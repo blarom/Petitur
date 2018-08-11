@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_edit_preferences"
+        android:orderInCategory="1"
+        app:showAsAction="never"
+        android:title="@string/preferences"/>
+    <item
+        android:id="@+id/action_edit_my_profile"
+        android:orderInCategory="2"
+        app:showAsAction="never"
+        android:title="@string/my_profile"/>
+    <item
+        android:id="@+id/action_signin"
+        android:orderInCategory="98"
+        app:showAsAction="never"
+        android:title="@string/sign_in"/>
+</menu>

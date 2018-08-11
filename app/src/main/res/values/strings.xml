@@ -1,0 +1,42 @@
+<resources>
+    <string name="app_name">Petitur</string>
+    <string name="find_a_pet">Find a pet</string>
+    <string name="get_advice">Get advice</string>
+    <string name="favorites">Favorites</string>
+    <string name="see_my_pets_list">See my pets list</string>
+    <string name="add_a_pet">Add a pet</string>
+    <string name="see_a_user_s_profile">See a user\'s profile</string>
+    <string name="location_rationale">Location is required to improve the search results by checking the distance relative to you. If you don\'t allow this, search results may be less useful.</string>
+    <string name="first_time_preferences">Since this is your first time using the app with this account, how about setting your preferences?</string>
+    <string name="save">Save</string>
+    <string name="done">Done</string>
+    <string name="edit_my_profile">Edit my profile</string>
+    <string name="sign_in">Sign in</string>
+    <string name="sign_out">Sign Out</string>
+    <string name="preferences">Preferences</string>
+    <string name="my_profile">My profile</string>
+    <string name="my_organization">My Organization</string>
+    <string name="my_pets">My pets</string>
+    <string name="user_longitude">user_longitude</string>
+    <string name="user_latitude">user_latitude</string>
+    <string name="tindog_notification_channel">tindog_notification_channel</string>
+    <string name="image_too_large">The image you chose is too large, try a smaller image.</string>
+    <string name="cannot_open_ftp">Sorry, we cannot open ftp links in this app</string>
+    <string name="cannot_open_smtp">Sorry, we cannot open smtp links in this app</string>
+    <string name="app_preference_sign_in_state">app_preference_sign_in_state</string>
+    <string name="app_preferences">app_preferences</string>
+    <string name="first_time_using_app">first_time_using_app</string>
+    <string name="saved_profile_images_rv_position">saved_profile_images_rv_position</string>
+    <string name="reached_max_images">You have reached the maximum number of images, please select an image to replace.</string>
+    <string name="no_permissions_terminating">The app cannot work properly without these permissions. Terminating the app.</string>
+    <string name="password">Password:</string>
+    <string name="email">Email:</string>
+    <string name="no_email_available">No email available</string>
+    <string name="no_name_available">No name available</string>
+    <string name="hidden_password">********</string>
+    <string name="name">Name:</string>
+    <string name="who_i_am">Who I am</string>
+    <string name="edit">edit</string>
+    <string name="search_only_in_my_country">Search only in my country (recommended)</string>
+
+</resources>

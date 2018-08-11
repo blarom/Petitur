@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "364672589708",
+    "firebase_url": "https://petitur-cda5a.firebaseio.com",
+    "project_id": "petitur-cda5a",
+    "storage_bucket": "petitur-cda5a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:364672589708:android:68553c730e466281",
+        "android_client_info": {
+          "package_name": "com.petitur"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "364672589708-qlb5vfgl9gmfj6ipqf25i6q118qirmhs.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.petitur",
+            "certificate_hash": "ea6d7d816ab0a82101d0e7ec9162aac63bcca750"
+          }
+        },
+        {
+          "client_id": "364672589708-3j2fv688c78riajm4km6a83kbcptj309.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDl-oArLcJau5raVkj0TO9_P95Wg6bJqOw"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "364672589708-3j2fv688c78riajm4km6a83kbcptj309.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
