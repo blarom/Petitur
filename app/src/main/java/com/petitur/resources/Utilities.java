@@ -1,14 +1,20 @@
 package com.petitur.resources;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.location.Address;
+import android.location.Geocoder;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -21,14 +27,21 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.petitur.BuildConfig;
 import com.petitur.R;
 import com.petitur.data.*;
-import com.petitur.ui.EditProfileActivity;
 import com.petitur.ui.PreferencesActivity;
+import com.petitur.ui.UpdateFamilyActivity;
+import com.petitur.ui.UpdateFoundationActivity;
 import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
 
@@ -40,8 +53,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 public class Utilities {
 
@@ -61,10 +76,26 @@ public class Utilities {
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         activity.startActivity(intent);
     }
-    public static void startEditProfileActtivity(Activity activity) {
-        Intent intent = new Intent(activity.getApplicationContext(), EditProfileActivity.class);
+    public static void startUpdateFamilyProfileActivity(Activity activity) {
+        Intent intent = new Intent(activity.getApplicationContext(), UpdateFamilyActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         activity.startActivity(intent);
+    }
+    public static void startUpdateFoundationProfileActivity(Activity activity) {
+        Intent intent = new Intent(activity.getApplicationContext(), UpdateFoundationActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        activity.startActivity(intent);
+    }
+    public static void handleUserSignIn(Activity activity, FirebaseUser mCurrentFirebaseUser, FirebaseAuth mFirebaseAuth, Menu mMenu) {
+        if (mCurrentFirebaseUser==null) {
+            Utilities.setAppPreferenceUserHasNotRefusedSignIn(activity.getApplicationContext(), true);
+            Utilities.showSignInScreen(activity);
+        }
+        else {
+            Utilities.setAppPreferenceUserHasNotRefusedSignIn(activity.getApplicationContext(), false);
+            mFirebaseAuth.signOut();
+            Utilities.updateSignInMenuItem(mMenu, activity.getBaseContext(), false);
+        }
     }
 
 
@@ -143,6 +174,9 @@ public class Utilities {
         }
         else return null;
         return imageDirectory;
+    }
+    public static String getTempImagesDirectory(Context context) {
+        return context.getFilesDir().getAbsolutePath()+"/temp/images/";
     }
     private static File getFileWithTrials(String directory, String fileName) {
         File imageFile = new File(directory, fileName);
@@ -401,6 +435,16 @@ public class Utilities {
         }
         return false;
     }
+    public static void displayTempImageInImageView(Context context, String imageName, ImageView imageView) {
+
+        String localDirectory = getTempImagesDirectory(context);
+        if (directoryIsInvalid(localDirectory)) {
+            Log.i(DEBUG_TAG, "Tried to access an invalid directory, aborting.");
+            return;
+        }
+        Uri localImageUri = Utilities.getImageUriWithPath(localDirectory, imageName);
+        displayUriInImageView(context, localImageUri, imageView);
+    }
     public static void displayObjectImageInImageView(Context context, Object object, String imageName, ImageView imageView) {
 
         String localDirectory = getImagesDirectoryForObject(context, object);
@@ -436,12 +480,108 @@ public class Utilities {
     }
 
 
+    //Location utlities
+    public static Address getAddressObjectFromAddressString(Context context, String location) {
+
+        //inspired by: https://stackoverflow.com/questions/20166328/how-to-get-longitude-latitude-from-the-city-name-android-code
+
+        List<Address> addresses = new ArrayList<>();
+        if(Geocoder.isPresent() && !TextUtils.isEmpty(location)){
+            try {
+                Geocoder gc = new Geocoder(context);
+                addresses = gc.getFromLocationName(location, 5); // get the found Address Objects
+
+//                List<LatLng> latLong = new ArrayList<>(addresses.size()); // A list to save the coordinates if they are available
+//                for (Address address : addresses){
+//                    if(address.hasLatitude() && address.hasLongitude()){
+//                        latLong.add(new LatLng(address.getLatitude(), address.getLongitude()));
+//                    }
+//                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        if (addresses.size()>0) return addresses.get(0);
+        else return null;
+    }
+    public static String[] getExactAddressFromGeoCoordinates(Context context, double latitude, double longitude) {
+
+        if (context==null || latitude==0.0 && longitude==0.0) return new String[]{ null, null, null, null };
+
+        Geocoder gcd = new Geocoder(context, Locale.getDefault());
+        List<Address> addresses;
+        try {
+            addresses = gcd.getFromLocation(latitude, longitude, 1);
+            if (addresses.size() > 0) {
+                String address = addresses.get(0).getAddressLine(0);
+                String street = (Arrays.asList(address.split(","))).get(0).trim();
+                String city = addresses.get(0).getLocality();
+                String state = addresses.get(0).getAdminArea();
+                String country = addresses.get(0).getCountryName();
+                String[] fullAddress = new String[] { street , city , state, country };
+                return fullAddress;
+            }
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    public static String getAddressStringFromComponents(String stN, String st, String ct, String se, String cn) {
+        StringBuilder builder = new StringBuilder("");
+        if (!TextUtils.isEmpty(stN)) {
+            builder.append(stN);
+            builder.append(" ");
+        }
+        if (!TextUtils.isEmpty(st)) {
+            builder.append(st);
+            if (!TextUtils.isEmpty(ct)) builder.append(", ");
+        }
+        if (!TextUtils.isEmpty(ct)) {
+            builder.append(ct);
+            if (!TextUtils.isEmpty(cn)) builder.append(", ");
+        }
+        if (!TextUtils.isEmpty(se)) {
+            builder.append(se);
+            if (!TextUtils.isEmpty(se)) builder.append(", ");
+        }
+        if (!TextUtils.isEmpty(cn)) {
+            builder.append(cn);
+        }
+        return builder.toString();
+    }
+    public static double[] getGeoCoordinatesFromAddressString(Context context, String address) {
+        Geocoder geocoder = new Geocoder(context);
+        List<Address> addresses;
+        try {
+            addresses = geocoder.getFromLocationName(address, 1);
+            if(addresses.size() > 0) {
+                double latitude= addresses.get(0).getLatitude();
+                double longitude= addresses.get(0).getLongitude();
+                return new double[]{latitude, longitude};
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+        return null;
+    }
+    public static boolean checkLocationPermission(Context context) {
+        if (context!=null && ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            return true;
+        }
+        else return false;
+    }
+
+
     //Database utilities
     public static FirebaseFirestore getDatabase() {
         //inspired by: https://github.com/firebase/quickstart-android/issues/15
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
                 .setPersistenceEnabled(true)
+                .setTimestampsInSnapshotsEnabled(true)
                 .build();
         db.setFirestoreSettings(settings);
         return db;
@@ -456,6 +596,308 @@ public class Utilities {
         //string = string.replaceAll("\\{","*");
         //string = string.replaceAll("}","*");
         return string;
+    }
+    public static void updateFirebaseUserName(final Context context, final FirebaseUser user, String password, final String newInfo) {
+
+        if (user.getEmail()==null) {
+            Toast.makeText(context, R.string.error_accessing_user_info, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        AuthCredential credential = EmailAuthProvider.getCredential(user.getEmail(), password);
+        user.reauthenticate(credential)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                            Log.d(DEBUG_TAG, "User re-authenticated.");
+
+                            UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                                    .setDisplayName(newInfo)
+                                    //.setPhotoUri(Uri.parse("https://example.com/jane-q-user/profile.jpg"))
+                                    .build();
+
+                            user.updateProfile(profileUpdates)
+                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Void> task) {
+                                            if (task.isSuccessful()) {
+                                                Toast.makeText(context, R.string.successfully_updated_name, Toast.LENGTH_SHORT).show();
+                                                Log.d(DEBUG_TAG, "User profile updated.");
+                                            }
+                                            else {
+                                                Toast.makeText(context, R.string.failed_to_update_name, Toast.LENGTH_SHORT).show();
+                                            }
+                                        }
+                                    });
+                        }
+                        else {
+                            Toast.makeText(context, R.string.authentication_failed, Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+
+    }
+    public static void updateFirebaseUserPassword(final Context context, final FirebaseUser user, String password, final String newInfo) {
+
+        if (user.getEmail()==null) {
+            Toast.makeText(context, R.string.error_accessing_user_info, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        AuthCredential credential = EmailAuthProvider.getCredential(user.getEmail(), password);
+        user.reauthenticate(credential)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                            Log.d(DEBUG_TAG, "User re-authenticated.");
+                            user.updatePassword(newInfo)
+                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Void> task) {
+                                            if (task.isSuccessful()) {
+                                                Toast.makeText(context, R.string.successfully_updated_password, Toast.LENGTH_SHORT).show();
+                                                Log.d(DEBUG_TAG, "User password updated.");
+                                            }
+                                            else {
+                                                Toast.makeText(context, R.string.failed_to_update_password, Toast.LENGTH_SHORT).show();
+                                            }
+                                        }
+                                    });
+                        }
+                        else {
+                            Toast.makeText(context, R.string.authentication_failed, Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+    }
+    public static void updateFirebaseUserEmail(final Context context, final FirebaseUser user, String password, final String newInfo) {
+
+        if (user.getEmail()==null) {
+            Toast.makeText(context, R.string.error_accessing_user_info, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        AuthCredential credential = EmailAuthProvider.getCredential(user.getEmail(), password);
+        user.reauthenticate(credential)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                            Log.d(DEBUG_TAG, "User re-authenticated.");
+                            user.updateEmail(newInfo)
+                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Void> task) {
+                                            if (task.isSuccessful()) {
+                                                Toast.makeText(context, R.string.successfully_updated_email, Toast.LENGTH_SHORT).show();
+                                                Log.d(DEBUG_TAG, "User email updated.");
+                                            }
+                                            else {
+                                                Toast.makeText(context, R.string.failed_to_update_email, Toast.LENGTH_SHORT).show();
+                                            }
+                                        }
+                                    });
+                        }
+                        else {
+                            Toast.makeText(context, R.string.authentication_failed, Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+    }
+    public static List<QueryCondition> getQueryConditionsForSingleObjectSearchByOwnerId(Object object) {
+
+        List<QueryCondition> queryConditions = new ArrayList<>();
+        QueryCondition queryCondition;
+        if (object instanceof User) {
+            User user = (User) object;
+            queryCondition = new QueryCondition("equalsString", "oI", user.getOI(), true, 0);
+            queryConditions.add(queryCondition);
+        }
+        else if (object instanceof Family) {
+            Family family = (Family) object;
+            queryCondition = new QueryCondition("equalsString", "oI", family.getOI(), true, 0);
+            queryConditions.add(queryCondition);
+        }
+        else if (object instanceof Foundation) {
+            Foundation foundation = (Foundation) object;
+            queryCondition = new QueryCondition("equalsString", "oI", foundation.getOI(), true, 0);
+            queryConditions.add(queryCondition);
+        }
+        else {
+            Log.i(DEBUG_TAG, "Warning! Asked for non-unique object (Pet/MapMarker/other) in query method " +
+                    "that implements conditions for unique user-associated object (User/Family/Foundation)");
+        }
+
+        queryCondition = new QueryCondition("limit", "", "", true, 10);
+        queryConditions.add(queryCondition);
+
+        return queryConditions;
+    }
+    public static List<QueryCondition> getQueryConditionsForMultipleObjectSearchByOwnerId(Object object, int limit) {
+
+        List<QueryCondition> queryConditions = new ArrayList<>();
+        QueryCondition queryCondition;
+        if (object instanceof User) {
+            User user = (User) object;
+            queryCondition = new QueryCondition("equalsString", "oI", user.getOI(), true, 0);
+            queryConditions.add(queryCondition);
+        }
+        else if (object instanceof Pet) {
+            Pet pet = (Pet) object;
+            queryCondition = new QueryCondition("equalsString", "oI", pet.getOI(), true, 0);
+            queryConditions.add(queryCondition);
+        }
+        else if (object instanceof Family) {
+            Family family = (Family) object;
+            queryCondition = new QueryCondition("equalsString", "oI", family.getOI(), true, 0);
+            queryConditions.add(queryCondition);
+        }
+        else if (object instanceof Foundation) {
+            Foundation foundation = (Foundation) object;
+            queryCondition = new QueryCondition("equalsString", "oI", foundation.getOI(), true, 0);
+            queryConditions.add(queryCondition);
+        }
+        else if (object instanceof MapMarker) {
+            MapMarker mapMarker = (MapMarker) object;
+            queryCondition = new QueryCondition("equalsString", "oI", mapMarker.getOI(), true, 0);
+            queryConditions.add(queryCondition);
+        }
+
+        queryCondition = new QueryCondition("limit", "", "", true, limit);
+        queryConditions.add(queryCondition);
+
+        return queryConditions;
+    }
+    public static List<QueryCondition> getQueryConditionsForSingleObjectSearchByUniqueId(Object object) {
+
+        List<QueryCondition> queryConditions = new ArrayList<>();
+        QueryCondition queryCondition;
+        if (object instanceof User) {
+            User user = (User) object;
+            queryCondition = new QueryCondition("equalsString", "uI", user.getUI(), true, 0);
+            queryConditions.add(queryCondition);
+        }
+        else if (object instanceof Pet) {
+            Pet pet = (Pet) object;
+            queryCondition = new QueryCondition("equalsString", "uI", pet.getUI(), true, 0);
+            queryConditions.add(queryCondition);
+        }
+        else if (object instanceof Family) {
+            Family family = (Family) object;
+            queryCondition = new QueryCondition("equalsString", "uI", family.getUI(), true, 0);
+            queryConditions.add(queryCondition);
+        }
+        else if (object instanceof Foundation) {
+            Foundation foundation = (Foundation) object;
+            queryCondition = new QueryCondition("equalsString", "uI", foundation.getUI(), true, 0);
+            queryConditions.add(queryCondition);
+        }
+        else if (object instanceof MapMarker) {
+            MapMarker mapMarker = (MapMarker) object;
+            queryCondition = new QueryCondition("equalsString", "uI", mapMarker.getUI(), true, 0);
+            queryConditions.add(queryCondition);
+        }
+
+        queryCondition = new QueryCondition("limit", "", "", true, 10);
+        queryConditions.add(queryCondition);
+
+        return queryConditions;
+    }
+    public static void synchronizeImageOnAllDevices(Context context, Object object, FirebaseDao firebaseDao, String imageName, Uri downloadedImageUri) {
+
+        String localDirectory = getImagesDirectoryForObject(context, object);
+        if(directoryIsInvalid(localDirectory)) return;
+
+        //The image was downloaded only if it was newer than the local image (If it wasn't downloaded, the downloadedImageUri is the same as the local image Uri)
+        Uri localImageUri = Utilities.getImageUriWithPath(localDirectory, imageName);
+
+        if (downloadedImageUri != null) {
+            if (localImageUri == null) {
+                Utilities.updateLocalObjectImage(context, downloadedImageUri, localDirectory, imageName);
+            }
+            else {
+                String localUriPath = localImageUri.getPath();
+                String downloadedUriPath = downloadedImageUri.getPath();
+
+                //If the downloaded image is newer, then update the image in the local directory
+                if (!downloadedUriPath.equals(localUriPath)) {
+                    Utilities.updateLocalObjectImage(context, downloadedImageUri, localDirectory, imageName);
+                }
+
+                //If the local image is newer, then upload it to Firebase to replace the older image
+                else if (downloadedUriPath.equals(localUriPath)) {
+                    firebaseDao.putImageInFirebaseStorage(object, localImageUri, imageName);
+                }
+            }
+        }
+        else {
+            if (localImageUri != null) {
+                firebaseDao.putImageInFirebaseStorage(object, localImageUri, imageName);
+            }
+        }
+    }
+    public static void updateImageOnLocalDevice(Context context, Object object, FirebaseDao firebaseDao, String imageName, Uri downloadedImageUri) {
+
+        String localDirectory = getImagesDirectoryForObject(context, object);
+        if(directoryIsInvalid(localDirectory)) return;
+
+        //The image was downloaded only if it was newer than the local image (If it wasn't downloaded, the downloadedImageUri is the same as the local image Uri)
+        Uri localImageUri = Utilities.getImageUriWithPath(localDirectory, imageName);
+
+        if (downloadedImageUri != null) {
+            if (localImageUri == null) {
+                Utilities.updateLocalObjectImage(context, downloadedImageUri, localDirectory, imageName);
+            }
+            else {
+                String localUriPath = localImageUri.getPath();
+                String downloadedUriPath = downloadedImageUri.getPath();
+
+                //If the downloaded image is newer, then update the image in the local directory
+                if (!downloadedUriPath.equals(localUriPath)) {
+                    Utilities.updateLocalObjectImage(context, downloadedImageUri, localDirectory, imageName);
+                }
+
+                //If the local image is newer, then do nothing
+            }
+        }
+    }
+    public static Uri updateLocalObjectImage(Context context, Uri originalImageUri, Object object, String imageName) {
+
+        String directory = getImagesDirectoryForObject(context, object);
+        if(directoryIsInvalid(directory)) return null;
+
+        Uri copiedImageUri = moveFile(originalImageUri, directory, imageName);
+        return copiedImageUri;
+    }
+    public static Uri updateTempObjectImage(Context context, Uri originalImageUri, String imageName) {
+
+        String directory = getTempImagesDirectory(context);
+        if(directoryIsInvalid(directory)) return null;
+
+        Uri copiedImageUri = moveFile(originalImageUri, directory, imageName);
+        return copiedImageUri;
+    }
+    public static void replaceObjectImagesWithTempImages(Context context, Uri[] mTempImageUris, Object object, FirebaseDao mFirebaseDao) {
+        for (int i=0; i<mTempImageUris.length; i++) {
+            Uri tempImageUri = mTempImageUris[i];
+            String imageName = "";
+            switch (i) {
+                case 0: imageName = "mainImage"; break;
+                case 1: imageName = "image1"; break;
+                case 2: imageName = "image2"; break;
+                case 3: imageName = "image3"; break;
+                case 4: imageName = "image4"; break;
+                case 5: imageName = "image5"; break;
+            }
+            if (tempImageUri !=null && !imageName.equals("")) {
+                Uri copiedImageUri = Utilities.updateLocalObjectImage(context, tempImageUri, object, imageName);
+                if (copiedImageUri != null) {
+                    mFirebaseDao.putImageInFirebaseStorage(object, copiedImageUri, imageName);
+                }
+            }
+        }
     }
 
 

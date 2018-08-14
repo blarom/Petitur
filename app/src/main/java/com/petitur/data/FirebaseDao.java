@@ -56,12 +56,51 @@ public class FirebaseDao {
 
 
     //Firebase Firestore CRUD methods
+    public Object createObjectWithUIAndReturnIt(Object object) {
+        String id = createObject(object);
+        if (!TextUtils.isEmpty(id)) {
+            if (object instanceof User) {
+                User user = (User) object;
+                user.setUI(id);
+                updateObject(user);
+                return user;
+            }
+            else if (object instanceof Pet) {
+                Pet pet = (Pet) object;
+                pet.setUI(id);
+                updateObject(pet);
+                return pet;
+            }
+            else if (object instanceof Family) {
+                Family family = (Family) object;
+                family.setUI(id);
+                updateObject(family);
+                return family;
+            }
+            else if (object instanceof Foundation) {
+                Foundation foundation = (Foundation) object;
+                foundation.setUI(id);
+                updateObject(foundation);
+                return foundation;
+            }
+            else if (object instanceof MapMarker) {
+                MapMarker mapMarker = (MapMarker) object;
+                mapMarker.setUI(id);
+                updateObject(mapMarker);
+                return mapMarker;
+            }
+        }
+        else {
+            Log.i(DEBUG_TAG, "Failed to create object in Firestore");
+        }
+        return object;
+    }
     public String createObject(Object object) {
 
         //Warning: must check that if object does not exist yet by using the getObject method, otherwise an identical object will be created with a different ID
 
         String path;
-        if (objectIsInvalid(object)) return "";
+        if (objectHasInvalidOwnerId(object)) return "";
         else path = getCollectionPath(object);
 
         if (path.equals("")) return "";
@@ -135,21 +174,19 @@ public class FirebaseDao {
                     }
                 });
     }
-    public void requestObjectsWithConditions(Object object, List<QueryCondition> conditions) {
+    public void requestObjectsWithConditions(final Object object, List<QueryCondition> conditions) {
 
         //Warning: it is recommended to set a QueryCondition limiting the number of search results
 
         if (object instanceof User) {
             CollectionReference collectionReference = mFirebaseDb.collection("users");
-            collectionReference = setConditionsOnCollectionQuery(collectionReference, conditions);
-            collectionReference.get()
+            Query query = setConditionsOnCollectionQuery(collectionReference, conditions);
+            query.get()
                     .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                         @Override
                         public void onComplete(@NonNull Task<QuerySnapshot> task) {
                             if (task.isSuccessful()) {
-                                for (QueryDocumentSnapshot document : task.getResult()) {
-                                    Log.d(DEBUG_TAG, document.getId() + " => " + document.getData());
-                                }
+                                sendObjectListToInterface(task, object);
                             } else {
                                 Log.w(DEBUG_TAG, "Error getting documents.", task.getException());
                             }
@@ -158,15 +195,13 @@ public class FirebaseDao {
         }
         else if (object instanceof Pet) {
             CollectionReference collectionReference = mFirebaseDb.collection("pets");
-            collectionReference = setConditionsOnCollectionQuery(collectionReference, conditions);
-            collectionReference.get()
+            Query query = setConditionsOnCollectionQuery(collectionReference, conditions);
+            query.get()
                     .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                         @Override
                         public void onComplete(@NonNull Task<QuerySnapshot> task) {
                             if (task.isSuccessful()) {
-                                for (QueryDocumentSnapshot document : task.getResult()) {
-                                    Log.d(DEBUG_TAG, document.getId() + " => " + document.getData());
-                                }
+                                sendObjectListToInterface(task, object);
                             } else {
                                 Log.w(DEBUG_TAG, "Error getting documents.", task.getException());
                             }
@@ -175,15 +210,13 @@ public class FirebaseDao {
         }
         else if (object instanceof Family) {
             CollectionReference collectionReference = mFirebaseDb.collection("families");
-            collectionReference = setConditionsOnCollectionQuery(collectionReference, conditions);
-            collectionReference.get()
+            Query query = setConditionsOnCollectionQuery(collectionReference, conditions);
+            query.get()
                     .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                         @Override
                         public void onComplete(@NonNull Task<QuerySnapshot> task) {
                             if (task.isSuccessful()) {
-                                for (QueryDocumentSnapshot document : task.getResult()) {
-                                    Log.d(DEBUG_TAG, document.getId() + " => " + document.getData());
-                                }
+                                sendObjectListToInterface(task, object);
                             } else {
                                 Log.w(DEBUG_TAG, "Error getting documents.", task.getException());
                             }
@@ -192,15 +225,13 @@ public class FirebaseDao {
         }
         else if (object instanceof Foundation) {
             CollectionReference collectionReference = mFirebaseDb.collection("foundations");
-            collectionReference = setConditionsOnCollectionQuery(collectionReference, conditions);
-            collectionReference.get()
+            Query query = setConditionsOnCollectionQuery(collectionReference, conditions);
+            query.get()
                     .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                         @Override
                         public void onComplete(@NonNull Task<QuerySnapshot> task) {
                             if (task.isSuccessful()) {
-                                for (QueryDocumentSnapshot document : task.getResult()) {
-                                    Log.d(DEBUG_TAG, document.getId() + " => " + document.getData());
-                                }
+                                sendObjectListToInterface(task, object);
                             } else {
                                 Log.w(DEBUG_TAG, "Error getting documents.", task.getException());
                             }
@@ -209,15 +240,13 @@ public class FirebaseDao {
         }
         else if (object instanceof MapMarker) {
             CollectionReference collectionReference = mFirebaseDb.collection("mapMarkers");
-            collectionReference = setConditionsOnCollectionQuery(collectionReference, conditions);
-            collectionReference.get()
+            Query query = setConditionsOnCollectionQuery(collectionReference, conditions);
+            query.get()
                     .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                         @Override
                         public void onComplete(@NonNull Task<QuerySnapshot> task) {
                             if (task.isSuccessful()) {
-                                for (QueryDocumentSnapshot document : task.getResult()) {
-                                    Log.d(DEBUG_TAG, document.getId() + " => " + document.getData());
-                                }
+                                sendObjectListToInterface(task, object);
                             } else {
                                 Log.w(DEBUG_TAG, "Error getting documents.", task.getException());
                             }
@@ -238,7 +267,7 @@ public class FirebaseDao {
                 .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                     @Override
                     public void onSuccess(DocumentSnapshot documentSnapshot) {
-                        sendObjectListToInterface(documentSnapshot, object);
+                        sendObjectToInterface(documentSnapshot, object);
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -323,63 +352,73 @@ public class FirebaseDao {
 
         return path;
     }
-    private CollectionReference setConditionsOnCollectionQuery(CollectionReference collectionReference, List<QueryCondition> conditions) {
-        if (conditions == null) return collectionReference;
+    private Query setConditionsOnCollectionQuery(CollectionReference collectionReference, List<QueryCondition> conditions) {
+
+        Query query = null;
+        if (conditions == null) return null;
+
+        query = collectionReference;
+
+//        for (QueryCondition condition : conditions) {
+//            if (condition.getOperation().equals("equalsString")) {
+//                query = collectionReference.whereEqualTo(condition.getKey(), condition.getValueString());
+//            }
+//        }
 
         for (QueryCondition condition : conditions) {
             if (condition.getOperation().equals("equalsString")) {
-                collectionReference.whereEqualTo(condition.getKey(), condition.getValueString());
+                query = query.whereEqualTo(condition.getKey(), condition.getValueString());
             }
             else if (condition.getOperation().equals("equalsBoolean")) {
-                collectionReference.whereEqualTo(condition.getKey(), condition.getValueBoolean());
+                query = query.whereEqualTo(condition.getKey(), condition.getValueBoolean());
             }
             else if (condition.getOperation().equals("lessThanString")) {
-                collectionReference.whereLessThan(condition.getKey(), condition.getValueString());
+                query = query.whereLessThan(condition.getKey(), condition.getValueString());
             }
             else if (condition.getOperation().equals("lessThanInteger")) {
-                collectionReference.whereLessThan(condition.getKey(), condition.getValueInteger());
+                query = query.whereLessThan(condition.getKey(), condition.getValueInteger());
             }
             else if (condition.getOperation().equals("greaterThanOrEqualToString")) {
-                collectionReference.whereGreaterThanOrEqualTo(condition.getKey(), condition.getValueString());
+                query = query.whereGreaterThanOrEqualTo(condition.getKey(), condition.getValueString());
             }
             else if (condition.getOperation().equals("greaterThanOrEqualToInteger")) {
-                collectionReference.whereGreaterThanOrEqualTo(condition.getKey(), condition.getValueInteger());
+                query = query.whereGreaterThanOrEqualTo(condition.getKey(), condition.getValueInteger());
             }
             else if (condition.getOperation().equals("orderBy")) {
-                if (condition.getValueBoolean()) collectionReference.orderBy(condition.getKey());
-                else collectionReference.orderBy(condition.getKey(), Query.Direction.DESCENDING);
+                if (condition.getValueBoolean()) query = query.orderBy(condition.getKey());
+                else query = query.orderBy(condition.getKey(), Query.Direction.DESCENDING);
             }
             else if (condition.getOperation().equals("limit")) {
-                collectionReference.limit(condition.getValueInteger());
+                query = query.limit(condition.getValueInteger());
             }
 
             //Note: the following conditions must occur after "orderBy"
             else if (condition.getOperation().equals("startAtString")) {
-                collectionReference.startAt(condition.getValueString());
+                query = query.startAt(condition.getValueString());
             }
             else if (condition.getOperation().equals("startAfterString")) {
-                collectionReference.startAfter(condition.getValueString());
+                query = query.startAfter(condition.getValueString());
             }
             else if (condition.getOperation().equals("startAtInteger")) {
-                collectionReference.startAt(condition.getValueInteger());
+                query = query.startAt(condition.getValueInteger());
             }
             else if (condition.getOperation().equals("startAfterInteger")) {
-                collectionReference.startAfter(condition.getValueInteger());
+                query = query.startAfter(condition.getValueInteger());
             }
             else if (condition.getOperation().equals("endAtString")) {
-                collectionReference.endAt(condition.getValueString());
+                query = query.endAt(condition.getValueString());
             }
             else if (condition.getOperation().equals("endBeforeString")) {
-                collectionReference.endBefore(condition.getValueString());
+                query = query.endBefore(condition.getValueString());
             }
             else if (condition.getOperation().equals("endAtInteger")) {
-                collectionReference.endAt(condition.getValueInteger());
+                query = query.endAt(condition.getValueInteger());
             }
             else if (condition.getOperation().equals("endBeforeInteger")) {
-                collectionReference.endBefore(condition.getValueInteger());
+                query = query.endBefore(condition.getValueInteger());
             }
         }
-        return collectionReference;
+        return query;
     }
     private boolean objectIsInvalid(Object object) {
 
@@ -425,7 +464,51 @@ public class FirebaseDao {
         }
         return true;
     }
-    private void sendObjectListToInterface(DocumentSnapshot documentSnapshot, Object object) {
+    private boolean objectHasInvalidOwnerId(Object object) {
+
+        if (object instanceof User) {
+            User user = (User) object;
+            if (TextUtils.isEmpty(user.getOI())) {
+                Log.d(DEBUG_TAG, "Attempted to perform a database action on an invalid user, aborting");
+                return true;
+            }
+            else return false;
+        }
+        else if (object instanceof Pet) {
+            Pet pet = (Pet) object;
+            if (TextUtils.isEmpty(pet.getOI())) {
+                Log.d(DEBUG_TAG, "Attempted to perform a database action on an invalid pet, aborting");
+                return true;
+            }
+            else return false;
+        }
+        else if (object instanceof Family) {
+            Family family = (Family) object;
+            if (TextUtils.isEmpty(family.getOI())) {
+                Log.d(DEBUG_TAG, "Attempted to perform a database action on an invalid family, aborting");
+                return true;
+            }
+            else return false;
+        }
+        else if (object instanceof Foundation) {
+            Foundation foundation = (Foundation) object;
+            if (TextUtils.isEmpty(foundation.getOI())) {
+                Log.d(DEBUG_TAG, "Attempted to perform a database action on an invalid foundation, aborting");
+                return true;
+            }
+            else return false;
+        }
+        else if (object instanceof MapMarker) {
+            MapMarker mapMarker = (MapMarker) object;
+            if (TextUtils.isEmpty(mapMarker.getOI())) {
+                Log.d(DEBUG_TAG, "Attempted to perform a database action on an invalid mapMarker, aborting");
+                return true;
+            }
+            else return false;
+        }
+        return true;
+    }
+    private void sendObjectToInterface(DocumentSnapshot documentSnapshot, Object object) {
 
         if (object instanceof User) {
             List<User> users = new ArrayList<>();
@@ -464,6 +547,64 @@ public class FirebaseDao {
             if (documentSnapshot.exists()) {
                 MapMarker mapMarker = documentSnapshot.toObject(MapMarker.class);
                 mapMarkers.add(mapMarker);
+            }
+            mOnOperationPerformedHandler.onMapMarkerListFound(mapMarkers);
+        }
+    }
+    private void sendObjectListToInterface(Task<QuerySnapshot> task, Object object) {
+
+        if (object instanceof User) {
+            List<User> users = new ArrayList<>();
+            for (QueryDocumentSnapshot document : task.getResult()) {
+                Log.d(DEBUG_TAG, document.getId() + " => " + document.getData());
+                if (document.exists()) {
+                    User user = document.toObject(User.class);
+                    users.add(user);
+                }
+            }
+            mOnOperationPerformedHandler.onUserListFound(users);
+        }
+        else if (object instanceof Pet) {
+            List<Pet> pets = new ArrayList<>();
+            for (QueryDocumentSnapshot document : task.getResult()) {
+                Log.d(DEBUG_TAG, document.getId() + " => " + document.getData());
+                if (document.exists()) {
+                    Pet pet = document.toObject(Pet.class);
+                    pets.add(pet);
+                }
+            }
+            mOnOperationPerformedHandler.onPetListFound(pets);
+        }
+        else if (object instanceof Family) {
+            List<Family> families = new ArrayList<>();
+            for (QueryDocumentSnapshot document : task.getResult()) {
+                Log.d(DEBUG_TAG, document.getId() + " => " + document.getData());
+                if (document.exists()) {
+                    Family family = document.toObject(Family.class);
+                    families.add(family);
+                }
+            }
+            mOnOperationPerformedHandler.onFamilyListFound(families);
+        }
+        else if (object instanceof Foundation) {
+            List<Foundation> foundations = new ArrayList<>();
+            for (QueryDocumentSnapshot document : task.getResult()) {
+                Log.d(DEBUG_TAG, document.getId() + " => " + document.getData());
+                if (document.exists()) {
+                    Foundation foundation = document.toObject(Foundation.class);
+                    foundations.add(foundation);
+                }
+            }
+            mOnOperationPerformedHandler.onFoundationListFound(foundations);
+        }
+        else if (object instanceof MapMarker) {
+            List<MapMarker> mapMarkers = new ArrayList<>();
+            for (QueryDocumentSnapshot document : task.getResult()) {
+                Log.d(DEBUG_TAG, document.getId() + " => " + document.getData());
+                if (document.exists()) {
+                    MapMarker mapMarker = document.toObject(MapMarker.class);
+                    mapMarkers.add(mapMarker);
+                }
             }
             mOnOperationPerformedHandler.onMapMarkerListFound(mapMarkers);
         }

@@ -1,5 +1,7 @@
 package com.petitur.data;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.text.TextUtils;
 
 import com.petitur.resources.Utilities;
@@ -7,7 +9,7 @@ import com.petitur.resources.Utilities;
 import java.util.Arrays;
 import java.util.List;
 
-public class Foundation {
+public class Foundation implements Parcelable {
 
     public Foundation() { }
     Foundation(String name, String street, String city, String country) {
@@ -17,9 +19,39 @@ public class Foundation {
         this.cn = country;
     }
     public Foundation(String ownerfirebaseUid) {
-        this.oFId = ownerfirebaseUid;
+        this.oI = ownerfirebaseUid;
         setUniqueIdentifierFromDetails();
     }
+
+    protected Foundation(Parcel in) {
+        nm = in.readString();
+        oI = in.readString();
+        uI = in.readString();
+        wb = in.readString();
+        cn = in.readString();
+        se = in.readString();
+        ct = in.readString();
+        st = in.readString();
+        stN = in.readString();
+        cP = in.readString();
+        cE = in.readString();
+        iUT = in.createStringArrayList();
+        gac = in.readString();
+        galt = in.readString();
+        galg = in.readString();
+    }
+
+    public static final Creator<Foundation> CREATOR = new Creator<Foundation>() {
+        @Override
+        public Foundation createFromParcel(Parcel in) {
+            return new Foundation(in);
+        }
+
+        @Override
+        public Foundation[] newArray(int size) {
+            return new Foundation[size];
+        }
+    };
 
     private String nm = "Default"; //name
     public String getNm() {
@@ -29,12 +61,12 @@ public class Foundation {
         this.nm = nm;
     }
 
-    private String oFId; // ownerfirebaseUid
-    public String getOFId() {
-        return oFId;
+    private String oI; // ownerfirebaseUid
+    public String getOI() {
+        return oI;
     }
-    public void setOFId(String Ouid) {
-        this.oFId = Ouid;
+    public void setOI(String oI) {
+        this.oI = oI;
         setUniqueIdentifierFromDetails();
     }
 
@@ -47,8 +79,8 @@ public class Foundation {
     }
     public void setUniqueIdentifierFromDetails() {
         if (!TextUtils.isEmpty(uI)) { } //Keep the uI
-        else if (TextUtils.isEmpty(oFId)) uI = nm + "-" + ct + "-" + cn;
-        else uI = oFId;
+        else if (TextUtils.isEmpty(oI)) uI = nm + "-" + ct + "-" + cn;
+        else uI = oI;
         uI = Utilities.cleanIdentifierForFirebase(uI);
     }
 
@@ -148,4 +180,27 @@ public class Foundation {
         this.galg = galg;
     }
 
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(nm);
+        parcel.writeString(oI);
+        parcel.writeString(uI);
+        parcel.writeString(wb);
+        parcel.writeString(cn);
+        parcel.writeString(se);
+        parcel.writeString(ct);
+        parcel.writeString(st);
+        parcel.writeString(stN);
+        parcel.writeString(cP);
+        parcel.writeString(cE);
+        parcel.writeStringList(iUT);
+        parcel.writeString(gac);
+        parcel.writeString(galt);
+        parcel.writeString(galg);
+    }
 }

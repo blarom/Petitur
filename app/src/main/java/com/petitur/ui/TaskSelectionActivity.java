@@ -13,6 +13,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.firebase.ui.auth.IdpResponse;
@@ -24,15 +27,27 @@ import com.petitur.resources.Utilities;
 
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 
 import static butterknife.internal.Utils.arrayOf;
 
-public class TaskSelectionActivity extends AppCompatActivity implements FirebaseDao.FirebaseOperationsHandler {
+public class TaskSelectionActivity extends AppCompatActivity implements
+        FirebaseDao.FirebaseOperationsHandler {
+
 
     //region Parameters
+    @BindView(R.id.task_selection_find_pet) Button mFindPetButton;
+    @BindView(R.id.task_selection_get_advice) Button mGetAdviceButton;
+    @BindView(R.id.task_selection_see_favorites) Button mSeeFavoritesButton;
+    @BindView(R.id.task_selection_see_my_pets) Button mSeeMyPetsButton;
+    @BindView(R.id.task_selection_add_pet) Button mAddPetButton;
+    @BindView(R.id.task_selection_search_users) Button mSearchUsersButton;
+    @BindView(R.id.task_selection_please_sign_in) TextView mPleaseSignInTextView;
     private static final String DEBUG_TAG = "Petitur TaskSelection";
     public static final int APP_PERMISSIONS_REQUEST_CODE_WRITE_EXTERNAL_STORAGE = 555;
     private static final int APP_PERMISSIONS_REQUEST_CODE_ACCESS_FINE_LOCATION = 123;
@@ -53,9 +68,7 @@ public class TaskSelectionActivity extends AppCompatActivity implements Firebase
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_task_selection);
 
-        mFirebaseAuth = FirebaseAuth.getInstance();
-        mBinding =  ButterKnife.bind(this);
-
+        initializeParameters();
         setupFirebaseAuthentication();
         hasStoragePermissions = checkStoragePermission();
         hasLocationPermissions = checkLocationPermission();
@@ -64,6 +77,7 @@ public class TaskSelectionActivity extends AppCompatActivity implements Firebase
     @Override protected void onResume() {
         super.onResume();
         mCurrentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        invalidateOptionsMenu();
 
     }
     @Override public void onStart() {
@@ -99,11 +113,14 @@ public class TaskSelectionActivity extends AppCompatActivity implements Firebase
             }
         }
     }
-    @Override public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.task_selection_menu, menu);
+    @Override public boolean onPrepareOptionsMenu(Menu menu) {
         mMenu = menu;
         if (mCurrentFirebaseUser==null) Utilities.updateSignInMenuItem(mMenu, this, false);
         else Utilities.updateSignInMenuItem(mMenu, this, true);
+        return super.onPrepareOptionsMenu(menu);
+    }
+    @Override public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.task_selection_menu, menu);
         return true;
     }
     @Override public boolean onOptionsItemSelected(MenuItem item) {
@@ -117,18 +134,12 @@ public class TaskSelectionActivity extends AppCompatActivity implements Firebase
                 Utilities.startPreferencesActivity(TaskSelectionActivity.this);
                 return true;
             case R.id.action_edit_my_profile:
-                Utilities.startEditProfileActtivity(TaskSelectionActivity.this);
+                if (mUser.getIF()) Utilities.startUpdateFoundationProfileActivity(TaskSelectionActivity.this);
+                else Utilities.startUpdateFamilyProfileActivity(TaskSelectionActivity.this);
                 return true;
             case R.id.action_signin:
-                if (mCurrentFirebaseUser==null) {
-                    Utilities.setAppPreferenceUserHasNotRefusedSignIn(getApplicationContext(), true);
-                    Utilities.showSignInScreen(TaskSelectionActivity.this);
-                }
-                else {
-                    Utilities.setAppPreferenceUserHasNotRefusedSignIn(getApplicationContext(), false);
-                    mFirebaseAuth.signOut();
-                    Utilities.updateSignInMenuItem(mMenu, this, false);
-                }
+                Utilities.handleUserSignIn(TaskSelectionActivity.this, mCurrentFirebaseUser, mFirebaseAuth, mMenu);
+                if (mCurrentFirebaseUser!=null) showBlankTaskSelectionMenu(); //ie. show the blank screen when requesting sign-out for a logged-in user
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -159,9 +170,22 @@ public class TaskSelectionActivity extends AppCompatActivity implements Firebase
 
 
     //Functionality methods
+    private void initializeParameters() {
+
+        mFirebaseDao = new FirebaseDao(getBaseContext(), this);
+        mFirebaseAuth = FirebaseAuth.getInstance();
+        mCurrentFirebaseUser = mFirebaseAuth.getCurrentUser();
+        mBinding =  ButterKnife.bind(this);
+
+        mFindPetButton.setVisibility(View.GONE);
+        mGetAdviceButton.setVisibility(View.GONE);
+        mSeeFavoritesButton.setVisibility(View.GONE);
+        mSeeMyPetsButton.setVisibility(View.GONE);
+        mAddPetButton.setVisibility(View.GONE);
+        mSearchUsersButton.setVisibility(View.GONE);
+    }
     private void setupFirebaseAuthentication() {
         // Check if user is signed in (non-null) and update UI accordingly.
-        mCurrentFirebaseUser = mFirebaseAuth.getCurrentUser();
         mAuthStateListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
@@ -223,14 +247,71 @@ public class TaskSelectionActivity extends AppCompatActivity implements Firebase
         mFirebaseDao.removeListeners();
     }
     private void getUserProfile() {
-        mFirebaseDao = new FirebaseDao(getBaseContext(), this);
         if (mCurrentFirebaseUser != null) {
             mUser = new User();
-            mUser.setUI(mCurrentFirebaseUser.getUid());
+            mUser.setOI(mCurrentFirebaseUser.getUid());
             mUser.setEm(mCurrentFirebaseUser.getEmail());
             mUser.setNm(mCurrentFirebaseUser.getDisplayName());
-            mFirebaseDao.requestObjectWithId(mUser);
+
+            mFirebaseDao.requestObjectsWithConditions(mUser, Utilities.getQueryConditionsForSingleObjectSearchByOwnerId(mUser));
         }
+        else {
+            showBlankTaskSelectionMenu();
+        }
+    }
+    private void getFoundationProfile() {
+        if (mCurrentFirebaseUser != null) {
+            Foundation foundation = new Foundation(mCurrentFirebaseUser.getUid());
+            mFirebaseDao.requestObjectsWithConditions(foundation, Utilities.getQueryConditionsForSingleObjectSearchByOwnerId(foundation));
+        }
+    }
+    private void getFamilyProfile() {
+        if (mCurrentFirebaseUser != null) {
+            Family family = new Family(mCurrentFirebaseUser.getUid());
+            mFirebaseDao.requestObjectsWithConditions(family, Utilities.getQueryConditionsForSingleObjectSearchByOwnerId(family));
+        }
+    }
+    private void modifyUserInterfaceAccordingToCredentials() {
+        if (mUser!=null) {
+            if (mUser.getIF()) {
+                mFindPetButton.setVisibility(View.GONE);
+                mGetAdviceButton.setVisibility(View.GONE);
+                mSeeFavoritesButton.setVisibility(View.GONE);
+                mSeeMyPetsButton.setVisibility(View.VISIBLE);
+                mAddPetButton.setVisibility(View.VISIBLE);
+                mSearchUsersButton.setVisibility(View.VISIBLE);
+                mPleaseSignInTextView.setVisibility(View.GONE);
+            }
+            else {
+                mFindPetButton.setVisibility(View.VISIBLE);
+                mGetAdviceButton.setVisibility(View.VISIBLE);
+                mSeeFavoritesButton.setVisibility(View.VISIBLE);
+                mSeeMyPetsButton.setVisibility(View.GONE);
+                mAddPetButton.setVisibility(View.GONE);
+                mSearchUsersButton.setVisibility(View.GONE);
+                mPleaseSignInTextView.setVisibility(View.GONE);
+            }
+        }
+        else {
+            showBlankTaskSelectionMenu();
+        }
+    }
+    private void showBlankTaskSelectionMenu() {
+        mFindPetButton.setVisibility(View.GONE);
+        mGetAdviceButton.setVisibility(View.GONE);
+        mSeeFavoritesButton.setVisibility(View.GONE);
+        mSeeMyPetsButton.setVisibility(View.GONE);
+        mAddPetButton.setVisibility(View.GONE);
+        mSearchUsersButton.setVisibility(View.GONE);
+        mPleaseSignInTextView.setVisibility(View.VISIBLE);
+    }
+    private void openPetProfile(@Nonnull Pet pet) {
+        Intent intent = new Intent(this, UpdatePetActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putString(getString(R.string.selected_pet_id), pet.getUI());
+        intent.putExtras(bundle);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        startActivity(intent);
     }
 
 
@@ -244,6 +325,7 @@ public class TaskSelectionActivity extends AppCompatActivity implements Firebase
     @OnClick(R.id.task_selection_see_my_pets) public void onSeeMyPetsButtonClick() {
     }
     @OnClick(R.id.task_selection_add_pet) public void onAddPetButtonClick() {
+        openPetProfile(new Pet());
     }
     @OnClick(R.id.task_selection_search_users) public void onSearchUsersButtonClick() {
     }
@@ -256,24 +338,38 @@ public class TaskSelectionActivity extends AppCompatActivity implements Firebase
 
     }
     @Override public void onFamilyListFound(List<Family> families) {
-
+        //If the family wasn't defined yet, go to the family update screen
+        if (families.size() == 0 || families.get(0).getPn().equals("")) {
+            Toast.makeText(getApplicationContext(), R.string.please_fill_user_profile, Toast.LENGTH_SHORT).show();
+            Utilities.startUpdateFamilyProfileActivity(TaskSelectionActivity.this);
+        }
     }
     @Override public void onFoundationListFound(List<Foundation> foundations) {
-
+        //If the family wasn't defined yet, go to the family update screen
+        if (foundations.size() == 0 || foundations.get(0).getNm().equals("")) {
+            Toast.makeText(getApplicationContext(), R.string.please_fill_user_profile, Toast.LENGTH_SHORT).show();
+            Utilities.startUpdateFoundationProfileActivity(TaskSelectionActivity.this);
+        }
     }
     @Override public void onUserListFound(List<User> users) {
         if (users == null) return;
 
         //If user is not in database then create it, otherwise update mUser
         if (users.size() == 0 || users.get(0)==null) {
-            if (!mUser.getUI().equals("")) {
-                String id = mFirebaseDao.createObject(mUser);
-                mUser.setUI(id);
-                mFirebaseDao.updateObject(mUser);
+            if (!mUser.getOI().equals("")) {
+                mUser = (User) mFirebaseDao.createObjectWithUIAndReturnIt(mUser);
+                if (!mUser.getUI().equals("")) {
+                    modifyUserInterfaceAccordingToCredentials();
+                    if (mUser.getIF()) getFoundationProfile();
+                    else getFamilyProfile();
+                }
             }
         }
         else {
             mUser = users.get(0);
+            modifyUserInterfaceAccordingToCredentials();
+            if (mUser.getIF()) getFoundationProfile();
+            else getFamilyProfile();
         }
     }
     @Override public void onMapMarkerListFound(List<MapMarker> mapMarkers) {

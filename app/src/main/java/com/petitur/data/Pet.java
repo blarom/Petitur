@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class Pet {
+public class Pet implements Parcelable{
 
     public Pet() {}
     Pet(String name, String gender, String race, String street, String city, String country, String age) {
@@ -22,6 +22,45 @@ public class Pet {
     public Pet(String uI) {
         this.uI = uI;
     }
+
+
+    protected Pet(Parcel in) {
+        nm = in.readString();
+        tp = in.readString();
+        uI = in.readString();
+        afCP = in.readString();
+        oI = in.readString();
+        fN = in.readString();
+        cn = in.readString();
+        ct = in.readString();
+        se = in.readString();
+        st = in.readString();
+        stN = in.readString();
+        gac = in.readString();
+        galt = in.readString();
+        galg = in.readString();
+        vU = in.createStringArrayList();
+        ag = in.readString();
+        sz = in.readString();
+        rc = in.readString();
+        gn = in.readString();
+        bh = in.readString();
+        it = in.readString();
+        hs = in.readString();
+        iUT = in.createStringArrayList();
+    }
+
+    public static final Creator<Pet> CREATOR = new Creator<Pet>() {
+        @Override
+        public Pet createFromParcel(Parcel in) {
+            return new Pet(in);
+        }
+
+        @Override
+        public Pet[] newArray(int size) {
+            return new Pet[size];
+        }
+    };
 
     private String nm = ""; //name
     public String getNm() {
@@ -55,12 +94,12 @@ public class Pet {
         this.afCP = FCP;
     }
 
-    private String aFid = ""; //Associated Foundation unique id
-    public String getAFid() {
-        return aFid;
+    private String oI = ""; //Owner identifier
+    public String getOI() {
+        return oI;
     }
-    public void setAFid(String aFid) {
-        this.aFid = aFid;
+    public void setOI(String oI) {
+        this.oI = oI;
     }
 
     private String fN = ""; //Associated Foundation name
@@ -207,4 +246,35 @@ public class Pet {
         this.iUT = iUT;
     }
 
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(nm);
+        parcel.writeString(tp);
+        parcel.writeString(uI);
+        parcel.writeString(afCP);
+        parcel.writeString(oI);
+        parcel.writeString(fN);
+        parcel.writeString(cn);
+        parcel.writeString(ct);
+        parcel.writeString(se);
+        parcel.writeString(st);
+        parcel.writeString(stN);
+        parcel.writeString(gac);
+        parcel.writeString(galt);
+        parcel.writeString(galg);
+        parcel.writeStringList(vU);
+        parcel.writeString(ag);
+        parcel.writeString(sz);
+        parcel.writeString(rc);
+        parcel.writeString(gn);
+        parcel.writeString(bh);
+        parcel.writeString(it);
+        parcel.writeString(hs);
+        parcel.writeStringList(iUT);
+    }
 }

@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">Petitur</string>
+    <string name="title_activity_map">Map</string>
     <string name="find_a_pet">Find a pet</string>
     <string name="get_advice">Get advice</string>
     <string name="favorites">Favorites</string>
@@ -38,5 +39,244 @@
     <string name="who_i_am">Who I am</string>
     <string name="edit">edit</string>
     <string name="search_only_in_my_country">Search only in my country (recommended)</string>
+    <string name="please_sign_in_to_view_the_menu">Please sign in to view the menu.</string>
+    <string name="saved_firebase_email">saved_firebase_email</string>
+    <string name="saved_firebase_name">saved_firebase_name</string>
+    <string name="saved_firebase_id">saved_firebase_id</string>
+    <string name="saved_user">saved_user</string>
+    <string name="please_enter_your_name">Please enter your name.</string>
+    <string name="please_enter_your_email">Please enter your email.</string>
+    <string name="please_enter_your_password">Please enter your password</string>
+    <string name="current_password">Please enter your current password</string>
+    <string name="new_password">New Password</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="wrong_password">Wrong Password, please try again.</string>
+    <string name="sent_password_reset_email">We just sent you a password reset link at your registered email.</string>
+    <string name="successfully_updated_password">Successfully updated password.</string>
+    <string name="failed_to_update_password">Failed to update password.</string>
+    <string name="error_accessing_user_info">Error accessing user information.</string>
+    <string name="successfully_updated_email">Successfully updated email.</string>
+    <string name="failed_to_update_email">Failed to update password.</string>
+    <string name="successfully_updated_name">Successfully updated name.</string>
+    <string name="failed_to_update_name">Failed to update name.</string>
+    <string name="authentication_failed">Authentication failed.</string>
+    <string name="device_version_too_low">Your device\'s Android version is too low.</string>
+    <string name="please_sign_in_to_view_your_preferences">Please sign in to view your preferences.</string>
+    <string name="selected_pet_id">selected_pet_id</string>
+    <string name="organization">Organization</string>
+    <string name="pet_s_name_required">Pet\'s name (*required)</string>
+    <string name="country_required">Country (*required)</string>
+    <string name="state_if_relevant">State (if relevant)</string>
+    <string name="city_required">City (*required)</string>
+    <string name="street_required">Street (*required)</string>
+    <string name="street_number_required">Street Number (*required)</string>
+    <string name="pet_interactions">Interactions</string>
+    <string name="pet_behavior">Behavior</string>
+    <string name="pet_race">Race</string>
+    <string name="pet_gender">Gender</string>
+    <string name="pet_size">Size</string>
+    <string name="pet_age">Age</string>
+    <string name="pet_s_history">Pet\'s history</string>
+    <string name="add_a_video_link_http">Add a video link (http://...)</string>
+    <string name="please_paste_a_full_http_link_here">Please paste a full http link here</string>
+    <string name="add_video_link">Add a video link</string>
+    <string name="no_exp_shared">No experience shared.</string>
+    <string name="upload_pet_pics">Upload pet pics</string>
+    <string name="choose_pet_s_main_pic">Choose pet\'s main pic</string>
+    <string name="pet_main_image">Pet main image</string>
+    <string name="saved_scroll_position">scroll_position</string>
+    <string name="image">Image</string>
+    <string name="must_save_profile_first">You must save the profile with the required fields before you can upload pictures.</string>
+    <string name="error_processing_request">Error while trying to process request, please try again</string>
+    <string name="profile_update_image_name">profile_update_image_name</string>
+    <string name="profile_update_pet_images_rv_position">profile_update_pet_images_rv_position</string>
+    <string name="saved_foundation_name">saved_foundation_name</string>
+    <string name="saved_foundation_city">saved_foundation_city</string>
+    <string name="saved_foundation_id">saved_foundation_id</string>
+    <string name="saved_foundation_country">saved_foundation_country</string>
+    <string name="saved_foundation_street">saved_foundation_street</string>
+    <string name="saved_foundation_street_number">saved_foundation_street_number</string>
+    <string name="critical_parameters_set">critical_parameters_set</string>
+    <string name="saved_profile">saved_profile</string>
+    <string name="pet_profile">Pet Profile</string>
+    <string name="pet_not_saved">Pet not saved! Please fill in valid values for the fields marked with *.</string>
+    <string name="add_marker_to_map">Add marker to map</string>
+    <string name="profile_type">Profile Type</string>
+    <string name="family_profile">Family Profile</string>
+    <string name="foundation_profile">Foundation Profile</string>
+    <string name="are_you_sure_delete_marker">Are you sure you want to delete this marker? This cannot be undone.</string>
+    <string name="yes">Yes</string>
+    <string name="remove">Remove</string>
+    <string name="map">Map</string>
+    <string name="map_activity_got_map_markers">map_activity_got_map_markers</string>
+    <string name="map_activity_bounds">map_activity_bounds</string>
+    <string name="map_activity_map_markers">map_activity_map_markers</string>
+    <string name="requested_specific_profile">requested_specific_profile</string>
+    <string name="click_on_pin_to_show_profile">Click on a pin to show the item\'s name, then click on it to see its profile</string>
+    <string name="search_results_pets_at_distance_list">search_results_pets_at_distance_list</string>
+    <string name="search_results_families_at_distance_list">search_results_families_at_distance_list</string>
+    <string name="search_results_foundations_at_distance_list">search_results_foundations_at_distance_list</string>
+    <string name="description">Description</string>
+    <string name="address">Address</string>
+    <string name="please_sign_in_to_see_map_markers">Please sign-in to see your map markers</string>
+    <string name="marker_title">Marker Title</string>
+    <string name="marker_description">Description</string>
+    <string name="please_enter_marker_info">Please enter the marker information</string>
+    <string name="street_incl_number">Street (including number)</string>
+    <string name="city">City</string>
+    <string name="state">State</string>
+    <string name="country">Country</string>
+    <string name="no_pet_found_press_done_to_create">No pet found for your organization, press DONE to create a new pet.</string>
+    <string name="foundation_name">Foundation Name</string>
+    <string name="foundation_name_required">Foundation Name (*required)</string>
+    <string name="website">Website</string>
+    <string name="contact_email">Contact Email</string>
+    <string name="contact_phone">Contact phone</string>
+    <string name="street_number">Street Number</string>
+    <string name="upload_foundation_pics">Upload Foundation Pics</string>
+    <string name="foundation_main_pic">Foundation Main Pic</string>
+    <string name="foundation_main_image">Foundation main image</string>
+    <string name="street">Street</string>
+    <string name="family_not_found_press_done_to_create">Your family doesn\'t exist yet, press DONE to create your family.</string>
+    <string name="foundation_not_found_press_done_to_create">Your foundation doesn\'t exist yet, press DONE to create a new foundation.</string>
+    <string name="family_not_saved">Family not saved! Please fill in valid values for the fields marked with *.</string>
+    <string name="foundation_not_saved">Foundation not saved! Please fill in valid values for the fields marked with *.</string>
+    <string name="scroll_position">scroll_position</string>
+    <string name="my_name">My name (not shown to others)</string>
+    <string name="my_family_s_pseudonym">My family\'s pseudonym (*required, shown to others)</string>
+    <string name="my_cell_number_not_shown_to_others">My cell number (not shown to others)</string>
+    <string name="my_email_not_shown_to_others">My email (not shown to others)</string>
+    <string name="my_experience_with_fostering_adoption">My experience with fostering/adoption</string>
+    <string name="upload_pics_of_my_current_pets">Upload pics of my current pets!</string>
+    <string name="choose_family_page_picture">Choose my family page picture!</string>
+    <string name="how_we_want_to_help">How we want to help:</string>
+    <string name="providing_a_home">Providing a home</string>
+    <string name="foster_a_dog">Foster a dog</string>
+    <string name="adopt_a_dog">Adopt a dog</string>
+    <string name="foster_and_possibly_adopt_a_dog">Foster and possibly adopt a dog</string>
+    <string name="how_we_can_help">How we can help:</string>
+    <string name="moving_equipment_around">Moving equipment around</string>
+    <string name="moving_dogs_around">Moving dogs around</string>
+    <string name="coordinating_and_scheduling">Coordinating and scheduling</string>
+    <string name="lending_a_hand_at_events">Lending a hand at events</string>
+    <string name="dogwalking">Dogwalking</string>
+    <string name="where">Where:</string>
+    <string name="when">When:</string>
+    <string name="morning">Morning</string>
+    <string name="noon">Noon</string>
+    <string name="afternoon">Afternoon</string>
+    <string name="evening">Evening</string>
+    <string name="foster_period">Foster period</string>
+    <string name="help_organize_adoption_events">Help organize adoption events</string>
+    <string name="helping_in_other_ways">Helping in other ways</string>
+    <string name="family_main_image">Family main image</string>
+    <string name="please_fill_user_profile">Please fill in your user profile before continuing</string>
+    <string name="family_s_pseudonym">Family\'s name</string>
+    <string name="please_wait_saving_images">Please wait while your new images are being saved.</string>
+
+
+    <string-array name="dog_age">
+        <item>Newborn pup (up to 6 months)</item>
+        <item>Young troublemaker (0.5–3 yrs old)</item>
+        <item>Experienced pupper (3–6 yrs old)</item>
+        <item>Senior doggo (6–10 yrs old)</item>
+        <item>Old geyser (10+ yrs old)</item>
+    </string-array>
+    <string-array name="dog_size">
+        <item>Chihuaha-sized (in your purse!)</item>
+        <item>Weiner-sized (easy on kids)</item>
+        <item>Comfortable (trolley-sized)</item>
+        <item>Huggable (big pillow)</item>
+        <item>Grizzly-huggable (45+ kilos of love)</item>
+    </string-array>
+    <string-array name="dog_gender">
+        <item>Male (Who\'s a good boy!)</item>
+        <item>Female (The true boss of the house)</item>
+    </string-array>
+    <string-array name="dog_race">
+        <item>Mixed (it\'s the heart that matters)</item>
+        <item>Cross-bred (the best of both worlds)</item>
+        <item>Pure-bred (beauty before brawn)</item>
+    </string-array>
+    <string-array name="dog_behavior">
+        <item>Playful (mess is life)</item>
+        <item>Gentle</item>
+        <item>Calm</item>
+        <item>Trained</item>
+        <item>Smart</item>
+        <item>Special needs</item>
+    </string-array>
+    <string-array name="dog_interactions">
+        <item>Playful with other doggos</item>
+        <item>Calm with other doggos</item>
+        <item>Kitty-tolerant</item>
+        <item>The Buddha of the Animal Kingdom</item>
+        <item>Kid-friendly (+3 patience perk)</item>
+        <item>Adult-friendy (I fear no man!)</item>
+        <item>All of the above</item>
+    </string-array>
+    <string-array name="pet_age_array_simple">
+        <item>Newborn</item>
+        <item>1–3 yrs old</item>
+        <item>3–6 yrs old</item>
+        <item>6–10 yrs old</item>
+        <item>10+ yrs old</item>
+    </string-array>
+    <string-array name="pet_size_array_simple">
+        <item>Chihuaha</item>
+        <item>Weiner</item>
+        <item>Comfortable</item>
+        <item>Huggable</item>
+        <item>Grizzly</item>
+    </string-array>
+    <string-array name="pet_gender_array_simple">
+        <item>Male</item>
+        <item>Female</item>
+    </string-array>
+    <string-array name="pet_race_array_simple">
+        <item>Mixed</item>
+        <item>Cross-bred</item>
+        <item>Pure-bred</item>
+    </string-array>
+    <string-array name="pet_behavior_array_simple">
+        <item>Playful</item>
+        <item>Gentle</item>
+        <item>Calm</item>
+        <item>Trained</item>
+        <item>Smart</item>
+        <item>Special</item>
+    </string-array>
+    <string-array name="pet_interactions_array_simple">
+        <item>Playful with dogs</item>
+        <item>Calm with dogs</item>
+        <item>Kitty-tolerant</item>
+        <item>Buddha</item>
+        <item>Kid-friendly</item>
+        <item>Adult-friendy</item>
+        <item>All of the above</item>
+    </string-array>
+    <string-array name="distance">
+        <item>5km</item>
+        <item>20km</item>
+        <item>50km</item>
+        <item>100km</item>
+        <item>300km</item>
+        <item>Any distance</item>
+    </string-array>
+    <string-array name="foster_period">
+        <item>Up to 1 week</item>
+        <item>Up to a few weeks</item>
+        <item>Up to 1 month</item>
+        <item>Up to 1.5 months</item>
+        <item>Up to 2 months</item>
+        <item>Up to 3 months</item>
+    </string-array>
+    <string-array name="dogwalking_location">
+        <item>Near my home</item>
+        <item>Within my neighborhood</item>
+        <item>A short drive away</item>
+        <item>A long drive away</item>
+    </string-array>
 
 </resources>

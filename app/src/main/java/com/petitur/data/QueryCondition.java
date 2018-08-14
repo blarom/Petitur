@@ -2,7 +2,17 @@ package com.petitur.data;
 
 public class QueryCondition {
 
-    private String operation = "equals";
+    public QueryCondition() { }
+
+    public QueryCondition(String operation, String key, String valueString, boolean valueBoolean, int valueInteger) {
+        this.operation = operation;
+        this.key = key.toLowerCase();
+        this.valueString = valueString;
+        this.valueBoolean = valueBoolean;
+        this.valueInteger = valueInteger;
+    }
+
+    private String operation = "default";
     public String getOperation() {
         return operation;
     }

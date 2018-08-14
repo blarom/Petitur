@@ -1,5 +1,7 @@
 package com.petitur.data;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.text.TextUtils;
 
 import com.petitur.resources.Utilities;
@@ -7,7 +9,7 @@ import com.petitur.resources.Utilities;
 import java.util.Arrays;
 import java.util.List;
 
-public class Family {
+public class Family implements Parcelable{
 
     public Family() {
 
@@ -19,16 +21,67 @@ public class Family {
         this.cn = country;
     }
     public Family(String firebaseUid) {
-        this.oFid = firebaseUid;
+        this.oI = firebaseUid;
         setUniqueIdentifierFromDetails();
     }
 
-    private String oFid; //firebase user id
-    public String getOFid() {
-        return oFid;
+
+    protected Family(Parcel in) {
+        oI = in.readString();
+        pn = in.readString();
+        uI = in.readString();
+        em = in.readString();
+        cp = in.readString();
+        cn = in.readString();
+        se = in.readString();
+        ct = in.readString();
+        st = in.readString();
+        xp = in.readString();
+        fD = in.readByte() != 0;
+        aD = in.readByte() != 0;
+        FAD = in.readByte() != 0;
+        fP = in.readString();
+        hOE = in.readByte() != 0;
+        hOD = in.readByte() != 0;
+        hOC = in.readByte() != 0;
+        hOL = in.readByte() != 0;
+        hD = in.readByte() != 0;
+        hDW = in.readString();
+        hDM = in.readByte() != 0;
+        hDN = in.readByte() != 0;
+        hDa = in.readByte() != 0;
+        hDE = in.readByte() != 0;
+        gac = in.readString();
+        galt = in.readString();
+        galg = in.readString();
+        iUT = in.createStringArrayList();
+        aP = in.readString();
+        sZ = in.readString();
+        rP = in.readString();
+        gP = in.readString();
+        bP = in.readString();
+        iP = in.readString();
+        tP = in.readString();
     }
-    public void setOFid(String oFid) {
-        this.oFid = oFid;
+
+    public static final Creator<Family> CREATOR = new Creator<Family>() {
+        @Override
+        public Family createFromParcel(Parcel in) {
+            return new Family(in);
+        }
+
+        @Override
+        public Family[] newArray(int size) {
+            return new Family[size];
+        }
+    };
+
+    private String oI; //Owner identifier
+    public String getOI() {
+        return oI;
+    }
+    public void setOI(String oI) {
+        this.oI = oI;
         setUniqueIdentifierFromDetails();
     }
 
@@ -49,8 +102,8 @@ public class Family {
     }
     public void setUniqueIdentifierFromDetails() {
         if (!TextUtils.isEmpty(uI)) { } //Keep the uI
-        else if (TextUtils.isEmpty(oFid)) uI = pn + "-" + em;
-        else uI = oFid;
+        else if (TextUtils.isEmpty(oI)) uI = pn + "-" + em;
+        else uI = oI;
         uI = Utilities.cleanIdentifierForFirebase(uI);
     }
 
@@ -250,7 +303,7 @@ public class Family {
     public List<String> getIUT() {
         return iUT;
     }
-    public void setUIT(List<String> iUT) {
+    public void setIUT(List<String> iUT) {
         this.iUT = iUT;
     }
 
@@ -308,5 +361,49 @@ public class Family {
     }
     public void settP(String tP) {
         this.tP = tP;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(oI);
+        parcel.writeString(pn);
+        parcel.writeString(uI);
+        parcel.writeString(em);
+        parcel.writeString(cp);
+        parcel.writeString(cn);
+        parcel.writeString(se);
+        parcel.writeString(ct);
+        parcel.writeString(st);
+        parcel.writeString(xp);
+        parcel.writeByte((byte) (fD ? 1 : 0));
+        parcel.writeByte((byte) (aD ? 1 : 0));
+        parcel.writeByte((byte) (FAD ? 1 : 0));
+        parcel.writeString(fP);
+        parcel.writeByte((byte) (hOE ? 1 : 0));
+        parcel.writeByte((byte) (hOD ? 1 : 0));
+        parcel.writeByte((byte) (hOC ? 1 : 0));
+        parcel.writeByte((byte) (hOL ? 1 : 0));
+        parcel.writeByte((byte) (hD ? 1 : 0));
+        parcel.writeString(hDW);
+        parcel.writeByte((byte) (hDM ? 1 : 0));
+        parcel.writeByte((byte) (hDN ? 1 : 0));
+        parcel.writeByte((byte) (hDa ? 1 : 0));
+        parcel.writeByte((byte) (hDE ? 1 : 0));
+        parcel.writeString(gac);
+        parcel.writeString(galt);
+        parcel.writeString(galg);
+        parcel.writeStringList(iUT);
+        parcel.writeString(aP);
+        parcel.writeString(sZ);
+        parcel.writeString(rP);
+        parcel.writeString(gP);
+        parcel.writeString(bP);
+        parcel.writeString(iP);
+        parcel.writeString(tP);
     }
 }

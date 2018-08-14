@@ -6,6 +6,9 @@ import android.os.Parcelable;
 public class MapMarker implements Parcelable {
 
     public MapMarker() {}
+    public MapMarker(String firebaseUid) {
+        this.oI = firebaseUid;
+    }
 
     protected MapMarker(Parcel in) {
         lg = in.readString();
