@@ -173,7 +173,11 @@
     <string name="family_main_image">Family main image</string>
     <string name="please_fill_user_profile">Please fill in your user profile before continuing</string>
     <string name="family_s_pseudonym">Family\'s name</string>
-    <string name="please_wait_saving_images">Please wait while your new images are being saved.</string>
+    <string name="please_wait_syncing_images">Please wait while your new images are being synced online.</string>
+    <string name="no_internet_sync_later">No internet connection! Please enter this profile at a later date to sync the newer images.</string>
+    <string name="images_cannot_be_saved_no_internet_press_done_again">Sorry, your new images cannot be saved since there is no Internet connection. Press DONE again to proceed anyway.</string>
+    <string name="started_syncing_images">Started syncing your new images, please wait...</string>
+    <string name="finished_uploading_images">Finished uploading your new images.</string>
 
 
     <string-array name="dog_age">

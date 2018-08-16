@@ -78,7 +78,7 @@ public class UpdateFamilyActivity extends AppCompatActivity implements
     private Unbinder mBinding;
     private Family mFamily;
     private FirebaseDao mFirebaseDao;
-    private ImagesRecycleViewAdapter mPetImagesRecycleViewAdapter;
+    private ImagesRecycleViewAdapter mFamilyImagesRecycleViewAdapter;
     private String mImageName = "mainImage";
     private int mStoredPetImagesRecyclerViewPosition;
     private FirebaseAuth mFirebaseAuth;
@@ -96,7 +96,8 @@ public class UpdateFamilyActivity extends AppCompatActivity implements
     private Bundle mSavedInstanceState;
     private boolean mFamilyCriticalParametersSet;
     private Uri[] mTempImageUris;
-    private boolean mStillUpdatingImages;
+    private boolean mCurrentlySyncingImages;
+    private boolean mRequireOnlineSync;
     //endregion
 
 
@@ -131,59 +132,15 @@ public class UpdateFamilyActivity extends AppCompatActivity implements
                 Uri croppedImageTempUri = result.getUri();
                 boolean succeeded = Utilities.shrinkImageWithUri(getApplicationContext(), croppedImageTempUri, 300, 300);
 
-
-                //TODO: finished preparing the temp to local/cloud image sync, need to wrap up the methods for use in other classes
                 if (succeeded) {
                     Uri tempImageUri = Utilities.updateTempObjectImage(getApplicationContext(), croppedImageTempUri, mImageName);
-                    List<Uri> uris;
-                    if (tempImageUri != null)
-                        switch (mImageName) {
-                            case "mainImage":
-                                mTempImageUris[0] = tempImageUri;
-                                Utilities.displayTempImageInImageView(getApplicationContext(), "mainImage", mImageViewMain);
-                                break;
-                            case "image1":
-                                mTempImageUris[1] = tempImageUri;
-                                uris = Utilities.getExistingImageUriListForObject(getApplicationContext(), mFamily, true);
-                                uris.set(0,tempImageUri);
-                                mPetImagesRecycleViewAdapter.setContents(uris);
-                                break;
-                            case "image2":
-                                mTempImageUris[2] = tempImageUri;
-                                uris = Utilities.getExistingImageUriListForObject(getApplicationContext(), mFamily, true);
-                                uris.set(1,tempImageUri);
-                                break;
-                            case "image3":
-                                mTempImageUris[3] = tempImageUri;
-                                uris = Utilities.getExistingImageUriListForObject(getApplicationContext(), mFamily, true);
-                                uris.set(2,tempImageUri);
-                                break;
-                            case "image4":
-                                mTempImageUris[4] = tempImageUri;
-                                uris = Utilities.getExistingImageUriListForObject(getApplicationContext(), mFamily, true);
-                                uris.set(3,tempImageUri);
-                                break;
-                            case "image5":
-                                mTempImageUris[5] = tempImageUri;
-                                uris = Utilities.getExistingImageUriListForObject(getApplicationContext(), mFamily, true);
-                                uris.set(4,tempImageUri);
-                                break;
-                        }
+                    if (tempImageUri==null) return;
+
+                    mTempImageUris = Utilities.registerAndDisplayTempImage(
+                            getApplicationContext(), tempImageUri, mTempImageUris, mImageName, mFamily,
+                            mImageViewMain, mFamilyImagesRecycleViewAdapter);
                 }
 
-
-//                if (succeeded) {
-//                    Uri copiedImageUri = Utilities.updateLocalObjectImage(getApplicationContext(), croppedImageTempUri, mFamily, mImageName);
-//                    if (copiedImageUri != null)
-//                        if (mImageName.equals("mainImage")) {
-//                            Utilities.displayObjectImageInImageView(getApplicationContext(), mFamily, "mainImage", mImageViewMain);
-//                        }
-//                        else {
-//                            List<Uri> uris = Utilities.getExistingImageUriListForObject(getApplicationContext(), mFamily, true);
-//                            mPetImagesRecycleViewAdapter.setContents(uris);
-//                        }
-//                    mFirebaseDao.putImageInFirebaseStorage(mFamily, copiedImageUri, mImageName);
-//                }
             }
             else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
                 Exception error = result.getError();
@@ -196,7 +153,6 @@ public class UpdateFamilyActivity extends AppCompatActivity implements
                 // Successfully signed in
                 mCurrentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
                 getFamilyProfileFromFirebase();
-                // ...
             } else {
                 // Sign in failed. If response is null the user canceled the
                 // sign-in flow using the back button. Otherwise check
@@ -218,7 +174,10 @@ public class UpdateFamilyActivity extends AppCompatActivity implements
                 return true;
             case R.id.action_save:
                 updateFamilyWithUserInput();
-                Utilities.replaceObjectImagesWithTempImages(getApplicationContext(), mTempImageUris, mFamily, mFirebaseDao);
+                mRequireOnlineSync = Utilities.overwriteLocalImagesWithTempImages(getApplicationContext(), mTempImageUris, mFamily);
+                mTempImageUris = new Uri[]{null, null, null, null, null, null, null};
+                if (mRequireOnlineSync) mCurrentlySyncingImages = Utilities.startSyncingImagesIfNotAlreadySyncing(getApplicationContext(), mCurrentlySyncingImages, mFamily, mFirebaseDao);
+
                 if (mFamilyCriticalParametersSet) {
                     mFirebaseDao.updateObject(mFamily);
                 }
@@ -226,16 +185,21 @@ public class UpdateFamilyActivity extends AppCompatActivity implements
                 return true;
             case R.id.action_done:
                 updateFamilyWithUserInput();
-                mStillUpdatingImages = true;
-                Utilities.replaceObjectImagesWithTempImages(getApplicationContext(), mTempImageUris, mFamily, mFirebaseDao);
-                if (mStillUpdatingImages) {
-                    Toast.makeText(getApplicationContext(), R.string.please_wait_saving_images, Toast.LENGTH_SHORT).show();
+                mRequireOnlineSync = Utilities.overwriteLocalImagesWithTempImages(getApplicationContext(), mTempImageUris, mFamily);
+                mTempImageUris = new Uri[]{null, null, null, null, null, null, null};
+                if (mRequireOnlineSync) mCurrentlySyncingImages = Utilities.startSyncingImagesIfNotAlreadySyncing(getApplicationContext(), mCurrentlySyncingImages, mFamily, mFirebaseDao);
+
+                if (mCurrentlySyncingImages) {
+                    Toast.makeText(getApplicationContext(), R.string.please_wait_syncing_images, Toast.LENGTH_SHORT).show();
+                    return true;
                 }
-                else if (mFamilyCriticalParametersSet) {
+
+                if (mFamilyCriticalParametersSet) {
                     mFirebaseDao.updateObject(mFamily);
                     finish();
                 }
                 else Toast.makeText(getApplicationContext(), R.string.family_not_saved, Toast.LENGTH_SHORT).show();
+
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -297,7 +261,7 @@ public class UpdateFamilyActivity extends AppCompatActivity implements
         mImagesReady = new boolean[]{false, false, false, false, false, false};
         mTempImageUris = new Uri[]{null, null, null, null, null, null, null};
         mFamilyFound = false;
-        mStillUpdatingImages = false;
+        mCurrentlySyncingImages = false;
 
         mSpinnerAdapterDogwalkingWhere = ArrayAdapter.createFromResource(this, R.array.dogwalking_location, android.R.layout.simple_spinner_item);
         mSpinnerAdapterDogwalkingWhere.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -363,8 +327,8 @@ public class UpdateFamilyActivity extends AppCompatActivity implements
         mRecyclerViewPetImages.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         mRecyclerViewPetImages.setNestedScrollingEnabled(true);
         List<Uri> uris = Utilities.getExistingImageUriListForObject(getApplicationContext(), mFamily, true);
-        mPetImagesRecycleViewAdapter = new ImagesRecycleViewAdapter(this, this, uris);
-        mRecyclerViewPetImages.setAdapter(mPetImagesRecycleViewAdapter);
+        mFamilyImagesRecycleViewAdapter = new ImagesRecycleViewAdapter(this, this, uris);
+        mRecyclerViewPetImages.setAdapter(mFamilyImagesRecycleViewAdapter);
     }
     private void performImageCaptureAndCrop() {
         // start source picker (camera, gallery, etc..) to get image for cropping and then use the image in cropping activity
@@ -526,7 +490,7 @@ public class UpdateFamilyActivity extends AppCompatActivity implements
                 updateLayoutWithFamilyData();
                 updateFamilyWithUserInput();
             }
-            mFirebaseDao.getAllObjectImagesFromFirebaseStorage(mFamily);
+            mFirebaseDao.getAllObjectImages(mFamily);
         }
 
     }
@@ -539,51 +503,25 @@ public class UpdateFamilyActivity extends AppCompatActivity implements
     @Override public void onMapMarkerListFound(List<MapMarker> markers) {
 
     }
-    @Override public void onImageAvailable(Uri downloadedImageUri, String imageName) {
+    @Override public void onImageAvailable(boolean imageWasDownloaded, Uri downloadedImageUri, String imageName) {
 
-        if (mImageViewMain==null || mPetImagesRecycleViewAdapter==null || mFamily==null) return;
+        if (mImageViewMain==null || mFamilyImagesRecycleViewAdapter==null || mFamily==null) return;
 
-        Utilities.synchronizeImageOnAllDevices(getApplicationContext(), mFamily, mFirebaseDao, imageName, downloadedImageUri);
+        Utilities.synchronizeImageOnAllDevices(getApplicationContext(), mFamily, mFirebaseDao, imageName, downloadedImageUri, imageWasDownloaded);
 
-        //Display the images
-
-        //Only showing the images if all images are ready (prevents image flickering)
-        switch (imageName) {
-            case "mainImage": mImagesReady[0] = true; break;
-            case "image1": mImagesReady[1] = true; break;
-            case "image2": mImagesReady[2] = true; break;
-            case "image3": mImagesReady[3] = true; break;
-            case "image4": mImagesReady[4] = true; break;
-            case "image5": mImagesReady[5] = true; break;
+        //Displaying the images (Only showing the images if all images are ready (prevents image flickering))
+        boolean allImagesFinishedSyncing = Utilities.checkIfImagesReadyForDisplay(mImagesReady, imageName);
+        if (allImagesFinishedSyncing) {
+            Utilities.displayAllAvailableImages(getApplicationContext(), mFamily, mImageViewMain, mFamilyImagesRecycleViewAdapter);
+            mCurrentlySyncingImages = false;
         }
-        boolean allImagesReady = true;
-        for (boolean isReady : mImagesReady) {
-            if (!isReady) { allImagesReady = false; break; }
-        }
-        if (allImagesReady) {
-            Utilities.displayObjectImageInImageView(getApplicationContext(), mFamily, "mainImage", mImageViewMain);
-            List<Uri> uris = Utilities.getExistingImageUriListForObject(getApplicationContext(), mFamily, true);
-            mPetImagesRecycleViewAdapter.setContents(uris);
+        else {
+            mCurrentlySyncingImages = true;
         }
 
     }
     @Override public void onImageUploaded(List<String> uploadTimes) {
-        List<String> oldUploadTimes = mFamily.getIUT();
-
-        //Checking which image has been uploaded, and nulling mTempImageUris after they have been uploaded
-        for (int i=0; i<oldUploadTimes.size(); i++) {
-            if (uploadTimes.get(i).equals(oldUploadTimes.get(i))) {
-                mTempImageUris[i] = null;
-            }
-        }
-
         mFamily.setIUT(uploadTimes);
-
-        //Checking if all images have finished uploading
-        mStillUpdatingImages = false;
-        for (Uri tempUri : mTempImageUris) {
-            if (tempUri !=null) mStillUpdatingImages = true;
-        }
     }
 
     //Communication with spinner adapters

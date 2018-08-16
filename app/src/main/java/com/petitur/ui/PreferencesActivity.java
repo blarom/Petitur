@@ -387,7 +387,7 @@ public class PreferencesActivity extends AppCompatActivity implements FirebaseDa
     @Override public void onMapMarkerListFound(List<MapMarker> mapMarkers) {
 
     }
-    @Override public void onImageAvailable(Uri imageUri, String imageName) {
+    @Override public void onImageAvailable(boolean imageWasDownloaded, Uri imageUri, String imageName) {
 
     }
     @Override public void onImageUploaded(List<String> uploadTimes) {

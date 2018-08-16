@@ -163,8 +163,7 @@
                 app:ari_ratio="0.75"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:contentDescription="@string/foundation_main_image"
-                app:srcCompat="@drawable/ic_image_not_available"/>
+                android:contentDescription="@string/foundation_main_image"/>
 
         </LinearLayout>
     </android.support.v4.widget.NestedScrollView>

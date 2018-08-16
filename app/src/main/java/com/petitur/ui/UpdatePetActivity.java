@@ -122,6 +122,9 @@ public class UpdatePetActivity extends AppCompatActivity implements
     private String mFoundationStreetNumber;
     private int mScrollPosition;
     private String mFoundationId;
+    private Uri[] mTempImageUris;
+    private boolean mCurrentlySyncingImages;
+    private boolean mRequireOnlineSync;
     //endregion
 
 
@@ -159,17 +162,12 @@ public class UpdatePetActivity extends AppCompatActivity implements
                 boolean succeeded = Utilities.shrinkImageWithUri(getApplicationContext(), croppedImageTempUri, 300, 300);
 
                 if (succeeded) {
-                    Uri copiedImageUri = Utilities.updateLocalObjectImage(getApplicationContext(), croppedImageTempUri, mPet, mImageName);
-                    if (copiedImageUri!=null) {
-                        if (mImageName.equals("mainImage")) {
-                            Utilities.displayObjectImageInImageView(getApplicationContext(), mPet, "mainImage", mImageViewMain);
-                        }
-                        else {
-                            List<Uri> uris = Utilities.getExistingImageUriListForObject(getApplicationContext(), mPet, true);
-                            mPetImagesRecycleViewAdapter.setContents(uris);
-                        }
-                        mFirebaseDao.putImageInFirebaseStorage(mPet, copiedImageUri, mImageName);
-                    }
+                    Uri tempImageUri = Utilities.updateTempObjectImage(getApplicationContext(), croppedImageTempUri, mImageName);
+                    if (tempImageUri==null) return;
+
+                    mTempImageUris = Utilities.registerAndDisplayTempImage(
+                            getApplicationContext(), tempImageUri, mTempImageUris, mImageName, mPet,
+                            mImageViewMain, mPetImagesRecycleViewAdapter);
                 }
             }
             else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
@@ -207,6 +205,10 @@ public class UpdatePetActivity extends AppCompatActivity implements
             case R.id.action_save:
                 updatePetWithFoundationData();
                 updatePetWithUserInput();
+                mRequireOnlineSync = Utilities.overwriteLocalImagesWithTempImages(getApplicationContext(), mTempImageUris, mPet);
+                mTempImageUris = new Uri[]{null, null, null, null, null, null, null};
+                if (mRequireOnlineSync) mCurrentlySyncingImages = Utilities.startSyncingImagesIfNotAlreadySyncing(getApplicationContext(), mCurrentlySyncingImages, mPet, mFirebaseDao);
+
                 if (mPetCriticalParametersSet) {
                     if (!mPetAlreadyExistsInFirebaseDb) {
                         mPet = (Pet) mFirebaseDao.createObjectWithUIAndReturnIt(mPet);
@@ -219,6 +221,15 @@ public class UpdatePetActivity extends AppCompatActivity implements
             case R.id.action_done:
                 updatePetWithFoundationData();
                 updatePetWithUserInput();
+                mRequireOnlineSync = Utilities.overwriteLocalImagesWithTempImages(getApplicationContext(), mTempImageUris, mPet);
+                mTempImageUris = new Uri[]{null, null, null, null, null, null, null};
+                if (mRequireOnlineSync) mCurrentlySyncingImages = Utilities.startSyncingImagesIfNotAlreadySyncing(getApplicationContext(), mCurrentlySyncingImages, mPet, mFirebaseDao);
+
+                if (mCurrentlySyncingImages) {
+                    Toast.makeText(getApplicationContext(), R.string.please_wait_syncing_images, Toast.LENGTH_SHORT).show();
+                    return true;
+                }
+
                 if (mPetCriticalParametersSet) {
                     if (!mPetAlreadyExistsInFirebaseDb) {
                         mPet = (Pet) mFirebaseDao.createObjectWithUIAndReturnIt(mPet);
@@ -292,9 +303,11 @@ public class UpdatePetActivity extends AppCompatActivity implements
         mPetAlreadyExistsInFirebaseDb = false;
         mPetCriticalParametersSet = false;
         mImagesReady = new boolean[]{false, false, false, false, false, false};
+        mTempImageUris = new Uri[]{null, null, null, null, null, null, null};
         mEditTextFoundation.setEnabled(false);
         mPet = new Pet();
         mVideoLinks = new ArrayList<>();
+        mCurrentlySyncingImages = false;
 
         mFirebaseDao = new FirebaseDao(getBaseContext(), this);
         mCurrentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -599,7 +612,7 @@ public class UpdatePetActivity extends AppCompatActivity implements
                 updateLayoutWithPetData();
                 updatePetWithUserInput();
             }
-            mFirebaseDao.getAllObjectImagesFromFirebaseStorage(mPet);
+            mFirebaseDao.getAllObjectImages(mPet);
         }
 
     }
@@ -630,29 +643,22 @@ public class UpdatePetActivity extends AppCompatActivity implements
     @Override public void onMapMarkerListFound(List<MapMarker> mapMarkers) {
 
     }
-    @Override public void onImageAvailable(Uri imageUri, String imageName) {
-        if (mImageViewMain==null || mPetImagesRecycleViewAdapter ==null || mPet==null) return;
+    @Override public void onImageAvailable(boolean imageWasDownloaded, Uri downloadedImageUri, String imageName) {
 
-        Utilities.synchronizeImageOnAllDevices(getApplicationContext(), mPet, mFirebaseDao, imageName, imageUri);
+        if (mImageViewMain==null || mPetImagesRecycleViewAdapter==null || mPet==null) return;
 
-        //Only showing the images if all images are ready (prevents image flickering)
-        switch (imageName) {
-            case "mainImage": mImagesReady[0] = true; break;
-            case "image1": mImagesReady[1] = true; break;
-            case "image2": mImagesReady[2] = true; break;
-            case "image3": mImagesReady[3] = true; break;
-            case "image4": mImagesReady[4] = true; break;
-            case "image5": mImagesReady[5] = true; break;
+        Utilities.synchronizeImageOnAllDevices(getApplicationContext(), mPet, mFirebaseDao, imageName, downloadedImageUri, imageWasDownloaded);
+
+        //Displaying the images (Only showing the images if all images are ready (prevents image flickering))
+        boolean allImagesFinishedSyncing = Utilities.checkIfImagesReadyForDisplay(mImagesReady, imageName);
+        if (allImagesFinishedSyncing) {
+            Utilities.displayAllAvailableImages(getApplicationContext(), mPet, mImageViewMain, mPetImagesRecycleViewAdapter);
+            mCurrentlySyncingImages = false;
         }
-        boolean allImagesReady = true;
-        for (boolean isReady : mImagesReady) {
-            if (!isReady) { allImagesReady = false; break; }
+        else {
+            mCurrentlySyncingImages = true;
         }
-        if (allImagesReady) {
-            Utilities.displayObjectImageInImageView(getApplicationContext(), mPet, "mainImage", mImageViewMain);
-            List<Uri> uris = Utilities.getExistingImageUriListForObject(getApplicationContext(), mPet, true);
-            mPetImagesRecycleViewAdapter.setContents(uris);
-        }
+
     }
     @Override public void onImageUploaded(List<String> uploadTimes) {
         mPet.setIUT(uploadTimes);

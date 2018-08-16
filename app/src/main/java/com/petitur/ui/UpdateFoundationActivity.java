@@ -75,6 +75,9 @@ public class UpdateFoundationActivity extends AppCompatActivity  implements
     private Bundle mSavedInstanceState;
     private boolean mFoundationFound;
     private boolean mFoundationCriticalParametersSet;
+    private Uri[] mTempImageUris;
+    private boolean mCurrentlySyncingImages;
+    private boolean mRequireOnlineSync;
     //endregion
 
 
@@ -110,17 +113,12 @@ public class UpdateFoundationActivity extends AppCompatActivity  implements
                 boolean succeeded = Utilities.shrinkImageWithUri(getApplicationContext(), croppedImageTempUri, 300, 300);
 
                 if (succeeded) {
-                    Uri copiedImageUri = Utilities.updateLocalObjectImage(getApplicationContext(), croppedImageTempUri, mFoundation, mImageName);
-                    if (copiedImageUri != null) {
-                        if (mImageName.equals("mainImage")) {
-                            Utilities.displayObjectImageInImageView(getApplicationContext(), mFoundation, "mainImage", mImageViewMain);
-                        }
-                        else {
-                            List<Uri> uris = Utilities.getExistingImageUriListForObject(getApplicationContext(), mFoundation, true);
-                            mFoundationImagesRecycleViewAdapter.setContents(uris);
-                        }
-                        mFirebaseDao.putImageInFirebaseStorage(mFoundation, copiedImageUri, mImageName);
-                    }
+                    Uri tempImageUri = Utilities.updateTempObjectImage(getApplicationContext(), croppedImageTempUri, mImageName);
+                    if (tempImageUri==null) return;
+
+                    mTempImageUris = Utilities.registerAndDisplayTempImage(
+                            getApplicationContext(), tempImageUri, mTempImageUris, mImageName, mFoundation,
+                            mImageViewMain, mFoundationImagesRecycleViewAdapter);
                 }
             }
             else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
@@ -156,13 +154,26 @@ public class UpdateFoundationActivity extends AppCompatActivity  implements
                 return true;
             case R.id.action_save:
                 updateFoundationWithUserInput();
+                mRequireOnlineSync = Utilities.overwriteLocalImagesWithTempImages(getApplicationContext(), mTempImageUris, mFoundation);
+                mTempImageUris = new Uri[]{null, null, null, null, null, null, null};
+                if (mRequireOnlineSync) mCurrentlySyncingImages = Utilities.startSyncingImagesIfNotAlreadySyncing(getApplicationContext(), mCurrentlySyncingImages, mFoundation, mFirebaseDao);
+
                 if (mFoundationCriticalParametersSet) {
                     mFirebaseDao.updateObject(mFoundation);
                 }
-                else Toast.makeText(getApplicationContext(), R.string.foundation_not_saved, Toast.LENGTH_SHORT).show();
+                else Toast.makeText(getApplicationContext(), R.string.family_not_saved, Toast.LENGTH_SHORT).show();
                 return true;
             case R.id.action_done:
                 updateFoundationWithUserInput();
+                mRequireOnlineSync = Utilities.overwriteLocalImagesWithTempImages(getApplicationContext(), mTempImageUris, mFoundation);
+                mTempImageUris = new Uri[]{null, null, null, null, null, null, null};
+                if (mRequireOnlineSync) mCurrentlySyncingImages = Utilities.startSyncingImagesIfNotAlreadySyncing(getApplicationContext(), mCurrentlySyncingImages, mFoundation, mFirebaseDao);
+
+                if (mCurrentlySyncingImages) {
+                    Toast.makeText(getApplicationContext(), R.string.please_wait_syncing_images, Toast.LENGTH_SHORT).show();
+                    return true;
+                }
+
                 if (mFoundationCriticalParametersSet) {
                     mFirebaseDao.updateObject(mFoundation);
                     finish();
@@ -216,12 +227,14 @@ public class UpdateFoundationActivity extends AppCompatActivity  implements
         }
         mBinding =  ButterKnife.bind(this);
         mImagesReady = new boolean[]{false, false, false, false, false, false};
+        mTempImageUris = new Uri[]{null, null, null, null, null, null, null};
         mFoundationFound = false;
         mFoundationCriticalParametersSet = false;
         mFoundation = new Foundation();
         mFirebaseDao = new FirebaseDao(getBaseContext(), this);
         mCurrentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         mFirebaseAuth = FirebaseAuth.getInstance();
+        mCurrentlySyncingImages = false;
 
     }
     private void getFoundationProfileFromFirebase() {
@@ -411,7 +424,7 @@ public class UpdateFoundationActivity extends AppCompatActivity  implements
                 updateLayoutWithFoundationData();
                 updateFoundationWithUserInput();
             }
-            mFirebaseDao.getAllObjectImagesFromFirebaseStorage(mFoundation);
+            mFirebaseDao.getAllObjectImages(mFoundation);
         }
 
     }
@@ -421,29 +434,20 @@ public class UpdateFoundationActivity extends AppCompatActivity  implements
     @Override public void onMapMarkerListFound(List<MapMarker> mapMarkers) {
 
     }
-    @Override public void onImageAvailable(Uri imageUri, String imageName) {
+    @Override public void onImageAvailable(boolean imageWasDownloaded, Uri downloadedImageUri, String imageName) {
 
         if (mImageViewMain==null || mFoundationImagesRecycleViewAdapter==null || mFoundation==null) return;
 
-        Utilities.synchronizeImageOnAllDevices(getApplicationContext(), mFoundation, mFirebaseDao, imageName, imageUri);
+        Utilities.synchronizeImageOnAllDevices(getApplicationContext(), mFoundation, mFirebaseDao, imageName, downloadedImageUri, imageWasDownloaded);
 
-        //Only showing the images if all images are ready (prevents image flickering)
-        switch (imageName) {
-            case "mainImage": mImagesReady[0] = true; break;
-            case "image1": mImagesReady[1] = true; break;
-            case "image2": mImagesReady[2] = true; break;
-            case "image3": mImagesReady[3] = true; break;
-            case "image4": mImagesReady[4] = true; break;
-            case "image5": mImagesReady[5] = true; break;
+        //Displaying the images (Only showing the images if all images are ready (prevents image flickering))
+        boolean allImagesFinishedSyncing = Utilities.checkIfImagesReadyForDisplay(mImagesReady, imageName);
+        if (allImagesFinishedSyncing) {
+            Utilities.displayAllAvailableImages(getApplicationContext(), mFoundation, mImageViewMain, mFoundationImagesRecycleViewAdapter);
+            mCurrentlySyncingImages = false;
         }
-        boolean allImagesReady = true;
-        for (boolean isReady : mImagesReady) {
-            if (!isReady) { allImagesReady = false; break; }
-        }
-        if (allImagesReady) {
-            Utilities.displayObjectImageInImageView(getApplicationContext(), mFoundation, "mainImage", mImageViewMain);
-            List<Uri> uris = Utilities.getExistingImageUriListForObject(getApplicationContext(), mFoundation, true);
-            mFoundationImagesRecycleViewAdapter.setContents(uris);
+        else {
+            mCurrentlySyncingImages = true;
         }
 
     }

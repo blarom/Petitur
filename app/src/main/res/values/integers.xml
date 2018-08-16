@@ -5,5 +5,5 @@
     <integer name="checkbox_grid_col_count">2</integer>
     <integer name="checkbox_grid_row_count">2</integer>
     <integer name="max_website_length">2000</integer> <!--number of characters in the string-->
-    <integer name="max_image_file_size">300</integer> <!--in kB-->
+    <integer name="max_image_file_size">100</integer> <!--in kB-->
 </resources>

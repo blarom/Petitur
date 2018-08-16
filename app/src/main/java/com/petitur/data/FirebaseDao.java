@@ -24,7 +24,6 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.petitur.R;
 import com.petitur.resources.Utilities;
 
 import java.io.File;
@@ -160,7 +159,7 @@ public class FirebaseDao {
         if (path.equals("")) return;
 
         mFirebaseDb.document(path)
-                .set(docData)
+                .update(docData)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
@@ -656,7 +655,7 @@ public class FirebaseDao {
                                 case "image4": finalUploadTimes.set(4,String.valueOf(currentTime)); break;
                                 case "image5": finalUploadTimes.set(5,String.valueOf(currentTime)); break;
                             }
-                            updateObjectKeyValuePair(object, "iut", finalUploadTimes);
+                            updateObjectKeyValuePair(object, "iut", finalUploadTimes); //necessary here since the object is not necessarily updated in the activity
                             mOnOperationPerformedHandler.onImageUploaded(finalUploadTimes);
                         }
                     }
@@ -669,48 +668,45 @@ public class FirebaseDao {
                     }
                 });
     }
-    public void getAllObjectImagesFromFirebaseStorage(Object object) {
-        getImageFromFirebaseStorage(object, "mainImage");
-        getImageFromFirebaseStorage(object, "image1");
-        getImageFromFirebaseStorage(object, "image2");
-        getImageFromFirebaseStorage(object, "image3");
-        getImageFromFirebaseStorage(object, "image4");
-        getImageFromFirebaseStorage(object, "image5");
+    public void getAllObjectImages(Object object) {
+        getImage(object, "mainImage");
+        getImage(object, "image1");
+        getImage(object, "image2");
+        getImage(object, "image3");
+        getImage(object, "image4");
+        getImage(object, "image5");
     }
-    public void getImageFromFirebaseStorage(Object object, final String imageName) {
+    public void getImage(Object object, final String imageName) {
 
         if (Utilities.imageNameIsInvalid(imageName)) return;
 
-        String childPath;
-        String folderPath;
+        String localFolderPath;
 
         List<String> uploadTimes;
         if (object instanceof Pet) {
             Pet pet = (Pet) object;
-            folderPath = "pets/" + pet.getUI() + "/images";
+            localFolderPath = "pets/" + pet.getUI() + "/images";
             uploadTimes = pet.getIUT();
         }
         else if (object instanceof Family) {
             Family family = (Family) object;
-            folderPath = "families/" + family.getUI() + "/images";
+            localFolderPath = "families/" + family.getUI() + "/images";
             uploadTimes = family.getIUT();
         }
         else if (object instanceof Foundation) {
             Foundation foundation = (Foundation) object;
-            folderPath = "foundations/" + foundation.getUI() + "/images";
+            localFolderPath = "foundations/" + foundation.getUI() + "/images";
             uploadTimes = foundation.getIUT();
         }
         else return;
 
-        childPath = folderPath + "/" + imageName + ".jpg";
 
+        //Checking that all directories are valid
         final Uri localImageUri = Utilities.getLocalImageUriForObject(mContext, object, imageName);
         if (uploadTimes==null || uploadTimes.size()==0) {
-            sendImageUriToInterface(localImageUri, imageName);
+            mOnOperationPerformedHandler.onImageAvailable(false, localImageUri, imageName);
             return;
         }
-
-        //If the image loaded into Firebase is newer than the image saved onto the local device (if it exists), then download it. Otherwise, use the local image.
         String internalStorageDirString = Utilities.getImagesDirectoryForObject(mContext, object);
         if (Utilities.directoryIsInvalid(internalStorageDirString)) {
             Log.i(DEBUG_TAG, "Serious error in getImageFromFirebaseStorage(): invalid images directory: " + internalStorageDirString);
@@ -718,85 +714,110 @@ public class FirebaseDao {
         }
         File internalStorageDir = new File(internalStorageDirString);
         if (!internalStorageDir.exists()) internalStorageDir.mkdirs();
+        if (TextUtils.isEmpty(localFolderPath)) return;
 
+
+        //If the image loaded into Firebase is newer than the image saved onto the local device (if it exists), then download it. Otherwise, use the local image.
         File localFile = new File(internalStorageDirString, imageName + ".jpg");
         if (localFile.exists()) {
-            if (localImageUri!=null) Log.i(DEBUG_TAG, "Local file does exists: " + localImageUri.toString());
+            if (localImageUri!=null) Log.i(DEBUG_TAG, "Local file exists: " + localImageUri.toString());
 
-            Date lastModified = new Date(localFile.lastModified());
-            long lastModifiedTime = lastModified.getTime();
+            boolean localImageIsNewer = checkIfLocalImageIsNewerThanOnlineImage(object, imageName);
 
-            long imageUploadTime = 0;
-
-            switch (imageName) {
-                case "mainImage": imageUploadTime = !TextUtils.isEmpty(uploadTimes.get(0)) ? Long.parseLong(uploadTimes.get(0)) : 0; break;
-                case "image1": imageUploadTime = !TextUtils.isEmpty(uploadTimes.get(1)) ? Long.parseLong(uploadTimes.get(1)) : 0; break;
-                case "image2": imageUploadTime = !TextUtils.isEmpty(uploadTimes.get(2)) ? Long.parseLong(uploadTimes.get(2)) : 0; break;
-                case "image3": imageUploadTime = !TextUtils.isEmpty(uploadTimes.get(3)) ? Long.parseLong(uploadTimes.get(3)) : 0; break;
-                case "image4": imageUploadTime = !TextUtils.isEmpty(uploadTimes.get(4)) ? Long.parseLong(uploadTimes.get(4)) : 0; break;
-                case "image5": imageUploadTime = !TextUtils.isEmpty(uploadTimes.get(5)) ? Long.parseLong(uploadTimes.get(5)) : 0; break;
-            }
-
-            //If the local file is older than the Firebase file, then download the Firebase file to the cache directory
-            if (imageUploadTime!=0 && imageUploadTime > lastModifiedTime && Utilities.internetIsAvailable(mContext)) {
-                if (localImageUri!=null) Log.i(DEBUG_TAG, "Local file " + localImageUri.toString() + "with mod time " + lastModifiedTime + " is older than Firebase image with u/l time " + imageUploadTime);
-                downloadFromFirebase(internalStorageDir, imageName, childPath, localImageUri);
-            }
-            else {
-                sendImageUriToInterface(localImageUri, imageName);
-            }
+            if (localImageIsNewer || !Utilities.internetIsAvailable(mContext)) mOnOperationPerformedHandler.onImageAvailable(false, localImageUri, imageName);
+            else downloadFromFirebase(imageName, localFolderPath, localImageUri);
         }
         else {
             if (localImageUri!=null) Log.i(DEBUG_TAG, "Local file does not exist: " + localImageUri.toString());
-            downloadFromFirebase(internalStorageDir, imageName, childPath, localImageUri);
+            if(Utilities.internetIsAvailable(mContext)) downloadFromFirebase(imageName, localFolderPath, localImageUri);
         }
 
     }
-    private void downloadFromFirebase(File internalStorageDir, final String imageName, String childPath, final Uri localImageUri) {
+    private boolean checkIfLocalImageIsNewerThanOnlineImage(Object object, String imageName) {
+
+        List<String> uploadTimes;
+        if (object instanceof Pet) {
+            Pet pet = (Pet) object;
+            uploadTimes = pet.getIUT();
+        }
+        else if (object instanceof Family) {
+            Family family = (Family) object;
+            uploadTimes = family.getIUT();
+        }
+        else if (object instanceof Foundation) {
+            Foundation foundation = (Foundation) object;
+            uploadTimes = foundation.getIUT();
+        }
+        else return true;
+
+        String internalStorageDirString = Utilities.getImagesDirectoryForObject(mContext, object);
+        File localFile = new File(internalStorageDirString, imageName + ".jpg");
+        Date lastModified = new Date(localFile.lastModified());
+        long lastModifiedTime = lastModified.getTime();
+        long imageUploadTime = 0;
+
+        switch (imageName) {
+            case "mainImage": imageUploadTime = !TextUtils.isEmpty(uploadTimes.get(0)) ? Long.parseLong(uploadTimes.get(0)) : 0; break;
+            case "image1": imageUploadTime = !TextUtils.isEmpty(uploadTimes.get(1)) ? Long.parseLong(uploadTimes.get(1)) : 0; break;
+            case "image2": imageUploadTime = !TextUtils.isEmpty(uploadTimes.get(2)) ? Long.parseLong(uploadTimes.get(2)) : 0; break;
+            case "image3": imageUploadTime = !TextUtils.isEmpty(uploadTimes.get(3)) ? Long.parseLong(uploadTimes.get(3)) : 0; break;
+            case "image4": imageUploadTime = !TextUtils.isEmpty(uploadTimes.get(4)) ? Long.parseLong(uploadTimes.get(4)) : 0; break;
+            case "image5": imageUploadTime = !TextUtils.isEmpty(uploadTimes.get(5)) ? Long.parseLong(uploadTimes.get(5)) : 0; break;
+        }
+
+        //If the local file is older than the Firebase file, then download the Firebase file to the cache directory
+        if (imageUploadTime!=0 && imageUploadTime > lastModifiedTime) {
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+    private void downloadFromFirebase(final String imageName, String localFolderPath, final Uri localImageUri) {
 
         File cacheDirectory = new File(mContext.getFilesDir().getAbsolutePath() + "/cache");
         if (!cacheDirectory.exists()) cacheDirectory.mkdirs();
 
-        File localFirebaseTempImage = new File(internalStorageDir, imageName + ".jpg");
-        final Uri localFirebaseTempImageUri = Uri.fromFile(localFirebaseTempImage);
+        File localFirebaseCacheImage = new File(cacheDirectory, imageName + ".jpg");
+        final Uri localFirebaseCacheImageUri = Uri.fromFile(localFirebaseCacheImage);
 
         StorageReference storageRef = FirebaseStorage.getInstance().getReference();
-        StorageReference imageRef = storageRef.child(childPath);
+        String filePath = localFolderPath + "/" + imageName + ".jpg";
+        StorageReference imageRef = storageRef.child(filePath);
 
         // Issue the initial notification with zero progress
-        mNotificationBuilder = new NotificationCompat.Builder(mContext, mContext.getString(R.string.tindog_notification_channel))
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
-                .setContentTitle("Tinpet image download")
-                .setContentText("Download in progress")
-                .setProgress(PROGRESS_MAX, 0, false)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
-        mNotificationManager = NotificationManagerCompat.from(mContext);
+//        mNotificationBuilder = new NotificationCompat.Builder(mContext, mContext.getString(R.string.tindog_notification_channel))
+//                .setSmallIcon(R.drawable.ic_launcher_foreground)
+//                .setContentTitle("Petitur image download")
+//                .setContentText("Download in progress")
+//                .setProgress(PROGRESS_MAX, 0, false)
+//                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+//        mNotificationManager = NotificationManagerCompat.from(mContext);
 
-        Log.i(DEBUG_TAG, "Attempting to download image with uri: " + localFirebaseTempImageUri.toString());
-        imageRef.getFile(localFirebaseTempImage)
+        Log.i(DEBUG_TAG, "Attempting to download image with uri: " + localFirebaseCacheImageUri.toString());
+        imageRef.getFile(localFirebaseCacheImage)
                 .addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
                     @Override
                     public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                        mNotificationBuilder.setProgress(0, 0, false);
-                        mNotificationManager.notify(FIREBASE_IMAGE_DOWNLOAD_NOTIFICATION_ID, mNotificationBuilder.build());
+                        //mNotificationBuilder.setProgress(0, 0, false);
+                        //mNotificationManager.notify(FIREBASE_IMAGE_DOWNLOAD_NOTIFICATION_ID, mNotificationBuilder.build());
                         //Log.i(DEBUG_TAG, "Successfully downloaded image with uri: " + localFirebaseTempImageUri.toString());
-                        sendImageUriToInterface(localFirebaseTempImageUri, imageName);
+                        mOnOperationPerformedHandler.onImageAvailable(true, localFirebaseCacheImageUri, imageName);
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception exception) {
                         //Log.i(DEBUG_TAG, "Download failed for image with uri: " + localFirebaseTempImageUri.toString());
-                        sendImageUriToInterface(localImageUri, imageName);
+                        mOnOperationPerformedHandler.onImageAvailable(false, localImageUri, imageName);
                         //exception.printStackTrace();
-                        //Toast.makeText(mContext, "Failed to retrieve image from Firebase storage, check log.", Toast.LENGTH_SHORT).show();
                     }
                 }).addOnProgressListener(new OnProgressListener<FileDownloadTask.TaskSnapshot>() {
                     @Override
                     public void onProgress(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                        int progress = (int) ( (100.0 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount() );
-                        mNotificationBuilder.setProgress(PROGRESS_MAX, progress, false);
-                        mNotificationManager.notify(FIREBASE_IMAGE_DOWNLOAD_NOTIFICATION_ID, mNotificationBuilder.build());
+                        //int progress = (int) ( (100.0 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount() );
+                        //mNotificationBuilder.setProgress(PROGRESS_MAX, progress, false);
+                        //mNotificationManager.notify(FIREBASE_IMAGE_DOWNLOAD_NOTIFICATION_ID, mNotificationBuilder.build());
                     }
                 });
     }
@@ -848,11 +869,6 @@ public class FirebaseDao {
     }
 
 
-    //Firebase Storage helper methods (prevent code repetitions in the CRUD methods)
-    private void sendImageUriToInterface(Uri imageUri, String imageName) {
-        mOnOperationPerformedHandler.onImageAvailable(imageUri, imageName);
-    }
-
 
     //Communication with other activities/fragments
     final private FirebaseOperationsHandler mOnOperationPerformedHandler;
@@ -862,7 +878,7 @@ public class FirebaseDao {
         void onFoundationListFound(List<Foundation> foundations);
         void onUserListFound(List<User> users);
         void onMapMarkerListFound(List<MapMarker> mapMarkers);
-        void onImageAvailable(Uri imageUri, String imageName);
+        void onImageAvailable(boolean imageWasDownloaded, Uri imageUri, String imageName);
         void onImageUploaded(List<String> uploadTimes);
     }
     public void removeListeners() {

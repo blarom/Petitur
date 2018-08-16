@@ -612,7 +612,7 @@ public class MapActivity extends AppCompatActivity implements
         mMapMarkerList.addAll(extrasList);
 
     }
-    @Override public void onImageAvailable(Uri imageUri, String imageName) {
+    @Override public void onImageAvailable(boolean imageWasDownloaded, Uri imageUri, String imageName) {
 
     }
     @Override public void onImageUploaded(List<String> uploadTimes) {

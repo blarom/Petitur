@@ -38,6 +38,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.petitur.BuildConfig;
 import com.petitur.R;
+import com.petitur.adapters.ImagesRecycleViewAdapter;
 import com.petitur.data.*;
 import com.petitur.ui.PreferencesActivity;
 import com.petitur.ui.UpdateFamilyActivity;
@@ -96,6 +97,49 @@ public class Utilities {
             mFirebaseAuth.signOut();
             Utilities.updateSignInMenuItem(mMenu, activity.getBaseContext(), false);
         }
+    }
+    public static boolean overwriteLocalImagesWithTempImages(Context context, Uri[] mTempImageUris, Object object) {
+
+        boolean requireOnlineSync = false;
+        for (int i=0; i<mTempImageUris.length; i++) {
+            Uri tempImageUri = mTempImageUris[i];
+
+            if (tempImageUri!=null) {
+
+                String imageName = "";
+                switch (i) {
+                    case 0: imageName = "mainImage"; break;
+                    case 1: imageName = "image1"; break;
+                    case 2: imageName = "image2"; break;
+                    case 3: imageName = "image3"; break;
+                    case 4: imageName = "image4"; break;
+                    case 5: imageName = "image5"; break;
+                }
+                if (!imageName.equals("")) {
+                    Uri copiedImageUri = Utilities.updateLocalImageFromUri(context, tempImageUri, object, imageName);
+                    requireOnlineSync = true;
+                }
+            }
+        }
+        return requireOnlineSync;
+    }
+    public static boolean startSyncingImagesIfNotAlreadySyncing(Context context, boolean mCurrentlySyncingImages, Object object, FirebaseDao mFirebaseDao) {
+
+        if (Utilities.internetIsAvailable(context)) {
+            if (mCurrentlySyncingImages) {
+                //Toast.makeText(context, R.string.please_wait_syncing_images, Toast.LENGTH_SHORT).show();
+            }
+            else {
+                mFirebaseDao.getAllObjectImages(object);
+                mCurrentlySyncingImages = true;
+            }
+        }
+        else {
+            mCurrentlySyncingImages = false;
+            Toast.makeText(context, R.string.no_internet_sync_later, Toast.LENGTH_SHORT).show();
+        }
+
+        return mCurrentlySyncingImages;
     }
 
 
@@ -340,6 +384,35 @@ public class Utilities {
 
         return uris;
     }
+    public static List<Uri> getLocalImageUriList(Context context, Object object) {
+
+        String directory = getImagesDirectoryForObject(context, object);
+        List<Uri> uris = new ArrayList<>();
+        for (int i=0; i<6; i++) uris.add(null);
+        if(directoryIsInvalid(directory)) return uris;
+
+        File imageFile;
+
+        imageFile = getFileWithTrials(directory, "mainImage.jpg");
+        if (imageFile.exists() && imageFile.length()>0) uris.set(0, Uri.fromFile(imageFile));
+
+        imageFile = getFileWithTrials(directory, "image1.jpg");
+        if (imageFile.exists() && imageFile.length()>0) uris.set(1, Uri.fromFile(imageFile));
+
+        imageFile = getFileWithTrials(directory, "image2.jpg");
+        if (imageFile.exists() && imageFile.length()>0) uris.set(2, Uri.fromFile(imageFile));
+
+        imageFile = getFileWithTrials(directory, "image3.jpg");
+        if (imageFile.exists() && imageFile.length()>0) uris.set(3, Uri.fromFile(imageFile));
+
+        imageFile = getFileWithTrials(directory, "image4.jpg");
+        if (imageFile.exists() && imageFile.length()>0) uris.set(4, Uri.fromFile(imageFile));
+
+        imageFile = getFileWithTrials(directory, "image5.jpg");
+        if (imageFile.exists() && imageFile.length()>0) uris.set(5, Uri.fromFile(imageFile));
+
+        return uris;
+    }
     public static String getNameOfFirstAvailableImageInImagesList(Context context, Object object) {
 
         String directory = getImagesDirectoryForObject(context, object);
@@ -477,6 +550,49 @@ public class Utilities {
         if (uriString.contains("image4")) return "image4";
         if (uriString.contains("image5")) return "image5";
         else return "mainImage";
+    }
+    public static Uri[] registerAndDisplayTempImage(Context context, Uri tempImageUri,
+                                                    Uri[] tempImageUris, String imageName, Object object,
+                                                    ImageView imageViewMain, ImagesRecycleViewAdapter imagesRecycleViewAdapter) {
+
+        if (imageName.equals("mainImage")) {
+            tempImageUris[0] = tempImageUri;
+            Utilities.displayTempImageInImageView(context, "mainImage", imageViewMain);
+        }
+        else {
+            List<Uri> uris = Utilities.getLocalImageUriList(context, object);
+            switch (imageName) {
+                case "image1":
+                    tempImageUris[1] = tempImageUri;
+                    uris.set(1, tempImageUri);
+                    break;
+                case "image2":
+                    tempImageUris[2] = tempImageUri;
+                    uris.set(2, tempImageUri);
+                    break;
+                case "image3":
+                    tempImageUris[3] = tempImageUri;
+                    uris.set(3, tempImageUri);
+                    break;
+                case "image4":
+                    tempImageUris[4] = tempImageUri;
+                    uris.set(4, tempImageUri);
+                    break;
+                case "image5":
+                    tempImageUris[5] = tempImageUri;
+                    uris.set(5, tempImageUri);
+                    break;
+            }
+
+            List<Uri> displayedImageUris = new ArrayList<>();
+            for (int i=1; i<uris.size(); i++) {
+                Uri uri = uris.get(i);
+                if (uri!=null) displayedImageUris.add(uri);
+            }
+            imagesRecycleViewAdapter.setContents(displayedImageUris);
+        }
+
+        return tempImageUris;
     }
 
 
@@ -805,37 +921,19 @@ public class Utilities {
 
         return queryConditions;
     }
-    public static void synchronizeImageOnAllDevices(Context context, Object object, FirebaseDao firebaseDao, String imageName, Uri downloadedImageUri) {
+    public static void synchronizeImageOnAllDevices(Context context, Object object, FirebaseDao firebaseDao, String imageName, Uri downloadedImageUri, boolean imageWasDownloaded) {
 
         String localDirectory = getImagesDirectoryForObject(context, object);
         if(directoryIsInvalid(localDirectory)) return;
 
-        //The image was downloaded only if it was newer than the local image (If it wasn't downloaded, the downloadedImageUri is the same as the local image Uri)
         Uri localImageUri = Utilities.getImageUriWithPath(localDirectory, imageName);
 
-        if (downloadedImageUri != null) {
-            if (localImageUri == null) {
-                Utilities.updateLocalObjectImage(context, downloadedImageUri, localDirectory, imageName);
-            }
-            else {
-                String localUriPath = localImageUri.getPath();
-                String downloadedUriPath = downloadedImageUri.getPath();
-
-                //If the downloaded image is newer, then update the image in the local directory
-                if (!downloadedUriPath.equals(localUriPath)) {
-                    Utilities.updateLocalObjectImage(context, downloadedImageUri, localDirectory, imageName);
-                }
-
-                //If the local image is newer, then upload it to Firebase to replace the older image
-                else if (downloadedUriPath.equals(localUriPath)) {
-                    firebaseDao.putImageInFirebaseStorage(object, localImageUri, imageName);
-                }
-            }
+        if ((imageWasDownloaded || localImageUri == null) && downloadedImageUri != null) {
+            //The image was downloaded only if it was newer than the local image
+            Utilities.updateLocalImageFromUri(context, downloadedImageUri, localDirectory, imageName);
         }
-        else {
-            if (localImageUri != null) {
-                firebaseDao.putImageInFirebaseStorage(object, localImageUri, imageName);
-            }
+        else if (localImageUri != null){
+            firebaseDao.putImageInFirebaseStorage(object, localImageUri, imageName);
         }
     }
     public static void updateImageOnLocalDevice(Context context, Object object, FirebaseDao firebaseDao, String imageName, Uri downloadedImageUri) {
@@ -848,7 +946,7 @@ public class Utilities {
 
         if (downloadedImageUri != null) {
             if (localImageUri == null) {
-                Utilities.updateLocalObjectImage(context, downloadedImageUri, localDirectory, imageName);
+                Utilities.updateLocalImageFromUri(context, downloadedImageUri, localDirectory, imageName);
             }
             else {
                 String localUriPath = localImageUri.getPath();
@@ -856,14 +954,14 @@ public class Utilities {
 
                 //If the downloaded image is newer, then update the image in the local directory
                 if (!downloadedUriPath.equals(localUriPath)) {
-                    Utilities.updateLocalObjectImage(context, downloadedImageUri, localDirectory, imageName);
+                    Utilities.updateLocalImageFromUri(context, downloadedImageUri, localDirectory, imageName);
                 }
 
                 //If the local image is newer, then do nothing
             }
         }
     }
-    public static Uri updateLocalObjectImage(Context context, Uri originalImageUri, Object object, String imageName) {
+    public static Uri updateLocalImageFromUri(Context context, Uri originalImageUri, Object object, String imageName) {
 
         String directory = getImagesDirectoryForObject(context, object);
         if(directoryIsInvalid(directory)) return null;
@@ -879,25 +977,32 @@ public class Utilities {
         Uri copiedImageUri = moveFile(originalImageUri, directory, imageName);
         return copiedImageUri;
     }
-    public static void replaceObjectImagesWithTempImages(Context context, Uri[] mTempImageUris, Object object, FirebaseDao mFirebaseDao) {
-        for (int i=0; i<mTempImageUris.length; i++) {
-            Uri tempImageUri = mTempImageUris[i];
-            String imageName = "";
-            switch (i) {
-                case 0: imageName = "mainImage"; break;
-                case 1: imageName = "image1"; break;
-                case 2: imageName = "image2"; break;
-                case 3: imageName = "image3"; break;
-                case 4: imageName = "image4"; break;
-                case 5: imageName = "image5"; break;
-            }
-            if (tempImageUri !=null && !imageName.equals("")) {
-                Uri copiedImageUri = Utilities.updateLocalObjectImage(context, tempImageUri, object, imageName);
-                if (copiedImageUri != null) {
-                    mFirebaseDao.putImageInFirebaseStorage(object, copiedImageUri, imageName);
-                }
-            }
+    public static boolean checkIfImagesReadyForDisplay(boolean[] mImagesReady, String imageName) {
+        switch (imageName) {
+            case "mainImage": mImagesReady[0] = true; break;
+            case "image1": mImagesReady[1] = true; break;
+            case "image2": mImagesReady[2] = true; break;
+            case "image3": mImagesReady[3] = true; break;
+            case "image4": mImagesReady[4] = true; break;
+            case "image5": mImagesReady[5] = true; break;
         }
+        boolean allImagesReady = true;
+        for (boolean isReady : mImagesReady) {
+            if (!isReady) { allImagesReady = false; break; }
+        }
+        return allImagesReady;
+    }
+    public static void displayAllAvailableImages(Context context, Object object, ImageView mImageViewMain, ImagesRecycleViewAdapter mFamilyImagesRecycleViewAdapter) {
+        Utilities.displayObjectImageInImageView(context, object, "mainImage", mImageViewMain);
+        List<Uri> uris = Utilities.getExistingImageUriListForObject(context, object, true);
+        mFamilyImagesRecycleViewAdapter.setContents(uris);
+    }
+    public static boolean allUrisNull(Uri[] uris) {
+        boolean noMoreTempImages = true;
+        for (Uri uri : uris) {
+            if (uri!=null) noMoreTempImages = false;
+        }
+        return noMoreTempImages;
     }
 
 
