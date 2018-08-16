@@ -178,6 +178,17 @@
     <string name="images_cannot_be_saved_no_internet_press_done_again">Sorry, your new images cannot be saved since there is no Internet connection. Press DONE again to proceed anyway.</string>
     <string name="started_syncing_images">Started syncing your new images, please wait...</string>
     <string name="finished_uploading_images">Finished uploading your new images.</string>
+    <string name="filter">Filter</string>
+    <string name="sort">Sort</string>
+    <string name="pet_image">Pet image</string>
+    <string name="pet_list_item_name">Pet name</string>
+    <string name="pet_list_item_city">Pet city</string>
+    <string name="pet_list_item_race">Pet race</string>
+    <string name="pet_list_item_age">Pet age</string>
+    <string name="pet_list_item_gender">Gender</string>
+    <string name="pet_list_item_default_distance">0km</string>
+    <string name="task_sync_list_main_images">syncListMainImages</string>
+    <string name="task_sync_single_object_images">syncSingleObjectImages</string>
 
 
     <string-array name="dog_age">

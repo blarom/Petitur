@@ -5,6 +5,118 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.PetListActivity">
+    tools:context=".ui.PetListActivity"
+    android:background="@color/greenBackground">
+
+    <android.support.constraint.Guideline
+        android:id="@+id/pet_list_vertical_guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.5"/>
+
+    <android.support.constraint.ConstraintLayout android:id="@+id/pet_list_filter_button"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/pet_list_top_buttons_height"
+        android:background="@drawable/background_rounded_corners"
+        android:layout_marginTop="@dimen/pet_list_top_buttons_margin_top"
+        android:layout_marginStart="@dimen/pet_list_items_margin_to_parent"
+        android:layout_marginLeft="@dimen/pet_list_items_margin_to_parent"
+        android:layout_marginEnd="@dimen/pet_list_top_buttons_margin_to_guideline"
+        android:layout_marginRight="@dimen/pet_list_top_buttons_margin_to_guideline"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/pet_list_vertical_guideline">
+
+        <android.support.constraint.Guideline
+            android:id="@+id/pet_list_filter_button_vertical_guideline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.5"/>
+
+        <TextView
+            android:id="@+id/pet_list_filter_button_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/filter"
+            android:layout_marginEnd="@dimen/pet_list_filter_button_margin_to_guideline"
+            android:layout_marginRight="@dimen/pet_list_filter_button_margin_to_guideline"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/pet_list_filter_button_vertical_guideline"/>
+
+        <ImageView
+            android:id="@+id/pet_list_filter_button_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/ic_filter_button_24dp"
+            android:layout_marginStart="@dimen/pet_list_filter_button_margin_to_guideline"
+            android:layout_marginLeft="@dimen/pet_list_filter_button_margin_to_guideline"
+            android:contentDescription="@string/filter"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="@id/pet_list_filter_button_vertical_guideline"/>
+
+    </android.support.constraint.ConstraintLayout>
+
+    <android.support.constraint.ConstraintLayout android:id="@+id/pet_list_sort_button"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/pet_list_top_buttons_height"
+        android:layout_marginTop="@dimen/pet_list_top_buttons_margin_top"
+        android:background="@drawable/background_rounded_corners"
+        android:layout_marginStart="@dimen/pet_list_top_buttons_margin_to_guideline"
+        android:layout_marginLeft="@dimen/pet_list_top_buttons_margin_to_guideline"
+        android:layout_marginEnd="@dimen/pet_list_items_margin_to_parent"
+        android:layout_marginRight="@dimen/pet_list_items_margin_to_parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="@id/pet_list_vertical_guideline"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <android.support.constraint.Guideline
+            android:id="@+id/pet_list_sort_button_vertical_guideline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.5"/>
+
+        <TextView
+            android:id="@+id/pet_list_sort_button_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/sort"
+            android:layout_marginEnd="@dimen/pet_list_filter_button_margin_to_guideline"
+            android:layout_marginRight="@dimen/pet_list_filter_button_margin_to_guideline"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/pet_list_sort_button_vertical_guideline"/>
+
+        <ImageView
+            android:id="@+id/pet_list_sort_button_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/ic_sort_button_24dp"
+            android:layout_marginStart="@dimen/pet_list_filter_button_margin_to_guideline"
+            android:layout_marginLeft="@dimen/pet_list_filter_button_margin_to_guideline"
+            android:contentDescription="@string/sort"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="@id/pet_list_sort_button_vertical_guideline"/>
+
+    </android.support.constraint.ConstraintLayout>
+
+    <android.support.v7.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginStart="@dimen/pet_list_items_margin_to_parent"
+        android:layout_marginLeft="@dimen/pet_list_items_margin_to_parent"
+        android:layout_marginEnd="@dimen/pet_list_items_margin_to_parent"
+        android:layout_marginRight="@dimen/pet_list_items_margin_to_parent"
+        android:layout_marginTop="@dimen/pet_list_recyclerview_vertical_margins"
+        android:layout_marginBottom="@dimen/pet_list_recyclerview_vertical_margins"
+        app:layout_constraintTop_toBottomOf="@id/pet_list_filter_button"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+    </android.support.v7.widget.RecyclerView>
 
 </android.support.constraint.ConstraintLayout>

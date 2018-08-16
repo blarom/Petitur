@@ -28,5 +28,15 @@
     <dimen name="list_item_texts_padding">4dp</dimen>
     <dimen name="widget_text_height">32dp</dimen>
     <dimen name="widget_text_size">24sp</dimen>
+    <dimen name="pet_list_top_buttons_margin_top">24dp</dimen>
+    <dimen name="pet_list_items_margin_to_parent">16dp</dimen>
+    <dimen name="pet_list_top_buttons_margin_to_guideline">8dp</dimen>
+    <dimen name="pet_list_top_buttons_height">56dp</dimen>
+    <dimen name="pet_list_filter_button_margin_to_guideline">8dp</dimen>
+    <dimen name="pet_list_recyclerview_vertical_margins">8dp</dimen>
+    <dimen name="pet_list_item_love_image_size">56dp</dimen>
+    <dimen name="pet_list_item_gender_image_size">24dp</dimen>
+    <dimen name="pet_list_item_image_margins">24dp</dimen>
+    <dimen name="pet_list_item_elevation">8dp</dimen>
 
 </resources>
