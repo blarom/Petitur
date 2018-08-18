@@ -253,7 +253,7 @@ public class TaskSelectionActivity extends AppCompatActivity implements
             mUser.setEm(mCurrentFirebaseUser.getEmail());
             mUser.setNm(mCurrentFirebaseUser.getDisplayName());
 
-            mFirebaseDao.requestObjectsWithConditions(mUser, Utilities.getQueryConditionsForSingleObjectSearchByOwnerId(mUser));
+            mFirebaseDao.requestObjectsWithConditions(mUser, Utilities.getQueryConditionsForSingleObjectSearchByOwnerId(this, mUser));
         }
         else {
             showBlankTaskSelectionMenu();
@@ -262,13 +262,13 @@ public class TaskSelectionActivity extends AppCompatActivity implements
     private void getFoundationProfile() {
         if (mCurrentFirebaseUser != null) {
             Foundation foundation = new Foundation(mCurrentFirebaseUser.getUid());
-            mFirebaseDao.requestObjectsWithConditions(foundation, Utilities.getQueryConditionsForSingleObjectSearchByOwnerId(foundation));
+            mFirebaseDao.requestObjectsWithConditions(foundation, Utilities.getQueryConditionsForSingleObjectSearchByOwnerId(this, foundation));
         }
     }
     private void getFamilyProfile() {
         if (mCurrentFirebaseUser != null) {
             Family family = new Family(mCurrentFirebaseUser.getUid());
-            mFirebaseDao.requestObjectsWithConditions(family, Utilities.getQueryConditionsForSingleObjectSearchByOwnerId(family));
+            mFirebaseDao.requestObjectsWithConditions(family, Utilities.getQueryConditionsForSingleObjectSearchByOwnerId(this, family));
         }
     }
     private void modifyUserInterfaceAccordingToCredentials() {
@@ -305,6 +305,14 @@ public class TaskSelectionActivity extends AppCompatActivity implements
         mSearchUsersButton.setVisibility(View.GONE);
         mPleaseSignInTextView.setVisibility(View.VISIBLE);
     }
+    private void openPetList() {
+        Intent intent = new Intent(this, PetListActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putParcelable(getString(R.string.bundled_user), mUser);
+        intent.putExtras(bundle);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        startActivity(intent);
+    }
     private void openPetProfile(@Nonnull Pet pet) {
         Intent intent = new Intent(this, UpdatePetActivity.class);
         Bundle bundle = new Bundle();
@@ -317,6 +325,7 @@ public class TaskSelectionActivity extends AppCompatActivity implements
 
     //View click listeners
     @OnClick(R.id.task_selection_find_pet) public void onFindPetButtonClick() {
+        openPetList();
     }
     @OnClick(R.id.task_selection_get_advice) public void onGetAdviceButtonClick() {
     }

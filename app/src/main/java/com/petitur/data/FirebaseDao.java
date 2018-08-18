@@ -24,6 +24,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.petitur.R;
 import com.petitur.resources.Utilities;
 
 import java.io.File;
@@ -358,62 +359,56 @@ public class FirebaseDao {
 
         query = collectionReference;
 
-//        for (QueryCondition condition : conditions) {
-//            if (condition.getOperation().equals("equalsString")) {
-//                query = collectionReference.whereEqualTo(condition.getKey(), condition.getValueString());
-//            }
-//        }
-
         for (QueryCondition condition : conditions) {
-            if (condition.getOperation().equals("equalsString")) {
+            if (condition.getOperation().equals(mContext.getString(R.string.query_condition_equalsString))) {
                 query = query.whereEqualTo(condition.getKey(), condition.getValueString());
             }
-            else if (condition.getOperation().equals("equalsBoolean")) {
+            else if (condition.getOperation().equals(mContext.getString(R.string.query_condition_equalsBoolean))) {
                 query = query.whereEqualTo(condition.getKey(), condition.getValueBoolean());
             }
-            else if (condition.getOperation().equals("lessThanString")) {
+            else if (condition.getOperation().equals(mContext.getString(R.string.query_condition_lessThanString))) {
                 query = query.whereLessThan(condition.getKey(), condition.getValueString());
             }
-            else if (condition.getOperation().equals("lessThanInteger")) {
+            else if (condition.getOperation().equals(mContext.getString(R.string.query_condition_lessThanInteger))) {
                 query = query.whereLessThan(condition.getKey(), condition.getValueInteger());
             }
-            else if (condition.getOperation().equals("greaterThanOrEqualToString")) {
+            else if (condition.getOperation().equals(mContext.getString(R.string.query_condition_greaterThanOrEqualToString))) {
                 query = query.whereGreaterThanOrEqualTo(condition.getKey(), condition.getValueString());
             }
-            else if (condition.getOperation().equals("greaterThanOrEqualToInteger")) {
+            else if (condition.getOperation().equals(mContext.getString(R.string.query_condition_greaterThanOrEqualToInteger))) {
                 query = query.whereGreaterThanOrEqualTo(condition.getKey(), condition.getValueInteger());
             }
-            else if (condition.getOperation().equals("orderBy")) {
+            else if (condition.getOperation().equals(mContext.getString(R.string.query_condition_orderBy))) {
                 if (condition.getValueBoolean()) query = query.orderBy(condition.getKey());
                 else query = query.orderBy(condition.getKey(), Query.Direction.DESCENDING);
             }
-            else if (condition.getOperation().equals("limit")) {
+            else if (condition.getOperation().equals(mContext.getString(R.string.query_condition_limit))) {
                 query = query.limit(condition.getValueInteger());
             }
 
             //Note: the following conditions must occur after "orderBy"
-            else if (condition.getOperation().equals("startAtString")) {
+            else if (condition.getOperation().equals(mContext.getString(R.string.query_condition_startAtString))) {
                 query = query.startAt(condition.getValueString());
             }
-            else if (condition.getOperation().equals("startAfterString")) {
+            else if (condition.getOperation().equals(mContext.getString(R.string.query_condition_startAfterString))) {
                 query = query.startAfter(condition.getValueString());
             }
-            else if (condition.getOperation().equals("startAtInteger")) {
+            else if (condition.getOperation().equals(mContext.getString(R.string.query_condition_startAtInteger))) {
                 query = query.startAt(condition.getValueInteger());
             }
-            else if (condition.getOperation().equals("startAfterInteger")) {
+            else if (condition.getOperation().equals(mContext.getString(R.string.query_condition_startAfterInteger))) {
                 query = query.startAfter(condition.getValueInteger());
             }
-            else if (condition.getOperation().equals("endAtString")) {
+            else if (condition.getOperation().equals(mContext.getString(R.string.query_condition_endAtString))) {
                 query = query.endAt(condition.getValueString());
             }
-            else if (condition.getOperation().equals("endBeforeString")) {
+            else if (condition.getOperation().equals(mContext.getString(R.string.query_condition_endBeforeString))) {
                 query = query.endBefore(condition.getValueString());
             }
-            else if (condition.getOperation().equals("endAtInteger")) {
+            else if (condition.getOperation().equals(mContext.getString(R.string.query_condition_endAtInteger))) {
                 query = query.endAt(condition.getValueInteger());
             }
-            else if (condition.getOperation().equals("endBeforeInteger")) {
+            else if (condition.getOperation().equals(mContext.getString(R.string.query_condition_endBeforeInteger))) {
                 query = query.endBefore(condition.getValueInteger());
             }
         }

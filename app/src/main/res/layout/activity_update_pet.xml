@@ -118,28 +118,20 @@
                 android:layout_height="wrap_content">
 
                 <TextView
-                    android:id="@+id/update_pet_interactions_title"
+                    android:id="@+id/update_pet_coat_length_title"
                     style="@style/SpinnerTitleStyle"
-                    android:text="@string/pet_interactions"
-                    app:layout_constraintBottom_toBottomOf="@+id/update_pet_interactions_spinner"
+                    android:text="@string/coat_length"
+                    app:layout_constraintBottom_toBottomOf="@+id/update_pet_coat_length_spinner"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="@+id/update_pet_interactions_spinner"/>
-
-                <TextView
-                    android:id="@+id/update_pet_behavior_title"
-                    style="@style/SpinnerTitleStyle"
-                    android:text="@string/pet_behavior"
-                    app:layout_constraintBottom_toBottomOf="@+id/update_pet_behavior_spinner"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="@+id/update_pet_behavior_spinner"/>
+                    app:layout_constraintTop_toTopOf="@+id/update_pet_coat_length_spinner"/>
 
                 <TextView
                     android:id="@+id/update_pet_race_title"
                     style="@style/SpinnerTitleStyle"
                     android:text="@string/pet_race"
-                    app:layout_constraintBottom_toBottomOf="@+id/update_pet_race_spinner"
+                    app:layout_constraintBottom_toBottomOf="@+id/update_pet_breed_container"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="@+id/update_pet_race_spinner"/>
+                    app:layout_constraintTop_toTopOf="@+id/update_pet_breed_container"/>
 
                 <TextView
                     android:id="@+id/update_pet_gender_title"
@@ -160,58 +152,171 @@
                 <TextView
                     android:id="@+id/update_pet_age_title"
                     style="@style/SpinnerTitleStyle"
-                    android:text="@string/pet_age"
-                    app:layout_constraintBottom_toBottomOf="@+id/update_pet_age_spinner"
+                    android:text="@string/pet_age_required"
+                    app:layout_constraintBottom_toBottomOf="@+id/update_pet_age_years_edittext"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="@+id/update_pet_age_spinner"/>
+                    app:layout_constraintTop_toTopOf="@+id/update_pet_age_years_edittext"/>
 
+                <TextView
+                    android:id="@+id/update_pet_type_title"
+                    style="@style/SpinnerTitleStyle"
+                    android:text="@string/type"
+                    app:layout_constraintBottom_toBottomOf="@+id/update_pet_type_spinner"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="@+id/update_pet_type_spinner"/>
 
                 <Spinner
-                    android:id="@+id/update_pet_age_spinner"
+                    android:id="@+id/update_pet_type_spinner"
                     style="@style/SpinnerStyle"
-                    android:layout_marginTop="16dp"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@+id/update_pet_interactions_title"
+                    app:layout_constraintStart_toEndOf="@+id/update_pet_coat_length_title"
                     app:layout_constraintTop_toTopOf="parent"/>
+
+                <EditText
+                    android:id="@+id/update_pet_age_years_edittext"
+                    android:layout_width="56dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/standard_margin"
+                    android:layout_marginTop="8dp"
+                    android:hint="0"
+                    android:inputType="number"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textSize="@dimen/spinner_text_size"
+                    app:layout_constraintStart_toEndOf="@+id/update_pet_coat_length_title"
+                    app:layout_constraintTop_toBottomOf="@+id/update_pet_type_spinner"/>
+
+                <TextView
+                    android:id="@+id/update_pet_age_years_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/years"
+                    app:layout_constraintStart_toEndOf="@id/update_pet_age_years_edittext"
+                    app:layout_constraintTop_toTopOf="@id/update_pet_age_years_edittext"
+                    app:layout_constraintBottom_toBottomOf="@id/update_pet_age_years_edittext"/>
+
+
+                <EditText
+                    android:id="@+id/update_pet_age_months_edittext"
+                    android:hint="0"
+                    android:inputType="number"
+                    android:layout_width="56dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/standard_margin"
+                    android:layout_marginRight="@dimen/standard_margin"
+                    android:layout_marginTop="@dimen/standard_margin"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textSize="@dimen/spinner_text_size"
+                    app:layout_constraintStart_toEndOf="@+id/update_pet_age_years_text"
+                    app:layout_constraintTop_toBottomOf="@id/update_pet_type_spinner"/>
+
+                <TextView
+                    android:id="@+id/update_pet_age_months_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/months"
+                    app:layout_constraintStart_toEndOf="@id/update_pet_age_months_edittext"
+                    app:layout_constraintTop_toTopOf="@id/update_pet_age_months_edittext"
+                    app:layout_constraintBottom_toBottomOf="@id/update_pet_age_months_edittext"/>
+
 
                 <Spinner
                     android:id="@+id/update_pet_size_spinner"
                     style="@style/SpinnerStyle"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@+id/update_pet_interactions_title"
-                    app:layout_constraintTop_toBottomOf="@+id/update_pet_age_spinner"/>
+                    app:layout_constraintStart_toEndOf="@+id/update_pet_coat_length_title"
+                    app:layout_constraintTop_toBottomOf="@+id/update_pet_age_years_edittext"/>
 
                 <Spinner
                     android:id="@+id/update_pet_gender_spinner"
                     style="@style/SpinnerStyle"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@+id/update_pet_interactions_title"
+                    app:layout_constraintStart_toEndOf="@+id/update_pet_coat_length_title"
                     app:layout_constraintTop_toBottomOf="@+id/update_pet_size_spinner"/>
 
-                <Spinner
-                    android:id="@+id/update_pet_race_spinner"
-                    style="@style/SpinnerStyle"
+                <android.support.constraint.ConstraintLayout
+                    android:id="@+id/update_pet_breed_container"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginStart="@dimen/standard_margin"
+                    android:layout_marginLeft="@dimen/standard_margin"
+                    android:layout_marginEnd="@dimen/standard_margin"
+                    android:layout_marginRight="@dimen/standard_margin"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@+id/update_pet_interactions_title"
-                    app:layout_constraintTop_toBottomOf="@+id/update_pet_gender_spinner"/>
+                    app:layout_constraintStart_toEndOf="@+id/update_pet_coat_length_title"
+                    app:layout_constraintTop_toBottomOf="@+id/update_pet_gender_spinner">
 
+                    <AutoCompleteTextView
+                        android:id="@+id/update_pet_race_autocompletetextview"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/filter_option_any"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintLeft_toLeftOf="parent"
+                        app:layout_constraintEnd_toStartOf="@id/update_pet_arrow_breed"/>
+
+                    <ImageView
+                        android:id="@+id/update_pet_arrow_breed"
+                        android:layout_width="wrap_content"
+                        android:layout_height="0dp"
+                        app:srcCompat="@drawable/ic_arrow_drop_down_24dp"
+                        android:contentDescription="@string/show_dropdown"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"/>
+
+                </android.support.constraint.ConstraintLayout>
+                
                 <Spinner
-                    android:id="@+id/update_pet_behavior_spinner"
+                    android:id="@+id/update_pet_coat_length_spinner"
                     style="@style/SpinnerStyle"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0.955"
-                    app:layout_constraintStart_toEndOf="@+id/update_pet_interactions_title"
-                    app:layout_constraintTop_toBottomOf="@+id/update_pet_race_spinner"/>
-
-                <Spinner
-                    android:id="@+id/update_pet_interactions_spinner"
-                    style="@style/SpinnerStyle"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@+id/update_pet_interactions_title"
-                    app:layout_constraintTop_toBottomOf="@+id/update_pet_behavior_spinner"/>
+                    app:layout_constraintStart_toEndOf="@+id/update_pet_coat_length_title"
+                    app:layout_constraintTop_toBottomOf="@+id/update_pet_breed_container"/>
 
             </android.support.constraint.ConstraintLayout>
+            
+            <GridLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/standard_margin"
+                android:columnCount="2"
+                android:rowCount="3">
 
+                <CheckBox
+                    android:id="@+id/update_pet_checkbox_good_with_kids"
+                    style="@style/FilterGridCheckBoxStyle"
+                    android:text="@string/good_with_kids"/>
+
+                <CheckBox
+                    android:id="@+id/update_pet_checkbox_castrated"
+                    style="@style/FilterGridCheckBoxStyle"
+                    android:text="@string/castrated"/>
+
+                <CheckBox
+                    android:id="@+id/update_pet_checkbox_good_with_dogs"
+                    style="@style/FilterGridCheckBoxStyle"
+                    android:text="@string/good_with_dogs"/>
+
+                <CheckBox
+                    android:id="@+id/update_pet_checkbox_house_trained"
+                    style="@style/FilterGridCheckBoxStyle"
+                    android:text="@string/house_trained"/>
+
+                <CheckBox
+                    android:id="@+id/update_pet_checkbox_good_with_cats"
+                    style="@style/FilterGridCheckBoxStyle"
+                    android:text="@string/good_with_cats"/>
+
+                <CheckBox
+                    android:id="@+id/update_pet_checkbox_special_needs"
+                    style="@style/FilterGridCheckBoxStyle"
+                    android:text="@string/special_needs"/>
+
+            </GridLayout>
+            
             <android.support.design.widget.TextInputLayout
                 android:id="@+id/update_my_family_container_history"
                 android:hint="@string/pet_s_history"

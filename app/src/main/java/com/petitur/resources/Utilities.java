@@ -10,6 +10,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Address;
 import android.location.Geocoder;
+import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -689,6 +690,102 @@ public class Utilities {
         }
         else return false;
     }
+    public static Object getObjectsWithinDistance(Context context, Object object, double userLatitude, double userLongitude, int distanceMeters) {
+
+        if (!(object instanceof List)) return object;
+        List<Object> objectsList = (List<Object>) object;
+
+        if (objectsList.size() > 0) {
+            if (objectsList.get(0) instanceof Pet) {
+                List<Pet> dogsNearby = new ArrayList<>();
+                for (int i=0; i<objectsList.size(); i++) {
+                    Pet pet = (Pet) objectsList.get(i);
+                    boolean isNearby = checkIfObjectIsNearby(
+                            context,
+                            Utilities.getAddressStringFromComponents(pet.getStN(), pet.getSt(), pet.getCt(), pet.getSe(), pet.getCn()),
+                            pet.getGaLt(),
+                            pet.getGaLg(),
+                            userLatitude,
+                            userLongitude,
+                            distanceMeters);
+                    if (isNearby) dogsNearby.add(pet);
+                }
+                return dogsNearby;
+            }
+            else if (objectsList.get(0) instanceof Family) {
+                List<Family> familiesNearby = new ArrayList<>();
+                for (int i=0; i<objectsList.size(); i++) {
+                    Family family = (Family) objectsList.get(i);
+                    boolean isNearby = checkIfObjectIsNearby(
+                            context,
+                            Utilities.getAddressStringFromComponents(null, family.getSt(), family.getCt(), family.getSe(), family.getCn()),
+                            family.getGaLt(),
+                            family.getGaLg(),
+                            userLatitude,
+                            userLongitude,
+                            distanceMeters);
+                    if (isNearby) familiesNearby.add(family);
+                }
+                return familiesNearby;
+            }
+            else if (objectsList.get(0) instanceof Foundation) {
+                List<Foundation> foundationsNearby = new ArrayList<>();
+                for (int i=0; i<objectsList.size(); i++) {
+                    Foundation foundation = (Foundation) objectsList.get(i);
+                    boolean isNearby = checkIfObjectIsNearby(
+                            context,
+                            Utilities.getAddressStringFromComponents(foundation.getStN(), foundation.getSt(), foundation.getCt(), foundation.getSe(), foundation.getCn()),
+                            foundation.getGaLt(),
+                            foundation.getGaLg(),
+                            userLatitude,
+                            userLongitude,
+                            distanceMeters);
+                    if (isNearby) foundationsNearby.add(foundation);
+                }
+                return foundationsNearby;
+            }
+        }
+        return objectsList;
+    }
+    public static boolean checkIfObjectIsNearby(Context context, String addressString,
+                                                String objectLatitudeAsString, String objectLongitudeAsString,
+                                                double userLatitude, double userLongitude, int distanceMeters) {
+
+        //If the city value is empty, return true anyway since the object may be relevant
+        if (TextUtils.isEmpty(addressString)) return true;
+
+        double objectLatitude;
+        double objectLongitude;
+
+        if (!TextUtils.isEmpty(objectLatitudeAsString)) objectLatitude = Double.parseDouble(objectLatitudeAsString);
+        else objectLatitude = 0.0;
+        if (!TextUtils.isEmpty(objectLongitudeAsString)) objectLongitude = Double.parseDouble(objectLongitudeAsString);
+        else objectLongitude = 0.0;
+
+        //If the device can obtain valid up-to-date geolocation data for the object's registered address, use it instead of the stored values,
+        // since these may possibly be have been updated when the user last saved the object's profile
+        Address address = Utilities.getAddressObjectFromAddressString(context, addressString);
+        if (address!=null) {
+            //objectCountry = address.getCountryCode();
+            objectLatitude = address.getLatitude();
+            objectLongitude = address.getLongitude();
+        }
+
+        //If valid data is available, then check if the object is nearby. If it is, then add the object to the Nearby list
+        if (!(objectLatitude==0.0 && objectLongitude==0.0)) {
+            return isWithinDistance(userLatitude, userLongitude, objectLatitude, objectLongitude, distanceMeters);
+        }
+        return false;
+    }
+    public static boolean isWithinDistance(double userLatitude, double userLongitude, double objectLatitude, double objectLongitude, int distanceMeters) {
+        if (!(objectLatitude == 0.0 && objectLongitude == 0.0)) {
+            float[] objectDistance = new float[1];
+            Location.distanceBetween(userLatitude, userLongitude, objectLatitude, objectLongitude, objectDistance);
+            boolean isWithinDistance = objectDistance[0] < distanceMeters;
+            return isWithinDistance;
+        }
+        return false;
+    }
 
 
     //Database utilities
@@ -822,23 +919,23 @@ public class Utilities {
                     }
                 });
     }
-    public static List<QueryCondition> getQueryConditionsForSingleObjectSearchByOwnerId(Object object) {
+    public static List<QueryCondition> getQueryConditionsForSingleObjectSearchByOwnerId(Context context, Object object) {
 
         List<QueryCondition> queryConditions = new ArrayList<>();
         QueryCondition queryCondition;
         if (object instanceof User) {
             User user = (User) object;
-            queryCondition = new QueryCondition("equalsString", "oI", user.getOI(), true, 0);
+            queryCondition = new QueryCondition(context.getString(R.string.query_condition_equalsString), "oI", user.getOI(), true, 0);
             queryConditions.add(queryCondition);
         }
         else if (object instanceof Family) {
             Family family = (Family) object;
-            queryCondition = new QueryCondition("equalsString", "oI", family.getOI(), true, 0);
+            queryCondition = new QueryCondition(context.getString(R.string.query_condition_equalsString), "oI", family.getOI(), true, 0);
             queryConditions.add(queryCondition);
         }
         else if (object instanceof Foundation) {
             Foundation foundation = (Foundation) object;
-            queryCondition = new QueryCondition("equalsString", "oI", foundation.getOI(), true, 0);
+            queryCondition = new QueryCondition(context.getString(R.string.query_condition_equalsString), "oI", foundation.getOI(), true, 0);
             queryConditions.add(queryCondition);
         }
         else {
@@ -846,77 +943,77 @@ public class Utilities {
                     "that implements conditions for unique user-associated object (User/Family/Foundation)");
         }
 
-        queryCondition = new QueryCondition("limit", "", "", true, 10);
+        queryCondition = new QueryCondition(context.getString(R.string.query_condition_limit), "", "", true, 10);
         queryConditions.add(queryCondition);
 
         return queryConditions;
     }
-    public static List<QueryCondition> getQueryConditionsForMultipleObjectSearchByOwnerId(Object object, int limit) {
+    public static List<QueryCondition> getQueryConditionsForMultipleObjectSearchByOwnerId(Context context, Object object, int limit) {
 
         List<QueryCondition> queryConditions = new ArrayList<>();
         QueryCondition queryCondition;
         if (object instanceof User) {
             User user = (User) object;
-            queryCondition = new QueryCondition("equalsString", "oI", user.getOI(), true, 0);
+            queryCondition = new QueryCondition(context.getString(R.string.query_condition_equalsString), "oI", user.getOI(), true, 0);
             queryConditions.add(queryCondition);
         }
         else if (object instanceof Pet) {
             Pet pet = (Pet) object;
-            queryCondition = new QueryCondition("equalsString", "oI", pet.getOI(), true, 0);
+            queryCondition = new QueryCondition(context.getString(R.string.query_condition_equalsString), "oI", pet.getOI(), true, 0);
             queryConditions.add(queryCondition);
         }
         else if (object instanceof Family) {
             Family family = (Family) object;
-            queryCondition = new QueryCondition("equalsString", "oI", family.getOI(), true, 0);
+            queryCondition = new QueryCondition(context.getString(R.string.query_condition_equalsString), "oI", family.getOI(), true, 0);
             queryConditions.add(queryCondition);
         }
         else if (object instanceof Foundation) {
             Foundation foundation = (Foundation) object;
-            queryCondition = new QueryCondition("equalsString", "oI", foundation.getOI(), true, 0);
+            queryCondition = new QueryCondition(context.getString(R.string.query_condition_equalsString), "oI", foundation.getOI(), true, 0);
             queryConditions.add(queryCondition);
         }
         else if (object instanceof MapMarker) {
             MapMarker mapMarker = (MapMarker) object;
-            queryCondition = new QueryCondition("equalsString", "oI", mapMarker.getOI(), true, 0);
+            queryCondition = new QueryCondition(context.getString(R.string.query_condition_equalsString), "oI", mapMarker.getOI(), true, 0);
             queryConditions.add(queryCondition);
         }
 
-        queryCondition = new QueryCondition("limit", "", "", true, limit);
+        queryCondition = new QueryCondition(context.getString(R.string.query_condition_limit), "", "", true, limit);
         queryConditions.add(queryCondition);
 
         return queryConditions;
     }
-    public static List<QueryCondition> getQueryConditionsForSingleObjectSearchByUniqueId(Object object) {
+    public static List<QueryCondition> getQueryConditionsForSingleObjectSearchByUniqueId(Context context, Object object) {
 
         List<QueryCondition> queryConditions = new ArrayList<>();
         QueryCondition queryCondition;
         if (object instanceof User) {
             User user = (User) object;
-            queryCondition = new QueryCondition("equalsString", "uI", user.getUI(), true, 0);
+            queryCondition = new QueryCondition(context.getString(R.string.query_condition_equalsString), "uI", user.getUI(), true, 0);
             queryConditions.add(queryCondition);
         }
         else if (object instanceof Pet) {
             Pet pet = (Pet) object;
-            queryCondition = new QueryCondition("equalsString", "uI", pet.getUI(), true, 0);
+            queryCondition = new QueryCondition(context.getString(R.string.query_condition_equalsString), "uI", pet.getUI(), true, 0);
             queryConditions.add(queryCondition);
         }
         else if (object instanceof Family) {
             Family family = (Family) object;
-            queryCondition = new QueryCondition("equalsString", "uI", family.getUI(), true, 0);
+            queryCondition = new QueryCondition(context.getString(R.string.query_condition_equalsString), "uI", family.getUI(), true, 0);
             queryConditions.add(queryCondition);
         }
         else if (object instanceof Foundation) {
             Foundation foundation = (Foundation) object;
-            queryCondition = new QueryCondition("equalsString", "uI", foundation.getUI(), true, 0);
+            queryCondition = new QueryCondition(context.getString(R.string.query_condition_equalsString), "uI", foundation.getUI(), true, 0);
             queryConditions.add(queryCondition);
         }
         else if (object instanceof MapMarker) {
             MapMarker mapMarker = (MapMarker) object;
-            queryCondition = new QueryCondition("equalsString", "uI", mapMarker.getUI(), true, 0);
+            queryCondition = new QueryCondition(context.getString(R.string.query_condition_equalsString), "uI", mapMarker.getUI(), true, 0);
             queryConditions.add(queryCondition);
         }
 
-        queryCondition = new QueryCondition("limit", "", "", true, 10);
+        queryCondition = new QueryCondition(context.getString(R.string.query_condition_limit), "", "", true, 10);
         queryConditions.add(queryCondition);
 
         return queryConditions;
@@ -1004,7 +1101,15 @@ public class Utilities {
         }
         return noMoreTempImages;
     }
-
+    public static int getYearsFromAge(int age) {
+        return age/12;
+    }
+    public static int getMonthsFromAge(int age) {
+        return age - ((int) age/12)*12;
+    }
+    public static int getAgeFromYearsMonths(int years, int months) {
+        return 12*years+months;
+    }
 
     //Internet utilities
     public static boolean internetIsAvailable(Context context) {

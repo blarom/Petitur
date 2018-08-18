@@ -195,7 +195,7 @@ public class PreferencesActivity extends AppCompatActivity implements FirebaseDa
             mUser.setEm(mCurrentFirebaseUser.getEmail());
             mUser.setNm(mCurrentFirebaseUser.getDisplayName());
 
-            mFirebaseDao.requestObjectsWithConditions(mUser, Utilities.getQueryConditionsForSingleObjectSearchByOwnerId(mUser));
+            mFirebaseDao.requestObjectsWithConditions(mUser, Utilities.getQueryConditionsForSingleObjectSearchByOwnerId(this, mUser));
         }
         else {
             showBlankPreferences();

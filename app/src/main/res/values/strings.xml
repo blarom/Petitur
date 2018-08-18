@@ -189,96 +189,68 @@
     <string name="pet_list_item_default_distance">0km</string>
     <string name="task_sync_list_main_images">syncListMainImages</string>
     <string name="task_sync_single_object_images">syncSingleObjectImages</string>
+    <string name="no_internet_bad_results_warning">Warning: Internet is unavailable, the displayed results may not be up to date.</string>
+    <string name="bundled_user">bundled_user</string>
+    <string name="filters">Filters</string>
+    <string name="gender">Gender</string>
+    <string name="any_gender">Any gender</string>
+    <string name="dialog_filter_button_male">Male</string>
+    <string name="dialog_filter_button_female">Female</string>
+    <string name="dialog_filter_button_any">Any</string>
+    <string name="age">Age</string>
+    <string name="dialog_filter_button_puppy">Toddler</string>
+    <string name="dialog_filter_button_young">Young</string>
+    <string name="dialog_filter_button_adult">Adult</string>
+    <string name="dialog_filter_button_senior">Senior</string>
+    <string name="size">Size</string>
+    <string name="dialog_filter_button_small">S</string>
+    <string name="dialog_filter_button_medium">M</string>
+    <string name="dialog_filter_button_large">L</string>
+    <string name="dialog_filter_button_extra_large">XL</string>
+    <string name="breed">Breed</string>
+    <string name="coat_length">Coat length</string>
+    <string name="special_needs">Special needs</string>
+    <string name="good_with_cats">Good with cats</string>
+    <string name="house_trained">House trained</string>
+    <string name="good_with_dogs">Good with dogs</string>
+    <string name="castrated">Castrated</string>
+    <string name="good_with_kids">Good with kids</string>
+    <string name="reset_filters">Reset filters</string>
+    <string name="save_filters">Save filters</string>
+    <string name="filter_option_any">Any</string>
+    <string name="filter_gender_male">Male</string>
+    <string name="filter_gender_female">Female</string>
+    <string name="show_dropdown">Show dropdown</string>
+    <string name="mixed">Mixed</string>
+    <string name="years">years</string>
+    <string name="months">months</string>
+    <string name="type">Type</string>
+    <string name="distance_from_me">Distance from me:</string>
+    <string name="zero">0</string>
+    <string name="unit_km">km</string>
+    <string name="dog">Dog</string>
+    <string name="cat">Cat</string>
+    <string name="parrot">Parrot</string>
+    <string name="query_condition_lessThanInteger">lessThanInteger</string>
+    <string name="query_condition_greaterThanOrEqualToInteger">greaterThanOrEqualToInteger</string>
+    <string name="query_condition_lessThanString">lessThanString</string>
+    <string name="query_condition_equalsBoolean">equalsBoolean</string>
+    <string name="query_condition_equalsString">equalsString</string>
+    <string name="query_condition_greaterThanOrEqualToString">greaterThanOrEqualToString</string>
+    <string name="query_condition_orderBy">orderBy</string>
+    <string name="query_condition_limit">limit</string>
+    <string name="query_condition_startAtString">startAtString</string>
+    <string name="query_condition_startAfterString">startAfterString</string>
+    <string name="query_condition_startAtInteger">startAtInteger</string>
+    <string name="query_condition_startAfterInteger">startAfterInteger</string>
+    <string name="query_condition_endAtString">endAtString</string>
+    <string name="query_condition_endBeforeString">endBeforeString</string>
+    <string name="query_condition_endAtInteger">endAtInteger</string>
+    <string name="query_condition_endBeforeInteger">endBeforeInteger</string>
+    <string name="pet_age_required">Age (*)</string>
+    <string name="must_create_family_profile">You must create your family profile in order to save your pet preferences.</string>
+    <string name="could_not_save_preferences">Sorry, couldn\'t save your pet preferences at this time, please try again later.</string>
 
-
-    <string-array name="dog_age">
-        <item>Newborn pup (up to 6 months)</item>
-        <item>Young troublemaker (0.5–3 yrs old)</item>
-        <item>Experienced pupper (3–6 yrs old)</item>
-        <item>Senior doggo (6–10 yrs old)</item>
-        <item>Old geyser (10+ yrs old)</item>
-    </string-array>
-    <string-array name="dog_size">
-        <item>Chihuaha-sized (in your purse!)</item>
-        <item>Weiner-sized (easy on kids)</item>
-        <item>Comfortable (trolley-sized)</item>
-        <item>Huggable (big pillow)</item>
-        <item>Grizzly-huggable (45+ kilos of love)</item>
-    </string-array>
-    <string-array name="dog_gender">
-        <item>Male (Who\'s a good boy!)</item>
-        <item>Female (The true boss of the house)</item>
-    </string-array>
-    <string-array name="dog_race">
-        <item>Mixed (it\'s the heart that matters)</item>
-        <item>Cross-bred (the best of both worlds)</item>
-        <item>Pure-bred (beauty before brawn)</item>
-    </string-array>
-    <string-array name="dog_behavior">
-        <item>Playful (mess is life)</item>
-        <item>Gentle</item>
-        <item>Calm</item>
-        <item>Trained</item>
-        <item>Smart</item>
-        <item>Special needs</item>
-    </string-array>
-    <string-array name="dog_interactions">
-        <item>Playful with other doggos</item>
-        <item>Calm with other doggos</item>
-        <item>Kitty-tolerant</item>
-        <item>The Buddha of the Animal Kingdom</item>
-        <item>Kid-friendly (+3 patience perk)</item>
-        <item>Adult-friendy (I fear no man!)</item>
-        <item>All of the above</item>
-    </string-array>
-    <string-array name="pet_age_array_simple">
-        <item>Newborn</item>
-        <item>1–3 yrs old</item>
-        <item>3–6 yrs old</item>
-        <item>6–10 yrs old</item>
-        <item>10+ yrs old</item>
-    </string-array>
-    <string-array name="pet_size_array_simple">
-        <item>Chihuaha</item>
-        <item>Weiner</item>
-        <item>Comfortable</item>
-        <item>Huggable</item>
-        <item>Grizzly</item>
-    </string-array>
-    <string-array name="pet_gender_array_simple">
-        <item>Male</item>
-        <item>Female</item>
-    </string-array>
-    <string-array name="pet_race_array_simple">
-        <item>Mixed</item>
-        <item>Cross-bred</item>
-        <item>Pure-bred</item>
-    </string-array>
-    <string-array name="pet_behavior_array_simple">
-        <item>Playful</item>
-        <item>Gentle</item>
-        <item>Calm</item>
-        <item>Trained</item>
-        <item>Smart</item>
-        <item>Special</item>
-    </string-array>
-    <string-array name="pet_interactions_array_simple">
-        <item>Playful with dogs</item>
-        <item>Calm with dogs</item>
-        <item>Kitty-tolerant</item>
-        <item>Buddha</item>
-        <item>Kid-friendly</item>
-        <item>Adult-friendy</item>
-        <item>All of the above</item>
-    </string-array>
-    <string-array name="distance">
-        <item>5km</item>
-        <item>20km</item>
-        <item>50km</item>
-        <item>100km</item>
-        <item>300km</item>
-        <item>Any distance</item>
-    </string-array>
     <string-array name="foster_period">
         <item>Up to 1 week</item>
         <item>Up to a few weeks</item>
@@ -292,6 +264,52 @@
         <item>Within my neighborhood</item>
         <item>A short drive away</item>
         <item>A long drive away</item>
+    </string-array>
+    <string-array name="pet_genders">
+        <item>Male</item>
+        <item>Female</item>
+    </string-array>
+    <string-array name="pet_ages">
+        <item>Toddler</item>
+        <item>Young</item>
+        <item>Adult</item>
+        <item>Senior</item>
+    </string-array>
+    <string-array name="pet_types">
+        <item>@string/dog</item>
+        <item>@string/cat</item>
+    </string-array>
+    <string-array name="pet_sizes">
+        <item>Small</item>
+        <item>Medium</item>
+        <item>Large</item>
+        <item>Extra large</item>
+    </string-array>
+    <string-array name="dog_breeds">
+        <item>Pug</item>
+        <item>Labrador Retriever</item>
+        <item>Akita Inu</item>
+        <item>Bulldog</item>
+    </string-array>
+    <string-array name="cat_breeds">
+        <item>Pug</item>
+        <item>Labrador Retriever</item>
+        <item>Akita Inu</item>
+        <item>Bulldog</item>
+    </string-array>
+    <string-array name="parrot_breeds">
+        <item>Pug</item>
+        <item>Labrador Retriever</item>
+        <item>Akita Inu</item>
+        <item>Bulldog</item>
+    </string-array>
+    <string-array name="coat_lengths">
+        <item>Hairless</item>
+        <item>Very short</item>
+        <item>Short</item>
+        <item>Medium</item>
+        <item>Long</item>
+        <item>Very long</item>
     </string-array>
 
 </resources>

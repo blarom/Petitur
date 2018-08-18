@@ -38,5 +38,7 @@
     <dimen name="pet_list_item_gender_image_size">24dp</dimen>
     <dimen name="pet_list_item_image_margins">24dp</dimen>
     <dimen name="pet_list_item_elevation">8dp</dimen>
+    <dimen name="dialog_filter_bottom_buttons_height">32dp</dimen>
+    <dimen name="dialog_filter_bottom_buttons_corner_radius">16dp</dimen>
 
 </resources>

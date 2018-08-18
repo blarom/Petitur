@@ -291,7 +291,7 @@ public class UpdateFamilyActivity extends AppCompatActivity implements
             mImageName = "mainImage";
 
             //Getting the rest of the family's parameters
-            if (!mFamilyFound) mFirebaseDao.requestObjectsWithConditions(mFamily, Utilities.getQueryConditionsForSingleObjectSearchByOwnerId(mFamily));
+            if (!mFamilyFound) mFirebaseDao.requestObjectsWithConditions(mFamily, Utilities.getQueryConditionsForSingleObjectSearchByOwnerId(this, mFamily));
         }
     }
     private void updateLayoutWithUserData() {

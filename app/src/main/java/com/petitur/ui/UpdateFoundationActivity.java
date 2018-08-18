@@ -255,7 +255,7 @@ public class UpdateFoundationActivity extends AppCompatActivity  implements
             mImageName = "mainImage";
 
             //Getting the rest of the family's parameters
-            if (!mFoundationFound) mFirebaseDao.requestObjectsWithConditions(mFoundation, Utilities.getQueryConditionsForSingleObjectSearchByOwnerId(mFoundation));
+            if (!mFoundationFound) mFirebaseDao.requestObjectsWithConditions(mFoundation, Utilities.getQueryConditionsForSingleObjectSearchByOwnerId(this, mFoundation));
         }
     }
     private void updateLayoutWithFoundationData() {

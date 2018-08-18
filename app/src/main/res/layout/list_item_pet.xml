@@ -8,7 +8,7 @@
     android:layout_marginTop="@dimen/list_item_image_standard_margin"
     android:layout_marginBottom="@dimen/list_item_image_standard_margin"
     android:elevation="@dimen/pet_list_item_elevation"
-    android:background="@drawable/background_rounded_corners"
+    android:background="@drawable/background_rounded_corners_full_white"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <android.support.constraint.Guideline

@@ -23,7 +23,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
@@ -46,6 +48,7 @@ import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import butterknife.BindView;
@@ -61,7 +64,7 @@ public class UpdatePetActivity extends AppCompatActivity implements
 
 
     //region Parameters
-    private static final String DEBUG_TAG = "TinDog Update";
+    private static final String DEBUG_TAG = "Petitur Update Pet";
     @BindView(R.id.update_pet_button_choose_main_pic) Button mButtonChooseMainPic;
     @BindView(R.id.update_pet_button_upload_pics) Button mButtonUploadPics;
     @BindView(R.id.update_pet_button_add_video_link) Button mButtonAddVideoLink;
@@ -76,25 +79,27 @@ public class UpdatePetActivity extends AppCompatActivity implements
     @BindView(R.id.update_pet_image_main) ImageView mImageViewMain;
     @BindView(R.id.update_pet_recyclerview_video_links) RecyclerView mRecyclerViewVideoLinks;
     @BindView(R.id.update_pet_recyclerview_images) RecyclerView mRecyclerViewDogImages;
-    @BindView(R.id.update_pet_age_spinner) Spinner mSpinnerAge;
+    @BindView(R.id.update_pet_age_years_edittext) EditText mAgeYearsEditText;
+    @BindView(R.id.update_pet_age_months_edittext) EditText mAgeMonthsEditText;
+    @BindView(R.id.update_pet_type_spinner) Spinner mSpinnerType;
     @BindView(R.id.update_pet_size_spinner) Spinner mSpinnerSize;
     @BindView(R.id.update_pet_gender_spinner) Spinner mSpinnerGender;
-    @BindView(R.id.update_pet_race_spinner) Spinner mSpinnerRace;
-    @BindView(R.id.update_pet_behavior_spinner) Spinner mSpinnerBehavior;
-    @BindView(R.id.update_pet_interactions_spinner) Spinner mSpinnerInteractions;
+    @BindView(R.id.update_pet_race_autocompletetextview) AutoCompleteTextView mAutoCompleteTextViewBreed;
+    @BindView(R.id.update_pet_coat_length_spinner) Spinner mSpinnerCoatLength;
+    @BindView(R.id.update_pet_checkbox_good_with_kids) CheckBox mCheckBoxGoodWithKids;
+    @BindView(R.id.update_pet_checkbox_good_with_cats) CheckBox mCheckBoxGoodWithCats;
+    @BindView(R.id.update_pet_checkbox_good_with_dogs) CheckBox mCheckBoxGoodWithDogs;
+    @BindView(R.id.update_pet_checkbox_castrated) CheckBox mCheckBoxCastrated;
+    @BindView(R.id.update_pet_checkbox_house_trained) CheckBox mCheckBoxHouseTrained;
+    @BindView(R.id.update_pet_checkbox_special_needs) CheckBox mCheckBoxSpecialNeeds;
     @BindView(R.id.update_pet_scroll_container) NestedScrollView mScrollViewContainer;
-    private ArrayAdapter<CharSequence> mSpinnerAdapterAge;
+    @BindView(R.id.update_pet_arrow_breed) ImageView mImageViewArrowBreed;
+    private ArrayAdapter<CharSequence> mSpinnerAdapterType;
     private ArrayAdapter<CharSequence> mSpinnerAdapterSize;
     private ArrayAdapter<CharSequence> mSpinnerAdapterGender;
-    private ArrayAdapter<CharSequence> mSpinnerAdapterRace;
-    private ArrayAdapter<CharSequence> mSpinnerAdapterBehavior;
-    private ArrayAdapter<CharSequence> mSpinnerAdapterInteractions;
-    private int mAgeSpinnerPosition;
+    private int mTypeSpinnerPosition;
     private int mSizeSpinnerPosition;
     private int mGenderSpinnerPosition;
-    private int mRaceSpinnerPosition;
-    private int mBehaviorSpinnerPosition;
-    private int mInteractionsSpinnerPosition;
     private Pet mPet;
     private FirebaseDao mFirebaseDao;
     private ImagesRecycleViewAdapter mPetImagesRecycleViewAdapter;
@@ -313,35 +318,37 @@ public class UpdatePetActivity extends AppCompatActivity implements
         mCurrentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         mFirebaseAuth = FirebaseAuth.getInstance();
 
-        mSpinnerAdapterAge = ArrayAdapter.createFromResource(this, R.array.pet_age_array_simple, android.R.layout.simple_spinner_item);
-        mSpinnerAdapterAge.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mSpinnerAge.setAdapter(mSpinnerAdapterAge);
-        mSpinnerAge.setOnItemSelectedListener(this);
+        mSpinnerAdapterType = ArrayAdapter.createFromResource(this, R.array.pet_types, android.R.layout.simple_spinner_item);
+        mSpinnerAdapterType.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        mSpinnerType.setAdapter(mSpinnerAdapterType);
+        mSpinnerType.setOnItemSelectedListener(this);
 
-        mSpinnerAdapterSize = ArrayAdapter.createFromResource(this, R.array.pet_size_array_simple, android.R.layout.simple_spinner_item);
+        mSpinnerAdapterSize = ArrayAdapter.createFromResource(this, R.array.pet_sizes, android.R.layout.simple_spinner_item);
         mSpinnerAdapterSize.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mSpinnerSize.setAdapter(mSpinnerAdapterSize);
         mSpinnerSize.setOnItemSelectedListener(this);
 
-        mSpinnerAdapterGender = ArrayAdapter.createFromResource(this, R.array.pet_gender_array_simple, android.R.layout.simple_spinner_item);
+        mSpinnerAdapterGender = ArrayAdapter.createFromResource(this, R.array.pet_genders, android.R.layout.simple_spinner_item);
         mSpinnerAdapterGender.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mSpinnerGender.setAdapter(mSpinnerAdapterGender);
         mSpinnerGender.setOnItemSelectedListener(this);
 
-        mSpinnerAdapterRace = ArrayAdapter.createFromResource(this, R.array.pet_race_array_simple, android.R.layout.simple_spinner_item);
-        mSpinnerAdapterRace.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mSpinnerRace.setAdapter(mSpinnerAdapterRace);
-        mSpinnerRace.setOnItemSelectedListener(this);
-
-        mSpinnerAdapterBehavior = ArrayAdapter.createFromResource(this, R.array.pet_behavior_array_simple, android.R.layout.simple_spinner_item);
-        mSpinnerAdapterBehavior.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mSpinnerBehavior.setAdapter(mSpinnerAdapterBehavior);
-        mSpinnerBehavior.setOnItemSelectedListener(this);
-
-        mSpinnerAdapterInteractions = ArrayAdapter.createFromResource(this, R.array.pet_interactions_array_simple, android.R.layout.simple_spinner_item);
-        mSpinnerAdapterInteractions.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mSpinnerInteractions.setAdapter(mSpinnerAdapterInteractions);
-        mSpinnerInteractions.setOnItemSelectedListener(this);
+        List<String> dogBreeds = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.dog_breeds)));
+        dogBreeds.add(0,getString(R.string.mixed));
+        ArrayAdapter<String> mAdapterBreed = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, dogBreeds);
+        mAutoCompleteTextViewBreed.setAdapter(mAdapterBreed);
+        mAutoCompleteTextViewBreed.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(final View arg0) {
+                mAutoCompleteTextViewBreed.showDropDown();
+            }
+        });
+        mImageViewArrowBreed.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mAutoCompleteTextViewBreed.showDropDown();
+            }
+        });
 
     }
     private void getFoundationAndPetProfilesFromFirebase() {
@@ -357,7 +364,7 @@ public class UpdatePetActivity extends AppCompatActivity implements
 
             //Getting the foundation details
             Foundation foundation = new Foundation(mFirebaseUid);
-            mFirebaseDao.requestObjectsWithConditions(foundation, Utilities.getQueryConditionsForSingleObjectSearchByOwnerId(foundation));
+            mFirebaseDao.requestObjectsWithConditions(foundation, Utilities.getQueryConditionsForSingleObjectSearchByOwnerId(this, foundation));
 
             //Getting the pet details
             if (!TextUtils.isEmpty(mChosenPetId)) {
@@ -376,19 +383,25 @@ public class UpdatePetActivity extends AppCompatActivity implements
         mEditTextStreetNumber.setText(mPet.getStN());
         mEditTextHistory.setText(mPet.getHs());
 
-        mAgeSpinnerPosition = Utilities.getSpinnerPositionFromText(mSpinnerAge, mPet.getAg());
+        mAgeYearsEditText.setText(Utilities.getYearsFromAge(mPet.getAg()));
+        mAgeMonthsEditText.setText(Utilities.getMonthsFromAge(mPet.getAg()));
+
+        mTypeSpinnerPosition = Utilities.getSpinnerPositionFromText(mSpinnerType, mPet.getTp());
         mSizeSpinnerPosition = Utilities.getSpinnerPositionFromText(mSpinnerSize, mPet.getSz());
         mGenderSpinnerPosition = Utilities.getSpinnerPositionFromText(mSpinnerGender, mPet.getGn());
-        mRaceSpinnerPosition = Utilities.getSpinnerPositionFromText(mSpinnerRace, mPet.getRc());
-        mBehaviorSpinnerPosition = Utilities.getSpinnerPositionFromText(mSpinnerBehavior, mPet.getBh());
-        mInteractionsSpinnerPosition = Utilities.getSpinnerPositionFromText(mSpinnerInteractions, mPet.getIt());
 
-        mSpinnerAge.setSelection(mAgeSpinnerPosition);
+        mSpinnerType.setSelection(mTypeSpinnerPosition);
         mSpinnerSize.setSelection(mSizeSpinnerPosition);
         mSpinnerGender.setSelection(mGenderSpinnerPosition);
-        mSpinnerRace.setSelection(mRaceSpinnerPosition);
-        mSpinnerBehavior.setSelection(mBehaviorSpinnerPosition);
-        mSpinnerInteractions.setSelection(mInteractionsSpinnerPosition);
+
+        mAutoCompleteTextViewBreed.setText(mPet.getRc());
+
+        mCheckBoxGoodWithKids.setChecked(mPet.getGK());
+        mCheckBoxGoodWithCats.setChecked(mPet.getGC());
+        mCheckBoxGoodWithDogs.setChecked(mPet.getGD());
+        mCheckBoxCastrated.setChecked(mPet.getCs());
+        mCheckBoxHouseTrained.setChecked(mPet.getHT());
+        mCheckBoxSpecialNeeds.setChecked(mPet.getSN());
 
         mVideoLinksRecycleViewAdapter.setContents(mPet.getVU());
 
@@ -520,15 +533,22 @@ public class UpdatePetActivity extends AppCompatActivity implements
 
         mPet.setHs(mEditTextHistory.getText().toString());
 
-        mPet.setAg(mSpinnerAge.getSelectedItem().toString());
-        mPet.setSz(mSpinnerSize.getSelectedItem().toString());
+        mPet.setTp(mSpinnerType.getSelectedItem().toString());
         mPet.setGn(mSpinnerGender.getSelectedItem().toString());
-        mPet.setRc(mSpinnerRace.getSelectedItem().toString());
-        mPet.setBh(mSpinnerBehavior.getSelectedItem().toString());
-        mPet.setIt(mSpinnerInteractions.getSelectedItem().toString());
+        int years = (mAgeYearsEditText.getText().toString().equals("")) ? 0 : Integer.parseInt(mAgeYearsEditText.getText().toString());
+        int months = (mAgeYearsEditText.getText().toString().equals("")) ? 0 : Integer.parseInt(mAgeMonthsEditText.getText().toString());
+        mPet.setAg(Utilities.getAgeFromYearsMonths(years, months));
+        mPet.setSz(mSpinnerSize.getSelectedItem().toString());
+        mPet.setRc(mAutoCompleteTextViewBreed.getText().toString());
 
+        mPet.setGK(mCheckBoxGoodWithKids.isChecked());
+        mPet.setGC(mCheckBoxGoodWithCats.isChecked());
+        mPet.setGD(mCheckBoxGoodWithDogs.isChecked());
+        mPet.setCs(mCheckBoxCastrated.isChecked());
+        mPet.setHT(mCheckBoxHouseTrained.isChecked());
+        mPet.setSN(mCheckBoxSpecialNeeds.isChecked());
 
-        if (name.length() < 2 || country.length() < 2 || city.length() < 1 || street.length() < 2 || streeNumber.length() < 1) {
+        if ((years==0 && months==0) || name.length() < 2 || country.length() < 2 || city.length() < 1 || street.length() < 2 || streeNumber.length() < 1) {
             mPetCriticalParametersSet = false;
         }
         else {
@@ -549,12 +569,10 @@ public class UpdatePetActivity extends AppCompatActivity implements
     }
     private void removeListeners() {
         mFirebaseDao.removeListeners();
-        if (mSpinnerAge!=null) mSpinnerAge.setOnItemSelectedListener(null);
         if (mSpinnerSize!=null) mSpinnerSize.setOnItemSelectedListener(null);
         if (mSpinnerGender!=null) mSpinnerGender.setOnItemSelectedListener(null);
-        if (mSpinnerRace!=null) mSpinnerRace.setOnItemSelectedListener(null);
-        if (mSpinnerBehavior!=null) mSpinnerBehavior.setOnItemSelectedListener(null);
-        if (mSpinnerInteractions!=null) mSpinnerInteractions.setOnItemSelectedListener(null);
+        if (mAutoCompleteTextViewBreed !=null) mAutoCompleteTextViewBreed.setOnItemSelectedListener(null);
+        if (mSpinnerCoatLength !=null) mSpinnerCoatLength.setOnItemSelectedListener(null);
         if (mButtonChooseMainPic!=null) mButtonChooseMainPic.setOnClickListener(null);
         if (mButtonUploadPics!=null) mButtonUploadPics.setOnClickListener(null);
     }
@@ -687,8 +705,8 @@ public class UpdatePetActivity extends AppCompatActivity implements
     //Communication with spinner adapters
     @Override public void onItemSelected(AdapterView<?> adapterView, View view, int pos, long id) {
         switch (adapterView.getId()) {
-            case R.id.update_pet_age_spinner:
-                mPet.setAg((String) adapterView.getItemAtPosition(pos));
+            case R.id.update_pet_type_spinner:
+                mPet.setTp((String) adapterView.getItemAtPosition(pos));
                 break;
             case R.id.update_pet_size_spinner:
                 mPet.setSz((String) adapterView.getItemAtPosition(pos));
@@ -696,14 +714,8 @@ public class UpdatePetActivity extends AppCompatActivity implements
             case R.id.update_pet_gender_spinner:
                 mPet.setGn((String) adapterView.getItemAtPosition(pos));
                 break;
-            case R.id.update_pet_race_spinner:
+            case R.id.update_pet_race_autocompletetextview:
                 mPet.setRc((String) adapterView.getItemAtPosition(pos));
-                break;
-            case R.id.update_pet_behavior_spinner:
-                mPet.setBh((String) adapterView.getItemAtPosition(pos));
-                break;
-            case R.id.update_pet_interactions_spinner:
-                mPet.setIt((String) adapterView.getItemAtPosition(pos));
                 break;
         }
     }

@@ -25,7 +25,6 @@ public class Family implements Parcelable{
         setUniqueIdentifierFromDetails();
     }
 
-
     protected Family(Parcel in) {
         oI = in.readString();
         pn = in.readString();
@@ -55,13 +54,19 @@ public class Family implements Parcelable{
         galt = in.readString();
         galg = in.readString();
         iUT = in.createStringArrayList();
+        tP = in.readString();
         aP = in.readString();
         sZ = in.readString();
-        rP = in.readString();
+        dRP = in.readString();
+        cRP = in.readString();
+        pRP = in.readString();
         gP = in.readString();
-        bP = in.readString();
-        iP = in.readString();
-        tP = in.readString();
+        gKP = in.readByte() != 0;
+        gCP = in.readByte() != 0;
+        gDP = in.readByte() != 0;
+        csP = in.readByte() != 0;
+        hTP = in.readByte() != 0;
+        snP = in.readByte() != 0;
     }
 
     public static final Creator<Family> CREATOR = new Creator<Family>() {
@@ -307,6 +312,22 @@ public class Family implements Parcelable{
         this.iUT = iUT;
     }
 
+    private String tP = "Dog"; //pet type preference
+    public String getTP() {
+        return tP;
+    }
+    public void setTP(String tP) {
+        this.tP = tP;
+    }
+
+    private String gP = ""; //gender preference
+    public String getGP() {
+        return gP;
+    }
+    public void setGP(String gP) {
+        this.gP = gP;
+    }
+
     private String aP = ""; //age preference
     public String getAP() {
         return aP;
@@ -323,44 +344,92 @@ public class Family implements Parcelable{
         this.sZ = sZ;
     }
 
-    private String rP = ""; //race preference
-    public String getRP() {
-        return rP;
+    private String dRP = ""; //dog breed preference
+    public String getDRP() {
+        return dRP;
     }
-    public void setRP(String rP) {
-        this.rP = rP;
-    }
-
-    private String gP = ""; //gender preference
-    public String getGP() {
-        return gP;
-    }
-    public void setGP(String gP) {
-        this.gP = gP;
+    public void setDRP(String dRP) {
+        this.dRP = dRP;
     }
 
-    private String bP = ""; //behavior preference
-    public String getBP() {
-        return bP;
+    private String cRP = ""; //cat breed preference
+    public String getCRP() {
+        return cRP;
     }
-    public void setBP(String bP) {
-        this.bP = bP;
-    }
-
-    private String iP = ""; //interactions preference
-    public String getIP() {
-        return iP;
-    }
-    public void setIP(String iP) {
-        this.iP = iP;
+    public void setCRP(String cRP) {
+        this.cRP = cRP;
     }
 
-    private String tP = "dog"; //pet type preference
-    public String gettP() {
-        return tP;
+    private String pRP = ""; //parrot breed preference
+    public String getPRP() {
+        return pRP;
     }
-    public void settP(String tP) {
-        this.tP = tP;
+    public void setPRP(String pRP) {
+        this.pRP = pRP;
+    }
+
+    private String cLP = ""; //parrot breed preference
+    public String getCLP() {
+        return cLP;
+    }
+    public void setCLP(String cLP) {
+        this.cLP = cLP;
+    }
+
+    private boolean gKP = false; //good with kids preference
+    public boolean getGKP() {
+        return gKP;
+    }
+    public void setGKP(boolean gKP) {
+        this.gKP = gKP;
+    }
+
+    private boolean gCP = false; //good with cats preference
+    public boolean getGCP() {
+        return gCP;
+    }
+    public void setGCP(boolean gCP) {
+        this.gCP = gCP;
+    }
+
+    private boolean gDP = false; //good with dogs preference
+    public boolean getGDP() {
+        return gDP;
+    }
+    public void setGDP(boolean gdP) {
+        this.gDP = gdP;
+    }
+
+    private boolean csP = false; //castrated preference
+    public boolean getCsP() {
+        return csP;
+    }
+    public void setCsP(boolean csP) {
+        this.csP = csP;
+    }
+
+    private boolean hTP = false; //house trained preference
+    public boolean getHTP() {
+        return hTP;
+    }
+    public void setHTP(boolean hTP) {
+        this.hTP = hTP;
+    }
+
+    private boolean snP = false; //special needs preference
+    public boolean getSNP() {
+        return snP;
+    }
+    public void setSNP(boolean snP) {
+        this.snP = snP;
+    }
+
+    private int dP = 0; //distance preference
+    public int getdP() {
+        return dP;
+    }
+    public void setdP(int dP) {
+        this.dP = dP;
     }
 
     @Override
@@ -398,12 +467,19 @@ public class Family implements Parcelable{
         parcel.writeString(galt);
         parcel.writeString(galg);
         parcel.writeStringList(iUT);
+        parcel.writeString(tP);
         parcel.writeString(aP);
         parcel.writeString(sZ);
-        parcel.writeString(rP);
+        parcel.writeString(dRP);
+        parcel.writeString(cRP);
+        parcel.writeString(pRP);
         parcel.writeString(gP);
-        parcel.writeString(bP);
-        parcel.writeString(iP);
-        parcel.writeString(tP);
+        parcel.writeByte((byte) (gKP ? 1 : 0));
+        parcel.writeByte((byte) (gCP ? 1 : 0));
+        parcel.writeByte((byte) (gDP ? 1 : 0));
+        parcel.writeByte((byte) (csP ? 1 : 0));
+        parcel.writeByte((byte) (hTP ? 1 : 0));
+        parcel.writeByte((byte) (snP ? 1 : 0));
     }
+
 }

@@ -441,7 +441,7 @@ public class MapActivity extends AppCompatActivity implements
     private void getMapMarkersFromFirebase() {
         if (mCurrentFirebaseUser != null && !TextUtils.isEmpty(mFirebaseUid)) {
             MapMarker mapMarker = new MapMarker(mFirebaseUid);
-            mFirebaseDao.requestObjectsWithConditions(mapMarker, Utilities.getQueryConditionsForMultipleObjectSearchByOwnerId(mapMarker, 50));
+            mFirebaseDao.requestObjectsWithConditions(mapMarker, Utilities.getQueryConditionsForMultipleObjectSearchByOwnerId(this, mapMarker, 50));
         }
         else {
             Toast.makeText(this, R.string.please_sign_in_to_see_map_markers, Toast.LENGTH_SHORT).show();

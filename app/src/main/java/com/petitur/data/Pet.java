@@ -10,7 +10,7 @@ import java.util.List;
 public class Pet implements Parcelable{
 
     public Pet() {}
-    Pet(String name, String gender, String race, String street, String city, String country, String age) {
+    Pet(String name, String gender, String race, String street, String city, String country, int age) {
         this.nm = name;
         this.gn = gender;
         this.rc = race;
@@ -40,12 +40,10 @@ public class Pet implements Parcelable{
         galt = in.readString();
         galg = in.readString();
         vU = in.createStringArrayList();
-        ag = in.readString();
+        ag = in.readInt();
         sz = in.readString();
         rc = in.readString();
         gn = in.readString();
-        bh = in.readString();
-        it = in.readString();
         hs = in.readString();
         iUT = in.createStringArrayList();
     }
@@ -182,11 +180,11 @@ public class Pet implements Parcelable{
         this.vU = vU;
     }
 
-    private String ag  = "No age available"; // age
-    public String getAg() {
+    private int ag  = 0; // age
+    public int getAg() {
         return ag;
     }
-    public void setAg(String ag) {
+    public void setAg(int ag) {
         this.ag = ag;
     }
 
@@ -214,20 +212,52 @@ public class Pet implements Parcelable{
         this.gn = gn;
     }
 
-    private String bh  = "No behavior available"; //behavior
-    public String getBh() {
-        return bh;
+    private boolean gk = false; //good with kids
+    public boolean getGK() {
+        return gk;
     }
-    public void setBh(String bh) {
-        this.bh = bh;
+    public void setGK(boolean gk) {
+        this.gk = gk;
     }
 
-    private String it  = "No interactions available"; //interactions
-    public String getIt() {
-        return it;
+    private boolean gc = false; //good with cats
+    public boolean getGC() {
+        return gc;
     }
-    public void setIt(String it) {
-        this.it = it;
+    public void setGC(boolean gc) {
+        this.gc = gc;
+    }
+
+    private boolean gd = false; //good with dogs
+    public boolean getGD() {
+        return gd;
+    }
+    public void setGD(boolean gd) {
+        this.gd = gd;
+    }
+
+    private boolean cs = false; //castrated
+    public boolean getCs() {
+        return cs;
+    }
+    public void setCs(boolean cs) {
+        this.cs = cs;
+    }
+
+    private boolean hT = false; //house trained
+    public boolean getHT() {
+        return hT;
+    }
+    public void setHT(boolean hT) {
+        this.hT = hT;
+    }
+
+    private boolean sn = false; //special needs
+    public boolean getSN() {
+        return sn;
+    }
+    public void setSN(boolean sn) {
+        this.sn = sn;
     }
 
     private String hs  = "No history available"; //history
@@ -268,12 +298,10 @@ public class Pet implements Parcelable{
         parcel.writeString(galt);
         parcel.writeString(galg);
         parcel.writeStringList(vU);
-        parcel.writeString(ag);
+        parcel.writeInt(ag);
         parcel.writeString(sz);
         parcel.writeString(rc);
         parcel.writeString(gn);
-        parcel.writeString(bh);
-        parcel.writeString(it);
         parcel.writeString(hs);
         parcel.writeStringList(iUT);
     }
