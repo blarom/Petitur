@@ -25,6 +25,7 @@ import android.widget.Toast;
 import com.firebase.ui.auth.IdpResponse;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.GeoPoint;
 import com.petitur.R;
 import com.petitur.adapters.ImagesRecycleViewAdapter;
 import com.petitur.data.*;
@@ -389,8 +390,7 @@ public class UpdateFamilyActivity extends AppCompatActivity implements
             double geoAddressLongitude = address.getLongitude();
 
             mFamily.setGaC(geoAddressCountry);
-            mFamily.setGaLt(Double.toString(geoAddressLatitude));
-            mFamily.setGaLg(Double.toString(geoAddressLongitude));
+            mFamily.setGeo(new GeoPoint(geoAddressLatitude, geoAddressLongitude));
         }
 
         mFamily.setSt(mEditTextStreet.getText().toString());

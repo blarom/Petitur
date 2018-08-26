@@ -4,12 +4,12 @@ public class QueryCondition {
 
     public QueryCondition() { }
 
-    public QueryCondition(String operation, String key, String valueString, boolean valueBoolean, int valueInteger) {
+    public QueryCondition(String operation, String key, String valueString, boolean valueBoolean, double valueNumber) {
         this.operation = operation;
         this.key = key.toLowerCase();
         this.valueString = valueString;
         this.valueBoolean = valueBoolean;
-        this.valueInteger = valueInteger;
+        this.valueNumber = valueNumber;
     }
 
     private String operation = "default";
@@ -44,11 +44,11 @@ public class QueryCondition {
         this.valueBoolean = valueBoolean;
     }
 
-    private int valueInteger = 0;
-    public int getValueInteger() {
-        return valueInteger;
+    private double valueNumber = 0;
+    public double getValueNumber() {
+        return valueNumber;
     }
-    public void setValueInteger(int valueInteger) {
-        this.valueInteger = valueInteger;
+    public void setValueNumber(double valueNumber) {
+        this.valueNumber = valueNumber;
     }
 }

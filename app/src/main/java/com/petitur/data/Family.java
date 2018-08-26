@@ -4,6 +4,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.text.TextUtils;
 
+import com.google.firebase.firestore.GeoPoint;
 import com.petitur.resources.Utilities;
 
 import java.util.Arrays;
@@ -51,22 +52,23 @@ public class Family implements Parcelable{
         hDa = in.readByte() != 0;
         hDE = in.readByte() != 0;
         gac = in.readString();
-        galt = in.readString();
-        galg = in.readString();
         iUT = in.createStringArrayList();
         tP = in.readString();
+        gP = in.readString();
         aP = in.readString();
         sZ = in.readString();
         dRP = in.readString();
         cRP = in.readString();
         pRP = in.readString();
-        gP = in.readString();
+        cLP = in.readString();
         gKP = in.readByte() != 0;
         gCP = in.readByte() != 0;
         gDP = in.readByte() != 0;
         csP = in.readByte() != 0;
         hTP = in.readByte() != 0;
         snP = in.readByte() != 0;
+        dP = in.readInt();
+        srT = in.readString();
     }
 
     public static final Creator<Family> CREATOR = new Creator<Family>() {
@@ -80,6 +82,7 @@ public class Family implements Parcelable{
             return new Family[size];
         }
     };
+
 
     private String oI; //Owner identifier
     public String getOI() {
@@ -288,20 +291,12 @@ public class Family implements Parcelable{
         this.gac = gac;
     }
 
-    private String galt = "0.0"; //Geocoder address Latitude (requires internet to update)
-    public String getGaLt() {
-        return galt;
+    private GeoPoint geo; //Geopoint with latitude then longitude
+    public GeoPoint getGeo() {
+        return geo;
     }
-    public void setGaLt(String galt) {
-        this.galt = galt;
-    }
-
-    private String galg = "0.0"; //Geocoder address Longitude (requires internet to update)
-    public String getGaLg() {
-        return galg;
-    }
-    public void setGaLg(String galg) {
-        this.galg = galg;
+    public void setGeo(GeoPoint geo) {
+        this.geo = geo;
     }
 
     private List<String> iUT = Arrays.asList("","","","","",""); //Image upload times
@@ -320,7 +315,7 @@ public class Family implements Parcelable{
         this.tP = tP;
     }
 
-    private String gP = ""; //gender preference
+    private String gP = "Any"; //gender preference
     public String getGP() {
         return gP;
     }
@@ -328,7 +323,7 @@ public class Family implements Parcelable{
         this.gP = gP;
     }
 
-    private String aP = ""; //age preference
+    private String aP = "Any"; //age preference
     public String getAP() {
         return aP;
     }
@@ -336,7 +331,7 @@ public class Family implements Parcelable{
         this.aP = aP;
     }
 
-    private String sZ = ""; //size preference
+    private String sZ = "Any"; //size preference
     public String getSP() {
         return sZ;
     }
@@ -344,7 +339,7 @@ public class Family implements Parcelable{
         this.sZ = sZ;
     }
 
-    private String dRP = ""; //dog breed preference
+    private String dRP = "Any"; //dog breed preference
     public String getDRP() {
         return dRP;
     }
@@ -352,7 +347,7 @@ public class Family implements Parcelable{
         this.dRP = dRP;
     }
 
-    private String cRP = ""; //cat breed preference
+    private String cRP = "Any"; //cat breed preference
     public String getCRP() {
         return cRP;
     }
@@ -360,7 +355,7 @@ public class Family implements Parcelable{
         this.cRP = cRP;
     }
 
-    private String pRP = ""; //parrot breed preference
+    private String pRP = "Any"; //parrot breed preference
     public String getPRP() {
         return pRP;
     }
@@ -368,7 +363,7 @@ public class Family implements Parcelable{
         this.pRP = pRP;
     }
 
-    private String cLP = ""; //parrot breed preference
+    private String cLP = "Any"; //coat length preference
     public String getCLP() {
         return cLP;
     }
@@ -425,11 +420,27 @@ public class Family implements Parcelable{
     }
 
     private int dP = 0; //distance preference
-    public int getdP() {
+    public int getDP() {
         return dP;
     }
-    public void setdP(int dP) {
+    public void setDP(int dP) {
         this.dP = dP;
+    }
+
+    private String srT = "Distance"; //sort type
+    public String getSrT() {
+        return srT;
+    }
+    public void setSrT(String srT) {
+        this.srT = srT;
+    }
+
+    private boolean srA = true; //sort ascending
+    public boolean getSrA() {
+        return srA;
+    }
+    public void setSrA(boolean srA) {
+        this.srA = srA;
     }
 
     @Override
@@ -464,22 +475,22 @@ public class Family implements Parcelable{
         parcel.writeByte((byte) (hDa ? 1 : 0));
         parcel.writeByte((byte) (hDE ? 1 : 0));
         parcel.writeString(gac);
-        parcel.writeString(galt);
-        parcel.writeString(galg);
         parcel.writeStringList(iUT);
         parcel.writeString(tP);
+        parcel.writeString(gP);
         parcel.writeString(aP);
         parcel.writeString(sZ);
         parcel.writeString(dRP);
         parcel.writeString(cRP);
         parcel.writeString(pRP);
-        parcel.writeString(gP);
+        parcel.writeString(cLP);
         parcel.writeByte((byte) (gKP ? 1 : 0));
         parcel.writeByte((byte) (gCP ? 1 : 0));
         parcel.writeByte((byte) (gDP ? 1 : 0));
         parcel.writeByte((byte) (csP ? 1 : 0));
         parcel.writeByte((byte) (hTP ? 1 : 0));
         parcel.writeByte((byte) (snP ? 1 : 0));
+        parcel.writeInt(dP);
+        parcel.writeString(srT);
     }
-
 }

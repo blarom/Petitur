@@ -17,6 +17,7 @@ import com.petitur.resources.Utilities;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
+import java.util.Locale;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -24,14 +25,18 @@ import butterknife.ButterKnife;
 public class PetListRecycleViewAdapter extends RecyclerView.Adapter<PetListRecycleViewAdapter.PetViewHolder> {
 
     private final Context mContext;
+    private final double mUserLatitude;
+    private final double mUserLongitude;
     private List<Pet> mPets;
     final private PetListItemClickHandler mOnClickHandler;
     private int mSelectedProfileIndex;
 
-    public PetListRecycleViewAdapter(Context context, PetListItemClickHandler listener, List<Pet> pets) {
+    public PetListRecycleViewAdapter(Context context, PetListItemClickHandler listener, List<Pet> pets, double userLatitude, double userLongitude) {
         this.mContext = context;
         this.mOnClickHandler = listener;
         this.mPets = pets;
+        this.mUserLatitude = userLatitude;
+        this.mUserLongitude = userLongitude;
     }
 
     @NonNull @Override public PetViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {LayoutInflater inflater = LayoutInflater.from(mContext);
@@ -48,8 +53,16 @@ public class PetListRecycleViewAdapter extends RecyclerView.Adapter<PetListRecyc
         holder.nameTextView.setText(pet.getNm());
         holder.cityTextView.setText(pet.getCt());
         holder.raceTextView.setText(pet.getRc());
-        holder.ageTextView.setText(pet.getAg());
-        holder.distanceTextView.setText(pet.getAg());
+        holder.ageTextView.setText(Integer.toString(pet.getAg()));
+
+        int distanceM = Utilities.getDistanceFromLatLong(
+                mUserLatitude,
+                mUserLongitude,
+                pet.getGeo().getLatitude(),
+                pet.getGeo().getLongitude()
+        );
+        String displayableDistance = Utilities.convertDistanceToDisplayableValue(distanceM) + "km";
+        holder.distanceTextView.setText(displayableDistance);
 
         String gender = pet.getGn();
         if (gender.equals("Male")) Picasso.with(mContext).load(R.drawable.ic_pet_gender_male_24dp).into(holder.genderImageView);

@@ -53,7 +53,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.math.RoundingMode;
 import java.nio.channels.FileChannel;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -290,9 +292,23 @@ public class Utilities {
 
 
     //Image utilities
-    public static void loadGenericAppImageIntoImageView(Context context, ImageView image) {
+    public static void loadGenericImageIntoImageView(Context context, Object object, ImageView image) {
 
-        Uri imageUri = Uri.fromFile(new File("//android_asset/splashscreen_intro_image.jpg"));
+        Uri imageUri = null;
+        if (object instanceof Pet) {
+            Pet pet = (Pet) object;
+            if (pet.getTp().equals("Dog")) imageUri = Uri.fromFile(new File("//android_asset/default_dog_image.jpg"));
+            else if (pet.getTp().equals("Cat")) imageUri = Uri.fromFile(new File("//android_asset/default_dog_image.jpg"));
+            else if (pet.getTp().equals("Parrot")) imageUri = Uri.fromFile(new File("//android_asset/default_dog_image.jpg"));
+            else imageUri = Uri.fromFile(new File("//android_asset/default_dog_image.jpg"));
+        }
+        else if (object instanceof Family) {
+            imageUri = Uri.fromFile(new File("//android_asset/default_dog_image.jpg"));
+        }
+        else if (object instanceof Foundation) {
+            imageUri = Uri.fromFile(new File("//android_asset/default_dog_image.jpg"));
+        }
+
         Picasso.with(context)
                 .load(imageUri)
                 .placeholder(image.getDrawable()) //inspired by: https://github.com/square/picasso/issues/257
@@ -527,21 +543,22 @@ public class Utilities {
             return;
         }
         Uri localImageUri = Utilities.getImageUriWithPath(localDirectory, imageName);
-        displayUriInImageView(context, localImageUri, imageView);
-    }
-    public static void displayUriInImageView(Context context, Uri uri, ImageView imageView) {
-        if (uri!=null) {
-            Picasso.with(context)
-                    .load(uri.toString())
-                    .placeholder(imageView.getDrawable()) //inspired by: https://github.com/square/picasso/issues/257
-                    //.error(R.drawable.ic_image_not_available)
-                    .memoryPolicy(MemoryPolicy.NO_CACHE) //Prevents picasso from thinking that older images are valid, and forces it to load the new image
-                    .noFade()
-                    .into(imageView);
+
+        if (localImageUri!=null) {
+            displayUriInImageView(context, localImageUri, imageView);
         }
         else {
-            loadGenericAppImageIntoImageView(context, imageView);
+            loadGenericImageIntoImageView(context, object, imageView);
         }
+    }
+    public static void displayUriInImageView(Context context, Uri uri, ImageView imageView) {
+        Picasso.with(context)
+                .load(uri.toString())
+                .placeholder(imageView.getDrawable()) //inspired by: https://github.com/square/picasso/issues/257
+                //.error(R.drawable.ic_image_not_available)
+                .memoryPolicy(MemoryPolicy.NO_CACHE) //Prevents picasso from thinking that older images are valid, and forces it to load the new image
+                .noFade()
+                .into(imageView);
     }
     public static String getImageNameFromUri(String uriString) {
         if (uriString.contains("mainImage")) return "mainImage";
@@ -703,8 +720,8 @@ public class Utilities {
                     boolean isNearby = checkIfObjectIsNearby(
                             context,
                             Utilities.getAddressStringFromComponents(pet.getStN(), pet.getSt(), pet.getCt(), pet.getSe(), pet.getCn()),
-                            pet.getGaLt(),
-                            pet.getGaLg(),
+                            pet.getGeo().getLatitude(),
+                            pet.getGeo().getLongitude(),
                             userLatitude,
                             userLongitude,
                             distanceMeters);
@@ -719,8 +736,8 @@ public class Utilities {
                     boolean isNearby = checkIfObjectIsNearby(
                             context,
                             Utilities.getAddressStringFromComponents(null, family.getSt(), family.getCt(), family.getSe(), family.getCn()),
-                            family.getGaLt(),
-                            family.getGaLg(),
+                            family.getGeo().getLatitude(),
+                            family.getGeo().getLongitude(),
                             userLatitude,
                             userLongitude,
                             distanceMeters);
@@ -735,8 +752,8 @@ public class Utilities {
                     boolean isNearby = checkIfObjectIsNearby(
                             context,
                             Utilities.getAddressStringFromComponents(foundation.getStN(), foundation.getSt(), foundation.getCt(), foundation.getSe(), foundation.getCn()),
-                            foundation.getGaLt(),
-                            foundation.getGaLg(),
+                            foundation.getGeo().getLatitude(),
+                            foundation.getGeo().getLongitude(),
                             userLatitude,
                             userLongitude,
                             distanceMeters);
@@ -748,19 +765,11 @@ public class Utilities {
         return objectsList;
     }
     public static boolean checkIfObjectIsNearby(Context context, String addressString,
-                                                String objectLatitudeAsString, String objectLongitudeAsString,
+                                                double objectLatitude, double objectLongitude,
                                                 double userLatitude, double userLongitude, int distanceMeters) {
 
         //If the city value is empty, return true anyway since the object may be relevant
         if (TextUtils.isEmpty(addressString)) return true;
-
-        double objectLatitude;
-        double objectLongitude;
-
-        if (!TextUtils.isEmpty(objectLatitudeAsString)) objectLatitude = Double.parseDouble(objectLatitudeAsString);
-        else objectLatitude = 0.0;
-        if (!TextUtils.isEmpty(objectLongitudeAsString)) objectLongitude = Double.parseDouble(objectLongitudeAsString);
-        else objectLongitude = 0.0;
 
         //If the device can obtain valid up-to-date geolocation data for the object's registered address, use it instead of the stored values,
         // since these may possibly be have been updated when the user last saved the object's profile
@@ -785,6 +794,79 @@ public class Utilities {
             return isWithinDistance;
         }
         return false;
+    }
+    public static double[] getCoordinateLimitsAroundLatLong(double latitude, double longitude, int distanceM) {
+
+        //Returns an array of the min and max latitude, min and max longitudes
+        return new double[] {
+                getLatLongAtDistanceFromLatLong(latitude, longitude, distanceM, 180.0)[0],
+                getLatLongAtDistanceFromLatLong(latitude, longitude, distanceM, 0.0)[0],
+                getLatLongAtDistanceFromLatLong(latitude, longitude, distanceM, 90.0)[1],
+                getLatLongAtDistanceFromLatLong(latitude, longitude, distanceM, 270.0)[1]
+        };
+    }
+    public static double[] getLatLongAtDistanceFromLatLong(double lat1Deg, double lon1Deg, int distanceM, double radialDeg) {
+
+        //Adapted from: https://gis.stackexchange.com/questions/5821/calculating-latitude-longitude-x-miles-from-point
+        //Original source: http://www.edwilliams.org/avform.htm#LL
+
+        //radialDeg measured from local meridien clockwise
+
+        int earthRadius = 6371000;
+        double radialRad = Math.PI / 180 * radialDeg;
+        double distanceRad = (double) distanceM / (double) earthRadius;
+
+        double lat1Rad = Math.PI / 180 * lat1Deg;
+        double lon1Rad = Math.PI / 180 * lon1Deg;
+
+        double lat2Rad = asinSafe(   Math.sin(lat1Rad) * Math.cos(distanceRad) +
+                                        Math.cos(lat1Rad) * Math.sin(distanceRad) * Math.cos(radialRad));
+        double lon2Rad;
+        if (Math.cos(lat2Rad)==0) lon2Rad = lon1Rad; // endpoint a pole
+        else lon2Rad = (lon1Rad - asinSafe(Math.sin(radialRad) * Math.sin(distanceRad) / Math.cos(lat2Rad)) + Math.PI) % (2*Math.PI) - Math.PI;
+
+        double latitude2 = 180 / Math.PI * lat2Rad;
+        double longitude2 = 180 / Math.PI * lon2Rad;
+
+        return new double[]{latitude2, longitude2};
+    }
+    public static int getDistanceFromLatLong(double lat1Deg, double lon1Deg, double lat2Deg, double lon2Deg) {
+
+        //Adapted from: https://gis.stackexchange.com/questions/5821/calculating-latitude-longitude-x-miles-from-point
+        //Original source: http://www.edwilliams.org/avform.htm#LL
+
+        //radialDeg measured from local meridien clockwise
+
+        double lat1Rad = Math.PI / 180 * lat1Deg;
+        double lon1Rad = Math.PI / 180 * lon1Deg;
+        double lat2Rad = Math.PI / 180 * lat2Deg;
+        double lon2Rad = Math.PI / 180 * lon2Deg;
+
+        int earthRadius = 6371000;
+        double distanceRad = acosSafe( Math.sin(lat1Rad) * Math.sin(lat2Rad) +
+                    Math.cos(lat1Rad) * Math.cos(lat2Rad) * Math.cos(lon1Rad-lon2Rad));
+        int distanceM = (int) (distanceRad * (double) earthRadius);
+
+        return distanceM;
+    }
+    private static double asinSafe(double x) {
+        //Original source: http://www.edwilliams.org/avform.htm#LL
+        //Prevents math errors caused by rounding
+        return Math.asin(Math.max(-1,Math.min(x,1)));
+    }
+    private static double acosSafe(double x) {
+        //Original source: http://www.edwilliams.org/avform.htm#LL
+        //Prevents math errors caused by rounding
+        return Math.acos(Math.max(-1,Math.min(x,1)));
+    }
+    public static String convertDistanceToDisplayableValue(int distanceM) {
+
+        //see: https://stackoverflow.com/questions/153724/how-to-round-a-number-to-n-decimal-places-in-java
+        DecimalFormat df = new DecimalFormat("#.#");
+        df.setRoundingMode(RoundingMode.CEILING);
+        Number distanceKm = distanceM / 1000.000;
+        Double distanceKmRounded = distanceKm.doubleValue();
+        return df.format(distanceKmRounded);
     }
 
 
@@ -1110,6 +1192,21 @@ public class Utilities {
     public static int getAgeFromYearsMonths(int years, int months) {
         return 12*years+months;
     }
+    public static String getAgeRange(Context context, String type, int years, int months) {
+
+        int[] ageBorders = new int[]{0, 0, 0};
+        if (type.equals(context.getString(R.string.dog))) ageBorders = context.getResources().getIntArray(R.array.dog_age_borders);
+        else if (type.equals(context.getString(R.string.cat))) ageBorders = context.getResources().getIntArray(R.array.cat_age_borders);
+        else if (type.equals(context.getString(R.string.parrot))) ageBorders = context.getResources().getIntArray(R.array.parrot_age_borders);
+
+        int totalMonths = getAgeFromYearsMonths(years, months);
+        if (totalMonths < ageBorders[0]) return context.getString(R.string.toddler);
+        else if (totalMonths >= ageBorders[0] && totalMonths < ageBorders[1]) return context.getString(R.string.young);
+        else if (totalMonths >= ageBorders[1] && totalMonths < ageBorders[2]) return context.getString(R.string.adult);
+        else if (totalMonths >= ageBorders[2]) return context.getString(R.string.senior);
+        else return context.getString(R.string.toddler);
+    }
+
 
     //Internet utilities
     public static boolean internetIsAvailable(Context context) {

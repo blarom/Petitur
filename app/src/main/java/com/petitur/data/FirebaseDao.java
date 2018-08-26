@@ -369,21 +369,21 @@ public class FirebaseDao {
             else if (condition.getOperation().equals(mContext.getString(R.string.query_condition_lessThanString))) {
                 query = query.whereLessThan(condition.getKey(), condition.getValueString());
             }
-            else if (condition.getOperation().equals(mContext.getString(R.string.query_condition_lessThanInteger))) {
-                query = query.whereLessThan(condition.getKey(), condition.getValueInteger());
+            else if (condition.getOperation().equals(mContext.getString(R.string.query_condition_lessThanNumber))) {
+                query = query.whereLessThan(condition.getKey(), condition.getValueNumber());
             }
             else if (condition.getOperation().equals(mContext.getString(R.string.query_condition_greaterThanOrEqualToString))) {
                 query = query.whereGreaterThanOrEqualTo(condition.getKey(), condition.getValueString());
             }
-            else if (condition.getOperation().equals(mContext.getString(R.string.query_condition_greaterThanOrEqualToInteger))) {
-                query = query.whereGreaterThanOrEqualTo(condition.getKey(), condition.getValueInteger());
+            else if (condition.getOperation().equals(mContext.getString(R.string.query_condition_greaterThanOrEqualToNumber))) {
+                query = query.whereGreaterThanOrEqualTo(condition.getKey(), condition.getValueNumber());
             }
             else if (condition.getOperation().equals(mContext.getString(R.string.query_condition_orderBy))) {
                 if (condition.getValueBoolean()) query = query.orderBy(condition.getKey());
                 else query = query.orderBy(condition.getKey(), Query.Direction.DESCENDING);
             }
             else if (condition.getOperation().equals(mContext.getString(R.string.query_condition_limit))) {
-                query = query.limit(condition.getValueInteger());
+                query = query.limit((long) condition.getValueNumber());
             }
 
             //Note: the following conditions must occur after "orderBy"
@@ -394,10 +394,10 @@ public class FirebaseDao {
                 query = query.startAfter(condition.getValueString());
             }
             else if (condition.getOperation().equals(mContext.getString(R.string.query_condition_startAtInteger))) {
-                query = query.startAt(condition.getValueInteger());
+                query = query.startAt(condition.getValueNumber());
             }
             else if (condition.getOperation().equals(mContext.getString(R.string.query_condition_startAfterInteger))) {
-                query = query.startAfter(condition.getValueInteger());
+                query = query.startAfter(condition.getValueNumber());
             }
             else if (condition.getOperation().equals(mContext.getString(R.string.query_condition_endAtString))) {
                 query = query.endAt(condition.getValueString());
@@ -406,10 +406,10 @@ public class FirebaseDao {
                 query = query.endBefore(condition.getValueString());
             }
             else if (condition.getOperation().equals(mContext.getString(R.string.query_condition_endAtInteger))) {
-                query = query.endAt(condition.getValueInteger());
+                query = query.endAt(condition.getValueNumber());
             }
             else if (condition.getOperation().equals(mContext.getString(R.string.query_condition_endBeforeInteger))) {
-                query = query.endBefore(condition.getValueInteger());
+                query = query.endBefore(condition.getValueNumber());
             }
         }
         return query;

@@ -60,6 +60,8 @@ public class TaskSelectionActivity extends AppCompatActivity implements
     private Menu mMenu;
     private FirebaseDao mFirebaseDao;
     private User mUser;
+    private boolean mFoundationNotCreatedYet;
+    private boolean mFamilyNotCreatedYet;
     //endregion
 
 
@@ -176,6 +178,9 @@ public class TaskSelectionActivity extends AppCompatActivity implements
         mFirebaseAuth = FirebaseAuth.getInstance();
         mCurrentFirebaseUser = mFirebaseAuth.getCurrentUser();
         mBinding =  ButterKnife.bind(this);
+
+        mFoundationNotCreatedYet = true;
+        mFamilyNotCreatedYet = true;
 
         mFindPetButton.setVisibility(View.GONE);
         mGetAdviceButton.setVisibility(View.GONE);
@@ -306,6 +311,7 @@ public class TaskSelectionActivity extends AppCompatActivity implements
         mPleaseSignInTextView.setVisibility(View.VISIBLE);
     }
     private void openPetList() {
+        if (mFamilyNotCreatedYet) return;
         Intent intent = new Intent(this, PetListActivity.class);
         Bundle bundle = new Bundle();
         bundle.putParcelable(getString(R.string.bundled_user), mUser);
@@ -314,6 +320,7 @@ public class TaskSelectionActivity extends AppCompatActivity implements
         startActivity(intent);
     }
     private void openPetProfile(@Nonnull Pet pet) {
+        if (mFoundationNotCreatedYet) return;
         Intent intent = new Intent(this, UpdatePetActivity.class);
         Bundle bundle = new Bundle();
         bundle.putString(getString(R.string.selected_pet_id), pet.getUI());
@@ -349,15 +356,23 @@ public class TaskSelectionActivity extends AppCompatActivity implements
     @Override public void onFamilyListFound(List<Family> families) {
         //If the family wasn't defined yet, go to the family update screen
         if (families.size() == 0 || families.get(0).getPn().equals("")) {
+            mFamilyNotCreatedYet = false;
             Toast.makeText(getApplicationContext(), R.string.please_fill_user_profile, Toast.LENGTH_SHORT).show();
             Utilities.startUpdateFamilyProfileActivity(TaskSelectionActivity.this);
+        }
+        else {
+            mFamilyNotCreatedYet = false;
         }
     }
     @Override public void onFoundationListFound(List<Foundation> foundations) {
         //If the family wasn't defined yet, go to the family update screen
         if (foundations.size() == 0 || foundations.get(0).getNm().equals("")) {
+            mFoundationNotCreatedYet = false;
             Toast.makeText(getApplicationContext(), R.string.please_fill_user_profile, Toast.LENGTH_SHORT).show();
             Utilities.startUpdateFoundationProfileActivity(TaskSelectionActivity.this);
+        }
+        else {
+            mFoundationNotCreatedYet = false;
         }
     }
     @Override public void onUserListFound(List<User> users) {

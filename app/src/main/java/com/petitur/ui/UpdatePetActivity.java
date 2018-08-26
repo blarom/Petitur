@@ -34,6 +34,7 @@ import android.widget.Toast;
 import com.firebase.ui.auth.IdpResponse;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.GeoPoint;
 import com.petitur.R;
 import com.petitur.adapters.ImagesRecycleViewAdapter;
 import com.petitur.adapters.SimpleTextRecycleViewAdapter;
@@ -337,6 +338,7 @@ public class UpdatePetActivity extends AppCompatActivity implements
         dogBreeds.add(0,getString(R.string.mixed));
         ArrayAdapter<String> mAdapterBreed = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, dogBreeds);
         mAutoCompleteTextViewBreed.setAdapter(mAdapterBreed);
+        mAutoCompleteTextViewBreed.setText(dogBreeds.get(0));
         mAutoCompleteTextViewBreed.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View arg0) {
@@ -527,17 +529,20 @@ public class UpdatePetActivity extends AppCompatActivity implements
             double geoAddressLongitude = address.getLongitude();
 
             mPet.setGaC(geoAddressCountry);
-            mPet.setGaLt(Double.toString(geoAddressLatitude));
-            mPet.setGaLg(Double.toString(geoAddressLongitude));
+            mPet.setGeo(new GeoPoint(geoAddressLatitude, geoAddressLongitude));
         }
 
         mPet.setHs(mEditTextHistory.getText().toString());
 
         mPet.setTp(mSpinnerType.getSelectedItem().toString());
         mPet.setGn(mSpinnerGender.getSelectedItem().toString());
-        int years = (mAgeYearsEditText.getText().toString().equals("")) ? 0 : Integer.parseInt(mAgeYearsEditText.getText().toString());
-        int months = (mAgeYearsEditText.getText().toString().equals("")) ? 0 : Integer.parseInt(mAgeMonthsEditText.getText().toString());
+
+        String yearsString = mAgeYearsEditText.getText().toString();
+        String monthsString = mAgeMonthsEditText.getText().toString();
+        int years = (yearsString.equals("") || yearsString.length()>2) ? 0 : Integer.parseInt(yearsString);
+        int months = (monthsString.equals("") || monthsString.length()>2) ? 0 : Integer.parseInt(monthsString);
         mPet.setAg(Utilities.getAgeFromYearsMonths(years, months));
+        mPet.setAgR(Utilities.getAgeRange(this, mPet.getTp(), years, months));
         mPet.setSz(mSpinnerSize.getSelectedItem().toString());
         mPet.setRc(mAutoCompleteTextViewBreed.getText().toString());
 

@@ -4,6 +4,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.text.TextUtils;
 
+import com.google.firebase.firestore.GeoPoint;
 import com.petitur.resources.Utilities;
 
 import java.util.Arrays;
@@ -37,8 +38,6 @@ public class Foundation implements Parcelable {
         cE = in.readString();
         iUT = in.createStringArrayList();
         gac = in.readString();
-        galt = in.readString();
-        galg = in.readString();
     }
 
     public static final Creator<Foundation> CREATOR = new Creator<Foundation>() {
@@ -164,20 +163,12 @@ public class Foundation implements Parcelable {
         this.gac = gac;
     }
 
-    private String galt = "0.0"; //Geocoder address Latitude (requires internet to update)
-    public String getGaLt() {
-        return galt;
+    private GeoPoint geo; //Geopoint with latitude then longitude
+    public GeoPoint getGeo() {
+        return geo;
     }
-    public void setGaLt(String galt) {
-        this.galt = galt;
-    }
-
-    private String galg = "0.0"; //Geocoder address Longitude (requires internet to update)
-    public String getGaLg() {
-        return galg;
-    }
-    public void setGaLg(String galg) {
-        this.galg = galg;
+    public void setGeo(GeoPoint geo) {
+        this.geo = geo;
     }
 
     @Override
@@ -200,7 +191,5 @@ public class Foundation implements Parcelable {
         parcel.writeString(cE);
         parcel.writeStringList(iUT);
         parcel.writeString(gac);
-        parcel.writeString(galt);
-        parcel.writeString(galg);
     }
 }

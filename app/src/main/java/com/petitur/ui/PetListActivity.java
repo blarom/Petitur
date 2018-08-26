@@ -36,6 +36,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.petitur.R;
 import com.petitur.adapters.PetListRecycleViewAdapter;
+import com.petitur.adapters.SortOptionsRecycleViewAdapter;
 import com.petitur.data.Family;
 import com.petitur.data.FirebaseDao;
 import com.petitur.data.Foundation;
@@ -60,7 +61,8 @@ public class PetListActivity extends AppCompatActivity implements
         PetListRecycleViewAdapter.PetListItemClickHandler,
         CustomLocationListener.LocationListenerHandler,
         LoaderManager.LoaderCallbacks<String>,
-        ImageSyncAsyncTaskLoader.OnImageSyncOperationsHandler, FirebaseDao.FirebaseOperationsHandler {
+        ImageSyncAsyncTaskLoader.OnImageSyncOperationsHandler,
+        FirebaseDao.FirebaseOperationsHandler {
 
 
     //regionParameters
@@ -71,7 +73,6 @@ public class PetListActivity extends AppCompatActivity implements
     private Unbinder mBinding;
     private User mUser;
     private PetListRecycleViewAdapter mPetsRecyclerViewAdapter;
-    private int mDistance;
     private double mUserLongitude;
     private double mUserLatitude;
     private List<Pet> mPetList;
@@ -79,6 +80,7 @@ public class PetListActivity extends AppCompatActivity implements
     private LocationManager mLocationManager;
     private CustomLocationListener mLocationListener;
     private List<Pet> mPetsAtDistance;
+    private List<Pet> mSortedPetsAtDistance;
     private String mProfileType;
     private String mRequestedDogProfileUI;
     private String mRequestedFamilyProfileUI;
@@ -94,10 +96,10 @@ public class PetListActivity extends AppCompatActivity implements
     private List<String> mSelectedBreedsList;
     private List<String> mSelectedCoatLengthsList;
     private String mSelectedGender;
-    private String mSelectedAge;
+    private String mSelectedAgeRange;
     private String mSelectedSize;
     private String mTempSelectedGender;
-    private String mTempSelectedAge;
+    private String mTempSelectedAgeRange;
     private String mTempSelectedSize;
     private List<String> mPetGendersList;
     private List<String> mPetAgesList;
@@ -134,6 +136,16 @@ public class PetListActivity extends AppCompatActivity implements
     private String mTempSelectedParrotBreed;
     private List<String> mAvailableCatBreeds;
     private ArrayList<String> mAvailableParrotBreeds;
+    private double[] mCoordinateLimits;
+    private int mTempPetDistance;
+    private List<Integer> mPetDistances;
+    private String mTempSortField;
+    private SortOptionsRecycleViewAdapter mListAdapter;
+    private String mSortField;
+    private boolean mSortAscending;
+    private boolean mTempSortAscending;
+    private List<String> mSortOptions;
+    private String mTempSelectedBreed;
     //endregion
 
 
@@ -201,8 +213,8 @@ public class PetListActivity extends AppCompatActivity implements
 
         mPetAgesList = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.pet_ages)));
         mPetAgesList.add(0,getString(R.string.filter_option_any));
-        mTempSelectedAge = mPetAgesList.get(0);
-        mSelectedAge = mPetAgesList.get(0);
+        mTempSelectedAgeRange = mPetAgesList.get(0);
+        mSelectedAgeRange = mPetAgesList.get(0);
 
         mPetSizesList = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.pet_sizes)));
         mPetSizesList.add(0,getString(R.string.filter_option_any));
@@ -236,6 +248,7 @@ public class PetListActivity extends AppCompatActivity implements
         mTempSelectedSpecialNeeds = false;
 
         mPetDistance = getResources().getInteger(R.integer.default_pet_distance);
+        mTempPetDistance = mPetDistance;
     }
     private void getFamilyProfileFromFirebase() {
         if (mCurrentFirebaseUser != null) {
@@ -278,7 +291,7 @@ public class PetListActivity extends AppCompatActivity implements
         //Setting up the RecyclerView adapters
         mPetsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        if (mPetsRecyclerViewAdapter ==null) mPetsRecyclerViewAdapter = new PetListRecycleViewAdapter(this, this, null);
+        if (mPetsRecyclerViewAdapter ==null) mPetsRecyclerViewAdapter = new PetListRecycleViewAdapter(this, this, null, mUserLatitude, mUserLongitude);
         mPetsRecyclerView.setAdapter(mPetsRecyclerViewAdapter);
         mPetsRecyclerViewAdapter.setSelectedProfile(mSelectedProfileIndex);
 
@@ -331,6 +344,31 @@ public class PetListActivity extends AppCompatActivity implements
         }
         if (mLocationListener != null) mLocationListener = null;
     }
+    private void setSearchParametersEqualToTempParameters() {
+
+        //Filter Buttons
+        mSelectedPetType = mTempSelectedType;
+        mSelectedGender = mTempSelectedGender;
+        mSelectedAgeRange = mTempSelectedAgeRange;
+        mSelectedSize = mTempSelectedSize;
+
+        //Filter TextViews
+        mPetDistance = mTempPetDistance;
+        mSelectedBreed = mTempSelectedBreed;
+        mSelectedCoatLength = mTempSelectedCoatLength;
+
+        //Filter Checkboxes
+        mSelectedGoodWithKids = mTempSelectedGoodWithKids;
+        mSelectedGoodWithCats = mTempSelectedGoodWithCats;
+        mSelectedGoodWithDogs = mTempSelectedGoodWithDogs;
+        mSelectedCastrated = mTempSelectedCastrated;
+        mSelectedHouseTrained = mTempSelectedHouseTrained;
+        mSelectedSpecialNeeds = mTempSelectedSpecialNeeds;
+
+        //Sort options
+        mSortField = mTempSortField;
+        mSortAscending = mTempSortAscending;
+    }
     private void showFilterDialog() {
 
         //Get the dialog view
@@ -340,6 +378,7 @@ public class PetListActivity extends AppCompatActivity implements
         //region Getting the pet type
         ArrayAdapter<String> spinnerAdapterType = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, mPetTypesList);
         final Spinner dialogFilterSpinnerType = dialogView.findViewById(R.id.dialog_filter_type_spinner);
+        dialogFilterSpinnerType.setSelection(Utilities.getSpinnerPositionFromText(dialogFilterSpinnerType, mTempSelectedType));
         dialogFilterSpinnerType.setAdapter(spinnerAdapterType);
         dialogFilterSpinnerType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -414,11 +453,11 @@ public class PetListActivity extends AppCompatActivity implements
         final ToggleButton dialogFilterButtonAgeYoung = dialogView.findViewById(R.id.dialog_filter_button_age_young);
         final ToggleButton dialogFilterButtonAgeAdult = dialogView.findViewById(R.id.dialog_filter_button_age_adult);
         final ToggleButton dialogFilterButtonAgeSenior = dialogView.findViewById(R.id.dialog_filter_button_age_senior);
-        dialogFilterButtonAgeAny.setChecked(mTempSelectedAge.equals(mPetAgesList.get(0)));
-        dialogFilterButtonAgeToddler.setChecked(mTempSelectedAge.equals(mPetAgesList.get(1)));
-        dialogFilterButtonAgeYoung.setChecked(mTempSelectedAge.equals(mPetAgesList.get(2)));
-        dialogFilterButtonAgeAdult.setChecked(mTempSelectedAge.equals(mPetAgesList.get(3)));
-        dialogFilterButtonAgeSenior.setChecked(mTempSelectedAge.equals(mPetAgesList.get(4)));
+        dialogFilterButtonAgeAny.setChecked(mTempSelectedAgeRange.equals(mPetAgesList.get(0)));
+        dialogFilterButtonAgeToddler.setChecked(mTempSelectedAgeRange.equals(mPetAgesList.get(1)));
+        dialogFilterButtonAgeYoung.setChecked(mTempSelectedAgeRange.equals(mPetAgesList.get(2)));
+        dialogFilterButtonAgeAdult.setChecked(mTempSelectedAgeRange.equals(mPetAgesList.get(3)));
+        dialogFilterButtonAgeSenior.setChecked(mTempSelectedAgeRange.equals(mPetAgesList.get(4)));
         dialogFilterButtonAgeAny.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
@@ -427,14 +466,14 @@ public class PetListActivity extends AppCompatActivity implements
                     dialogFilterButtonAgeYoung.setChecked(false);
                     dialogFilterButtonAgeAdult.setChecked(false);
                     dialogFilterButtonAgeSenior.setChecked(false);
-                    mTempSelectedAge = mPetAgesList.get(0);
+                    mTempSelectedAgeRange = mPetAgesList.get(0);
                 }
                 else if (!dialogFilterButtonAgeToddler.isChecked()
                         && !dialogFilterButtonAgeYoung.isChecked()
                         && !dialogFilterButtonAgeAdult.isChecked()
                         && !dialogFilterButtonAgeSenior.isChecked()) {
                     dialogFilterButtonAgeToddler.setChecked(true);
-                    mTempSelectedAge = mPetAgesList.get(0);
+                    mTempSelectedAgeRange = mPetAgesList.get(0);
                 }
             }
         });
@@ -446,14 +485,14 @@ public class PetListActivity extends AppCompatActivity implements
                     dialogFilterButtonAgeYoung.setChecked(false);
                     dialogFilterButtonAgeAdult.setChecked(false);
                     dialogFilterButtonAgeSenior.setChecked(false);
-                    mTempSelectedAge = mPetAgesList.get(1);
+                    mTempSelectedAgeRange = mPetAgesList.get(1);
                 }
                 else if (!dialogFilterButtonAgeAny.isChecked()
                         && !dialogFilterButtonAgeYoung.isChecked()
                         && !dialogFilterButtonAgeAdult.isChecked()
                         && !dialogFilterButtonAgeSenior.isChecked()) {
                     dialogFilterButtonAgeAny.setChecked(true);
-                    mTempSelectedAge = mPetAgesList.get(0);
+                    mTempSelectedAgeRange = mPetAgesList.get(0);
                 }
             }
         });
@@ -465,14 +504,14 @@ public class PetListActivity extends AppCompatActivity implements
                     dialogFilterButtonAgeToddler.setChecked(false);
                     dialogFilterButtonAgeAdult.setChecked(false);
                     dialogFilterButtonAgeSenior.setChecked(false);
-                    mTempSelectedAge = mPetAgesList.get(2);
+                    mTempSelectedAgeRange = mPetAgesList.get(2);
                 }
                 else if (!dialogFilterButtonAgeAny.isChecked()
                         && !dialogFilterButtonAgeToddler.isChecked()
                         && !dialogFilterButtonAgeAdult.isChecked()
                         && !dialogFilterButtonAgeSenior.isChecked()) {
                     dialogFilterButtonAgeAny.setChecked(true);
-                    mTempSelectedAge = mPetAgesList.get(0);
+                    mTempSelectedAgeRange = mPetAgesList.get(0);
                 }
             }
         });
@@ -484,14 +523,14 @@ public class PetListActivity extends AppCompatActivity implements
                     dialogFilterButtonAgeToddler.setChecked(false);
                     dialogFilterButtonAgeYoung.setChecked(false);
                     dialogFilterButtonAgeSenior.setChecked(false);
-                    mTempSelectedAge = mPetAgesList.get(3);
+                    mTempSelectedAgeRange = mPetAgesList.get(3);
                 }
                 else if (!dialogFilterButtonAgeAny.isChecked()
                         && !dialogFilterButtonAgeToddler.isChecked()
                         && !dialogFilterButtonAgeYoung.isChecked()
                         && !dialogFilterButtonAgeSenior.isChecked()) {
                     dialogFilterButtonAgeAny.setChecked(true);
-                    mTempSelectedAge = mPetAgesList.get(0);
+                    mTempSelectedAgeRange = mPetAgesList.get(0);
                 }
             }
         });
@@ -503,14 +542,14 @@ public class PetListActivity extends AppCompatActivity implements
                     dialogFilterButtonAgeToddler.setChecked(false);
                     dialogFilterButtonAgeYoung.setChecked(false);
                     dialogFilterButtonAgeAdult.setChecked(false);
-                    mTempSelectedAge = mPetAgesList.get(4);
+                    mTempSelectedAgeRange = mPetAgesList.get(4);
                 }
                 else if (!dialogFilterButtonAgeAny.isChecked()
                         && !dialogFilterButtonAgeToddler.isChecked()
                         && !dialogFilterButtonAgeYoung.isChecked()
                         && !dialogFilterButtonAgeAdult.isChecked()) {
                     dialogFilterButtonAgeAny.setChecked(true);
-                    mTempSelectedAge = mPetAgesList.get(0);
+                    mTempSelectedAgeRange = mPetAgesList.get(0);
                 }
             }
         });
@@ -722,7 +761,8 @@ public class PetListActivity extends AppCompatActivity implements
 
         //region Getting the distance
         final EditText dialogFilterEditTextDistance = dialogView.findViewById(R.id.dialog_filter_distance_edittext);
-        dialogFilterEditTextDistance.setText(mPetDistance);
+        String distance = ""+mTempPetDistance/1000;
+        dialogFilterEditTextDistance.setText(distance);
         //endregion
 
         //region Reset button functionality
@@ -743,7 +783,7 @@ public class PetListActivity extends AppCompatActivity implements
                 dialogFilterButtonAgeYoung.setChecked(false);
                 dialogFilterButtonAgeAdult.setChecked(false);
                 dialogFilterButtonAgeSenior.setChecked(false);
-                mTempSelectedAge = mPetAgesList.get(0);
+                mTempSelectedAgeRange = mPetAgesList.get(0);
 
                 dialogFilterButtonSizeAny.setChecked(true);
                 dialogFilterButtonSizeSmall.setChecked(false);
@@ -767,6 +807,9 @@ public class PetListActivity extends AppCompatActivity implements
                 mTempSelectedHouseTrained = false;
                 dialogFilterCheckBoxSpecialNeeds.setChecked(false);
                 mTempSelectedSpecialNeeds = false;
+
+                dialogFilterEditTextDistance.setText("0");
+                mTempPetDistance = 0;
             }
         });
         //endregion
@@ -780,23 +823,12 @@ public class PetListActivity extends AppCompatActivity implements
                     Toast.makeText(getBaseContext(), R.string.could_not_save_preferences, Toast.LENGTH_SHORT).show();
                 }
                 else {
-                    mFamily.setTP(mTempSelectedType);
-                    mFamily.setGP(mTempSelectedGender);
-                    mFamily.setAP(mTempSelectedAge);
-                    mFamily.setSP(mTempSelectedSize);
 
-                    if (mTempSelectedType.equals(getString(R.string.dog))) mFamily.setDRP(dialogFilterAutoCompleteTextViewBreed.getText().toString());
-                    else if (mTempSelectedType.equals(getString(R.string.cat))) mFamily.setCRP(dialogFilterAutoCompleteTextViewBreed.getText().toString());
-                    else if (mTempSelectedType.equals(getString(R.string.parrot))) mFamily.setPRP(dialogFilterAutoCompleteTextViewBreed.getText().toString());
+                    mTempPetDistance = getRequestedDistanceFromUserInput(dialogFilterEditTextDistance.getText().toString());
+                    mTempSelectedBreed = dialogFilterAutoCompleteTextViewBreed.getText().toString();
+                    mTempSelectedCoatLength = dialogFilterAutoCompleteTextViewCoatLength.getText().toString();
 
-                    mFamily.setCLP(mTempSelectedCoatLength);
-
-                    mFamily.setGKP(mTempSelectedGoodWithKids);
-                    mFamily.setGCP(mTempSelectedGoodWithCats);
-                    mFamily.setGDP(mTempSelectedGoodWithDogs);
-                    mFamily.setCsP(mTempSelectedCastrated);
-                    mFamily.setHTP(mTempSelectedHouseTrained);
-                    mFamily.setSNP(mTempSelectedSpecialNeeds);
+                    saveSearchParametersInFamilyProfile();
 
                     mFirebaseDao.updateObject(mFamily);
                 }
@@ -809,25 +841,12 @@ public class PetListActivity extends AppCompatActivity implements
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
 
-                //Buttons
-                mSelectedPetType = mTempSelectedType;
-                mSelectedGender = mTempSelectedGender;
-                mSelectedAge = mTempSelectedAge;
-                mSelectedSize = mTempSelectedSize;
+                mTempPetDistance = getRequestedDistanceFromUserInput(dialogFilterEditTextDistance.getText().toString());
+                mTempSelectedBreed = dialogFilterAutoCompleteTextViewBreed.getText().toString();
+                mTempSelectedCoatLength = dialogFilterAutoCompleteTextViewCoatLength.getText().toString();
 
-                //TextViews
-                mPetDistance = getRequestedDistanceFromUserInput(dialogFilterEditTextDistance.getText().toString());
-                mSelectedBreed = dialogFilterAutoCompleteTextViewBreed.getText().toString();
-                mSelectedCoatLength = dialogFilterAutoCompleteTextViewCoatLength.getText().toString();
-
-                //Checkboxes
-                mSelectedGoodWithKids = mTempSelectedGoodWithKids;
-                mSelectedGoodWithCats = mTempSelectedGoodWithCats;
-                mSelectedGoodWithDogs = mTempSelectedGoodWithDogs;
-                mSelectedCastrated = mTempSelectedCastrated;
-                mSelectedHouseTrained = mTempSelectedHouseTrained;
-                mSelectedSpecialNeeds = mTempSelectedSpecialNeeds;
-
+                saveSearchParametersInFamilyProfile();
+                setSearchParametersEqualToTempParameters();
                 requestFilteredListFromFirebase();
 
                 dialog.dismiss();
@@ -847,128 +866,249 @@ public class PetListActivity extends AppCompatActivity implements
         //endregion
 
     }
+    private void showSortDialog() {
+
+        //Get the dialog view
+        LayoutInflater inflater = LayoutInflater.from(this);
+        View dialogView = inflater.inflate(R.layout.dialog_sort, null);
+
+        //region Setting the list behavior
+        final RecyclerView dialogSortList = dialogView.findViewById(R.id.dialog_sort_list);
+        dialogSortList.setLayoutManager(new LinearLayoutManager(this));
+
+        mSortOptions = new ArrayList<>();
+        mSortOptions.add(getString(R.string.distance));
+        mSortOptions.add(getString(R.string.age));
+        mSortOptions.add(getString(R.string.breed));
+
+        SortOptionsRecycleViewAdapter.SortOptionClickHandler sortOptionClickHandler = new SortOptionsRecycleViewAdapter.SortOptionClickHandler() {
+            @Override
+            public void onSortOptionClick(int clickedItemIndex) {
+                mTempSortField = mSortOptions.get(clickedItemIndex);
+                if (mListAdapter!=null) mListAdapter.setSelectedOption(clickedItemIndex);
+            }
+        };
+        mListAdapter = new SortOptionsRecycleViewAdapter(this, sortOptionClickHandler, mSortOptions);
+        dialogSortList.setAdapter(mListAdapter);
+        for (int i=0; i< mSortOptions.size(); i++) {
+            String sortOption = mSortOptions.get(i);
+            if (sortOption.equals(mTempSortField)) {
+                mListAdapter.setSelectedOption(i);
+                break;
+            }
+        }
+        //endregion
+
+        //region Setting the order button behavior
+        final ToggleButton orderButton = dialogView.findViewById(R.id.dialog_sort_order);
+        orderButton.setChecked(mTempSortAscending);
+        orderButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                mTempSortAscending = isChecked;
+            }
+        });
+        //endregion
+
+        //region Building the dialog
+        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
+        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+
+                mSortField = mTempSortField;
+                mSortAscending = mTempSortAscending;
+
+                saveSearchParametersInFamilyProfile();
+
+                //Sorting the pets
+                if (mPetsAtDistance!=null && mPetsAtDistance.size()>0) {
+                    sortPets();
+                    mPetsRecyclerViewAdapter.setContents(mPetsAtDistance);
+                }
+
+                //TODO: update only the data that was changed to lower bandwidth usage
+                mFirebaseDao.updateObject(mFamily);
+
+                dialog.dismiss();
+            }
+        });
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                dialog.dismiss();
+            }
+        });
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) builder.setView(dialogView);
+        else builder.setMessage(R.string.device_version_too_low);
+
+        android.app.AlertDialog dialog = builder.create();
+        dialog.show();
+        //endregion
+
+    }
+    private void saveSearchParametersInFamilyProfile() {
+        mFamily.setTP(mTempSelectedType);
+        mFamily.setGP(mTempSelectedGender);
+        mFamily.setAP(mTempSelectedAgeRange);
+        mFamily.setSP(mTempSelectedSize);
+
+        if (mTempSelectedType.equals(getString(R.string.dog))) mFamily.setDRP(mTempSelectedBreed);
+        else if (mTempSelectedType.equals(getString(R.string.cat))) mFamily.setCRP(mTempSelectedBreed);
+        else if (mTempSelectedType.equals(getString(R.string.parrot))) mFamily.setPRP(mTempSelectedBreed);
+
+        mFamily.setCLP(mTempSelectedCoatLength);
+
+        mFamily.setGKP(mTempSelectedGoodWithKids);
+        mFamily.setGCP(mTempSelectedGoodWithCats);
+        mFamily.setGDP(mTempSelectedGoodWithDogs);
+        mFamily.setCsP(mTempSelectedCastrated);
+        mFamily.setHTP(mTempSelectedHouseTrained);
+        mFamily.setSNP(mTempSelectedSpecialNeeds);
+
+        mFamily.setDP(mTempPetDistance);
+
+        mFamily.setSrT(mTempSortField);
+        mFamily.setSrA(mTempSortAscending);
+    }
     private void requestFilteredListFromFirebase() {
 
         List<QueryCondition> queryConditions = new ArrayList<>();
         QueryCondition queryCondition;
 
         //Setting the pet type
-        if (!mSelectedPetType.equals(getString(R.string.filter_option_any))) {
-            queryCondition = new QueryCondition("equalsString", "tp", mSelectedPetType, true, 0);
+        if (!TextUtils.isEmpty(mSelectedPetType) && !mSelectedPetType.equals(getString(R.string.filter_option_any))) {
+            queryCondition = new QueryCondition(getString(R.string.query_condition_equalsString), "tp", mSelectedPetType, true, 0);
             queryConditions.add(queryCondition);
         }
 
         //Setting the gender
-        queryCondition = new QueryCondition("equalsString", "gn", mSelectedGender, true, 0);
-        queryConditions.add(queryCondition);
+        if (!TextUtils.isEmpty(mSelectedGender) && !mSelectedGender.equals(getString(R.string.filter_option_any))) {
+            queryCondition = new QueryCondition(getString(R.string.query_condition_equalsString), "gn", mSelectedGender, true, 0);
+            queryConditions.add(queryCondition);
+        }
+
+        //Setting the age range
+        if (!TextUtils.isEmpty(mSelectedAgeRange) && !mSelectedAgeRange.equals(getString(R.string.filter_option_any))) {
+            queryCondition = new QueryCondition(getString(R.string.query_condition_equalsString), "agR", mSelectedAgeRange, true, 0);
+            queryConditions.add(queryCondition);
+        }
 
         //Setting the size
-        if (!mSelectedSize.equals(getString(R.string.filter_option_any))) {
-            queryCondition = new QueryCondition("equalsString", "sz", mSelectedSize, true, 0);
+        if (!TextUtils.isEmpty(mSelectedSize) && !mSelectedSize.equals(getString(R.string.filter_option_any))) {
+            queryCondition = new QueryCondition(getString(R.string.query_condition_equalsString), "sz", mSelectedSize, true, 0);
             queryConditions.add(queryCondition);
         }
 
         //Setting the breed/race
-        if (mSelectedBreed.equals(getString(R.string.filter_option_any))) {
-            queryCondition = new QueryCondition("equalsString", "rc", mSelectedBreed, true, 0);
+        if (!TextUtils.isEmpty(mSelectedBreed) && !mSelectedBreed.equals(getString(R.string.filter_option_any))) {
+            queryCondition = new QueryCondition(getString(R.string.query_condition_equalsString), "rc", mSelectedBreed, true, 0);
             queryConditions.add(queryCondition);
         }
 
         //Setting the coat lengths
-        if (!mSelectedCoatLength.equals(getString(R.string.filter_option_any))) {
-            queryCondition = new QueryCondition("equalsString", "rc", mSelectedCoatLength, true, 0);
+        if (!TextUtils.isEmpty(mSelectedCoatLength) && !mSelectedCoatLength.equals(getString(R.string.filter_option_any))) {
+            queryCondition = new QueryCondition(getString(R.string.query_condition_equalsString), "rc", mSelectedCoatLength, true, 0);
             queryConditions.add(queryCondition);
         }
 
         //Setting the checkbox settings
         if (mSelectedGoodWithKids) {
-            queryCondition = new QueryCondition("equalsBoolean", "gk", "", mSelectedGoodWithKids, 0);
+            queryCondition = new QueryCondition(getString(R.string.query_condition_equalsBoolean), "gk", "", mSelectedGoodWithKids, 0);
             queryConditions.add(queryCondition);
         }
         if (mSelectedGoodWithCats) {
-            queryCondition = new QueryCondition("equalsBoolean", "gc", "", mSelectedGoodWithCats, 0);
+            queryCondition = new QueryCondition(getString(R.string.query_condition_equalsBoolean), "gc", "", mSelectedGoodWithCats, 0);
             queryConditions.add(queryCondition);
         }
         if (mSelectedGoodWithDogs) {
-            queryCondition = new QueryCondition("equalsBoolean", "gd", "", mSelectedGoodWithDogs, 0);
+            queryCondition = new QueryCondition(getString(R.string.query_condition_equalsBoolean), "gd", "", mSelectedGoodWithDogs, 0);
             queryConditions.add(queryCondition);
         }
         if (mSelectedCastrated) {
-            queryCondition = new QueryCondition("equalsBoolean", "cs", "", mSelectedCastrated, 0);
+            queryCondition = new QueryCondition(getString(R.string.query_condition_equalsBoolean), "cs", "", mSelectedCastrated, 0);
             queryConditions.add(queryCondition);
         }
         if (mSelectedHouseTrained) {
-            queryCondition = new QueryCondition("equalsBoolean", "ht", "", mSelectedHouseTrained, 0);
+            queryCondition = new QueryCondition(getString(R.string.query_condition_equalsBoolean), "ht", "", mSelectedHouseTrained, 0);
             queryConditions.add(queryCondition);
         }
         if (mSelectedSpecialNeeds) {
-            queryCondition = new QueryCondition("equalsBoolean", "sn", "", mSelectedSpecialNeeds, 0);
+            queryCondition = new QueryCondition(getString(R.string.query_condition_equalsBoolean), "sn", "", mSelectedSpecialNeeds, 0);
             queryConditions.add(queryCondition);
         }
 
         //Limiting the search to the user's state (if it's not null) or country
         //if (!TextUtils.isEmpty(mFamily.getSe())) { //TODO: stub - complete country/state selection when creating a pet
         if (false) {
-            queryCondition = new QueryCondition("equalsString", "se", "Israel", mSelectedSpecialNeeds, 0);
+            queryCondition = new QueryCondition(getString(R.string.query_condition_equalsString), "se", "Israel", mSelectedSpecialNeeds, 0);
             queryConditions.add(queryCondition);
         }
         else {
-            queryCondition = new QueryCondition("equalsString", "cn", "Israel", mSelectedSpecialNeeds, 0);
+            queryCondition = new QueryCondition(getString(R.string.query_condition_equalsString), "cn", "Israel", mSelectedSpecialNeeds, 0);
             queryConditions.add(queryCondition);
         }
 
-        //Setting the age range
-        int[] ageBorders = new int[]{0, 0, 0};
-        if (mSelectedPetType.equals(getString(R.string.dog))) ageBorders = getResources().getIntArray(R.array.dog_age_borders);
-        else if (mSelectedPetType.equals(getString(R.string.cat))) ageBorders = getResources().getIntArray(R.array.cat_age_borders);
-        else if (mSelectedPetType.equals(getString(R.string.parrot))) ageBorders = getResources().getIntArray(R.array.parrot_age_borders);
+        //Setting the latitude limits based on the distance (longitude is ignored since Firestore does not support full GeoPoint comparison, see https://github.com/firebase/firebase-js-sdk/issues/826)
+        mCoordinateLimits = Utilities.getCoordinateLimitsAroundLatLong(mUserLatitude, mUserLongitude, mPetDistance);
 
-        if (mSelectedAge.equals(mPetAgesList.get(1))) {
-            queryCondition = new QueryCondition(getString(R.string.query_condition_lessThanInteger), "ag", "", true, ageBorders[0]);
-            queryConditions.add(queryCondition);
-        }
-        else if (mSelectedAge.equals(mPetAgesList.get(2))) {
-            queryCondition = new QueryCondition(getString(R.string.query_condition_greaterThanOrEqualToInteger), "ag", "", true, ageBorders[0]);
-            queryConditions.add(queryCondition);
-            queryCondition = new QueryCondition(getString(R.string.query_condition_lessThanInteger), "ag", "", true, ageBorders[1]);
-            queryConditions.add(queryCondition);
-        }
-        else if (mSelectedAge.equals(mPetAgesList.get(3))) {
-            queryCondition = new QueryCondition(getString(R.string.query_condition_greaterThanOrEqualToInteger), "ag", "", true, ageBorders[1]);
-            queryConditions.add(queryCondition);
-            queryCondition = new QueryCondition(getString(R.string.query_condition_lessThanInteger), "ag", "", true, ageBorders[2]);
-            queryConditions.add(queryCondition);
-        }
-        else if (mSelectedAge.equals(mPetAgesList.get(3))) {
-            queryCondition = new QueryCondition(getString(R.string.query_condition_greaterThanOrEqualToInteger), "ag", "", true, ageBorders[2]);
-            queryConditions.add(queryCondition);
-        }
-
-        //Setting the limit to the number of results
-        queryCondition = new QueryCondition(getString(R.string.query_condition_limit), "", "", true, 40);
-        queryConditions.add(queryCondition);
+//        //TODO: improve this when Firestore upgrades its geo capabilities, see: https://stackoverflow.com/questions/46630507/how-to-run-a-geo-nearby-query-with-firestore
+//        queryCondition = new QueryCondition(getString(R.string.query_condition_greaterThanOrEqualToNumber), "geo", "", true, mCoordinateLimits[2]);
+//        queryConditions.add(queryCondition);
+//        queryCondition = new QueryCondition(getString(R.string.query_condition_lessThanNumber), "geo", "", true, mCoordinateLimits[3]);
+//        queryConditions.add(queryCondition);
+//
+//        //Setting the limit to the number of results
+//        queryCondition = new QueryCondition(getString(R.string.query_condition_limit), "", "", true, 40);
+//        queryConditions.add(queryCondition);
 
         //Requesting the list
         showLoadingIndicator();
         mFirebaseDao.requestObjectsWithConditions(new Pet(), queryConditions);
     }
-    private void updateObjectListAccordingToDistance() {
+    private void sortAndDisplayPetList() {
 
-        mPetsAtDistance = (List<Pet>) Utilities.getObjectsWithinDistance(this, mPetList, mUserLatitude, mUserLongitude, mPetDistance);
+        getPetsAtDistance();
+        sortPets();
         startImageSyncThread();
         hideLoadingIndicator();
         mPetsRecyclerViewAdapter.setContents(mPetsAtDistance);
     }
+    private void sortPets() {
+
+        Pet[] pets = new Pet[mPetsAtDistance.size()];
+        pets = mPetsAtDistance.toArray(pets);
+
+        if (mSortField.equals(getString(R.string.distance)) && mSortAscending) Arrays.sort(pets, Pet.PetDistanceComparatorAscending);
+        else if (mSortField.equals(getString(R.string.distance)) && !mSortAscending) Arrays.sort(pets, Pet.PetDistanceComparatorDescending);
+        else if (mSortField.equals(getString(R.string.age)) && mSortAscending) Arrays.sort(pets, Pet.PetAgeComparatorAscending);
+        else if (mSortField.equals(getString(R.string.age)) && !mSortAscending) Arrays.sort(pets, Pet.PetAgeComparatorDescending);
+        else if (mSortField.equals(getString(R.string.breed)) && mSortAscending) Arrays.sort(pets, Pet.PetBreedComparatorAscending);
+        else if (mSortField.equals(getString(R.string.breed)) && !mSortAscending) Arrays.sort(pets, Pet.PetBreedComparatorDescending);
+        else Arrays.sort(pets, Pet.PetDistanceComparatorAscending);
+
+        mPetsAtDistance = Arrays.asList(pets);
+    }
+    private void getPetsAtDistance() {
+        mPetsAtDistance = new ArrayList<>();
+        mPetDistances = new ArrayList<>();
+        for (Pet pet : mPetList) {
+            int distance = Utilities.getDistanceFromLatLong(mUserLatitude, mUserLongitude, pet.getGeo().getLatitude(), pet.getGeo().getLongitude());
+            if (distance <= mPetDistance) {
+                pet.setDt(distance);
+                mPetsAtDistance.add(pet);
+            }
+        }
+    }
     private void setTempFiltersAccordingToFamilyPreferences() {
 
-        mTempSelectedType = mFamily.getTP();
-        mTempSelectedGender = mFamily.getGP();
-        mTempSelectedAge = mFamily.getAP();
-        mTempSelectedSize = mFamily.getSP();
-        mTempSelectedDogBreed = mFamily.getDRP();
-        mTempSelectedCatBreed = mFamily.getCRP();
-        mTempSelectedParrotBreed = mFamily.getPRP();
-        mTempSelectedCoatLength = mFamily.getCLP();
+        if (!TextUtils.isEmpty(mFamily.getTP())) mTempSelectedType = mFamily.getTP();
+        if (!TextUtils.isEmpty(mFamily.getGP())) mTempSelectedGender = mFamily.getGP();
+        if (!TextUtils.isEmpty(mFamily.getAP())) mTempSelectedAgeRange = mFamily.getAP();
+        if (!TextUtils.isEmpty(mFamily.getSP())) mTempSelectedSize = mFamily.getSP();
+        if (!TextUtils.isEmpty(mFamily.getDRP())) mTempSelectedDogBreed = mFamily.getDRP();
+        if (!TextUtils.isEmpty(mFamily.getCRP())) mTempSelectedCatBreed = mFamily.getCRP();
+        if (!TextUtils.isEmpty(mFamily.getPRP())) mTempSelectedParrotBreed = mFamily.getPRP();
+        if (!TextUtils.isEmpty(mFamily.getCLP())) mTempSelectedCoatLength = mFamily.getCLP();
 
         mTempSelectedGoodWithKids = mFamily.getGKP();
         mTempSelectedGoodWithCats = mFamily.getGCP();
@@ -977,22 +1117,32 @@ public class PetListActivity extends AppCompatActivity implements
         mTempSelectedHouseTrained = mFamily.getHTP();
         mTempSelectedSpecialNeeds = mFamily.getSNP();
 
-        mPetDistance = mFamily.getdP();
+        mTempPetDistance = mFamily.getDP();
+    }
+    private void setTempSortParametersAccordingToFamilyPreferences() {
+        if (!TextUtils.isEmpty(mFamily.getSrT())) mTempSortField = mFamily.getSrT();
+        else mTempSortField = getString(R.string.distance);
+
+        mTempSortAscending = mFamily.getSrA();
     }
 
 
     //View click listeners
     @OnClick(R.id.pet_list_filter_button) public void onFilterButtonClick() {
+        setTempFiltersAccordingToFamilyPreferences();
+        setSearchParametersEqualToTempParameters();
         showFilterDialog();
     }
     @OnClick(R.id.pet_list_sort_button) public void onSortButtonClick() {
-
+        setTempSortParametersAccordingToFamilyPreferences();
+        setSearchParametersEqualToTempParameters();
+        showSortDialog();
     }
 
 
     //Communication with other classes:
 
-    //Communication with RecyclerView adapter
+    //Communication with RecyclerView adapters
     @Override public void onPetListItemClick(int clickedItemIndex) {
 
     }
@@ -1013,10 +1163,19 @@ public class PetListActivity extends AppCompatActivity implements
 
     //Communication with Loader
     @NonNull @Override public Loader<String> onCreateLoader(int id, @Nullable Bundle args) {
-        return null;
+
+        if (id == LIST_MAIN_IMAGES_SYNC_LOADER && mImageSyncAsyncTaskLoader==null) {
+            mImageSyncAsyncTaskLoader =  new ImageSyncAsyncTaskLoader(this, getString(R.string.task_sync_list_main_images),
+                    mProfileType, mPetsAtDistance, null, null, this);
+            return mImageSyncAsyncTaskLoader;
+        }
+        return new ImageSyncAsyncTaskLoader(this, "", null, null, null, null, this);
     }
     @Override public void onLoadFinished(@NonNull Loader<String> loader, String data) {
-
+        if (loader.getId() == LIST_MAIN_IMAGES_SYNC_LOADER) {
+            mPetsRecyclerViewAdapter.notifyDataSetChanged();
+            stopImageSyncThread();
+        }
     }
     @Override public void onLoaderReset(@NonNull Loader<String> loader) {
 
@@ -1031,7 +1190,7 @@ public class PetListActivity extends AppCompatActivity implements
     @Override public void onPetListFound(List<Pet> pets) {
         if (pets == null) return;
         mPetList = pets;
-        updateObjectListAccordingToDistance();
+        sortAndDisplayPetList();
     }
     @Override public void onFamilyListFound(List<Family> families) {
         if (families == null) return;
@@ -1043,7 +1202,10 @@ public class PetListActivity extends AppCompatActivity implements
         }
         else {
             mFamily = families.get(0);
+            setTempSortParametersAccordingToFamilyPreferences();
             setTempFiltersAccordingToFamilyPreferences();
+            setSearchParametersEqualToTempParameters();
+            requestFilteredListFromFirebase();
         }
     }
     @Override public void onFoundationListFound(List<Foundation> foundations) {
@@ -1059,4 +1221,5 @@ public class PetListActivity extends AppCompatActivity implements
     @Override public void onImageUploaded(List<String> uploadTimes) {
 
     }
+
 }

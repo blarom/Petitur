@@ -298,8 +298,8 @@ public class MapActivity extends AppCompatActivity implements
         MarkerOptions currentMarkerOptions;
         if (mPetsArrayList !=null) {
             for (Pet pet : mPetsArrayList) {
-                latitude = Double.parseDouble(pet.getGaLt());
-                longitude = Double.parseDouble(pet.getGaLg());
+                latitude = pet.getGeo().getLatitude();
+                longitude = pet.getGeo().getLongitude();
                 coords = new LatLng(latitude, longitude);
                 currentMarkerOptions = new MarkerOptions().position(coords).title(pet.getNm());
                 currentMarker = mMap.addMarker(currentMarkerOptions);
@@ -309,8 +309,8 @@ public class MapActivity extends AppCompatActivity implements
         }
         if (mFamiliesArrayList!=null) {
             for (Family family : mFamiliesArrayList) {
-                latitude = Double.parseDouble(family.getGaLt());
-                longitude = Double.parseDouble(family.getGaLg());
+                latitude = family.getGeo().getLatitude();
+                longitude = family.getGeo().getLongitude();
                 coords = new LatLng(latitude, longitude);
                 currentMarkerOptions = new MarkerOptions().position(coords).title(family.getPn());
                 currentMarker = mMap.addMarker(currentMarkerOptions);
@@ -320,8 +320,8 @@ public class MapActivity extends AppCompatActivity implements
         }
         if (mFoundationsArrayList!=null) {
             for (Foundation foundation : mFoundationsArrayList) {
-                latitude = Double.parseDouble(foundation.getGaLt());
-                longitude = Double.parseDouble(foundation.getGaLg());
+                latitude = foundation.getGeo().getLatitude();
+                longitude = foundation.getGeo().getLongitude();
                 coords = new LatLng(latitude, longitude);
                 currentMarkerOptions = new MarkerOptions().position(coords).title(foundation.getNm());
                 currentMarker = mMap.addMarker(currentMarkerOptions);

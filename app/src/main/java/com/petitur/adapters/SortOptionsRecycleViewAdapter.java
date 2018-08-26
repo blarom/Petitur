@@ -8,6 +8,8 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.petitur.R;
@@ -17,31 +19,32 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class SimpleTextRecycleViewAdapter extends RecyclerView.Adapter<SimpleTextRecycleViewAdapter.TextViewHolder> {
+public class SortOptionsRecycleViewAdapter extends RecyclerView.Adapter<SortOptionsRecycleViewAdapter.SortOptionViewHolder> {
 
     private final Context mContext;
     private List<String> texts;
-    final private TextClickHandler mOnClickHandler;
+    final private SortOptionClickHandler mOnClickHandler;
     private int mSelectedOptionIndex;
 
-    public SimpleTextRecycleViewAdapter(Context context, TextClickHandler listener, List<String> texts) {
+    public SortOptionsRecycleViewAdapter(Context context, SortOptionClickHandler listener, List<String> texts) {
         this.mContext = context;
         this.mOnClickHandler = listener;
         this.texts = texts;
     }
 
-    @NonNull @Override public TextViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {LayoutInflater inflater = LayoutInflater.from(mContext);
-        View view = inflater.inflate(R.layout.list_item_texts, parent, false);
+    @NonNull @Override public SortOptionViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        LayoutInflater inflater = LayoutInflater.from(mContext);
+        View view = inflater.inflate(R.layout.list_item_sort_options, parent, false);
         view.setFocusable(true);
-        return new TextViewHolder(view);
+        return new SortOptionViewHolder(view);
     }
-    @Override public void onBindViewHolder(@NonNull TextViewHolder holder, int position) {
+    @Override public void onBindViewHolder(@NonNull SortOptionViewHolder holder, int position) {
 
         holder.textViewInRecyclerView.setText(texts.get(position));
         updateBackground(holder, position);
     }
 
-    private void updateBackground(TextViewHolder holder, int position) {
+    private void updateBackground(SortOptionViewHolder holder, int position) {
         if (position== mSelectedOptionIndex) {
             holder.container.setBackgroundColor(mContext.getResources().getColor(R.color.selected_item_background_color));
         }
@@ -70,12 +73,12 @@ public class SimpleTextRecycleViewAdapter extends RecyclerView.Adapter<SimpleTex
         }
     }
 
-    public class TextViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public class SortOptionViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-        @BindView(R.id.simple_text_list_item) TextView textViewInRecyclerView;
-        @BindView(R.id.simple_text_recyclerView_item_container) ConstraintLayout container;
+        @BindView(R.id.sort_options_list_item) TextView textViewInRecyclerView;
+        @BindView(R.id.sort_options_recyclerView_item_container) RelativeLayout container;
 
-        TextViewHolder(View itemView) {
+        SortOptionViewHolder(View itemView) {
             super(itemView);
 
             ButterKnife.bind(this, itemView);
@@ -85,11 +88,11 @@ public class SimpleTextRecycleViewAdapter extends RecyclerView.Adapter<SimpleTex
         @Override
         public void onClick(View view) {
             int clickedPosition = getAdapterPosition();
-            mOnClickHandler.onTextClick(clickedPosition);
+            mOnClickHandler.onSortOptionClick(clickedPosition);
         }
     }
 
-    public interface TextClickHandler {
-        void onTextClick(int clickedItemIndex);
+    public interface SortOptionClickHandler {
+        void onSortOptionClick(int clickedItemIndex);
     }
 }

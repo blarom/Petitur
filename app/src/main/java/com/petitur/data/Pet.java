@@ -2,12 +2,16 @@ package com.petitur.data;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
+
+import com.google.firebase.firestore.GeoPoint;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
-public class Pet implements Parcelable{
+public class Pet implements Parcelable, Comparable<Pet> {
 
     public Pet() {}
     Pet(String name, String gender, String race, String street, String city, String country, int age) {
@@ -23,7 +27,6 @@ public class Pet implements Parcelable{
         this.uI = uI;
     }
 
-
     protected Pet(Parcel in) {
         nm = in.readString();
         tp = in.readString();
@@ -37,15 +40,21 @@ public class Pet implements Parcelable{
         st = in.readString();
         stN = in.readString();
         gac = in.readString();
-        galt = in.readString();
-        galg = in.readString();
         vU = in.createStringArrayList();
+        agR = in.readString();
         ag = in.readInt();
         sz = in.readString();
         rc = in.readString();
         gn = in.readString();
+        gk = in.readByte() != 0;
+        gc = in.readByte() != 0;
+        gd = in.readByte() != 0;
+        cs = in.readByte() != 0;
+        hT = in.readByte() != 0;
+        sn = in.readByte() != 0;
         hs = in.readString();
         iUT = in.createStringArrayList();
+        dt = in.readInt();
     }
 
     public static final Creator<Pet> CREATOR = new Creator<Pet>() {
@@ -156,20 +165,12 @@ public class Pet implements Parcelable{
         this.gac = gac;
     }
 
-    private String galt = "0.0"; //Geocoder address Latitude (requires internet to update)
-    public String getGaLt() {
-        return galt;
+    private GeoPoint geo; //Geopoint with latitude then longitude
+    public GeoPoint getGeo() {
+        return geo;
     }
-    public void setGaLt(String galt) {
-        this.galt = galt;
-    }
-
-    private String galg = "0.0"; //Geocoder address Longitude (requires internet to update)
-    public String getGaLg() {
-        return galg;
-    }
-    public void setGaLg(String galg) {
-        this.galg = galg;
+    public void setGeo(GeoPoint geo) {
+        this.geo = geo;
     }
 
     private List<String> vU = new ArrayList<>(); //video urls
@@ -178,6 +179,14 @@ public class Pet implements Parcelable{
     }
     public void setVU(List<String> vU) {
         this.vU = vU;
+    }
+
+    private String agR = ""; // age range
+    public String getAgR() {
+        return agR;
+    }
+    public void setAgR(String agR) {
+        this.agR = agR;
     }
 
     private int ag  = 0; // age
@@ -276,6 +285,103 @@ public class Pet implements Parcelable{
         this.iUT = iUT;
     }
 
+    private int dt = 0; //distance (only used locally)
+    public int getDt() {
+        return dt;
+    }
+    public void setDt(int dt) {
+        this.dt = dt;
+    }
+
+    //Comparator interface
+    @Override public int compareTo(@NonNull Pet pet) {
+        //see: https://www.mkyong.com/java/java-object-sorting-example-comparable-and-comparator/
+
+        int compareDistance = pet.getDt();
+
+        //ascending order
+        return this.dt - compareDistance;
+
+        //descending order
+        //return compareDistance - this.dt;
+    }
+    public static Comparator<Pet> PetNameComparator = new Comparator<Pet>() {
+
+        public int compare(Pet pet1, Pet pet2) {
+
+            String petName1 = pet1.getNm().toUpperCase();
+            String petName2 = pet2.getNm().toUpperCase();
+
+            //ascending order
+            return petName1.compareTo(petName2);
+
+            //descending order
+            //return petName2.compareTo(petName1);
+        }
+
+    };
+    public static Comparator<Pet> PetDistanceComparatorAscending = new Comparator<Pet>() {
+
+        public int compare(Pet pet1, Pet pet2) {
+
+            int petDistance1 = pet1.getDt();
+            int petDistance2 = pet2.getDt();
+            return petDistance1 - petDistance2;
+        }
+
+    };
+    public static Comparator<Pet> PetDistanceComparatorDescending = new Comparator<Pet>() {
+
+        public int compare(Pet pet1, Pet pet2) {
+
+            int petDistance1 = pet1.getDt();
+            int petDistance2 = pet2.getDt();
+            return petDistance2 - petDistance1;
+        }
+
+    };
+    public static Comparator<Pet> PetAgeComparatorAscending = new Comparator<Pet>() {
+
+        public int compare(Pet pet1, Pet pet2) {
+
+            int petAge1 = pet1.getAg();
+            int petAge2 = pet2.getAg();
+            return petAge1 - petAge2;
+        }
+
+    };
+    public static Comparator<Pet> PetAgeComparatorDescending = new Comparator<Pet>() {
+
+        public int compare(Pet pet1, Pet pet2) {
+
+            int petAge1 = pet1.getAg();
+            int petAge2 = pet2.getAg();
+            return petAge2 - petAge1;
+        }
+
+    };
+    public static Comparator<Pet> PetBreedComparatorAscending = new Comparator<Pet>() {
+
+        public int compare(Pet pet1, Pet pet2) {
+
+            String petBreed1 = pet1.getRc().toUpperCase();
+            String petBreed2 = pet2.getRc().toUpperCase();
+            return petBreed1.compareTo(petBreed2);
+        }
+
+    };
+    public static Comparator<Pet> PetBreedComparatorDescending = new Comparator<Pet>() {
+
+        public int compare(Pet pet1, Pet pet2) {
+
+            String petBreed1 = pet1.getRc().toUpperCase();
+            String petBreed2 = pet2.getRc().toUpperCase();
+            return petBreed2.compareTo(petBreed1);
+        }
+
+    };
+
+    //Parcelable interface
     @Override
     public int describeContents() {
         return 0;
@@ -295,14 +401,20 @@ public class Pet implements Parcelable{
         parcel.writeString(st);
         parcel.writeString(stN);
         parcel.writeString(gac);
-        parcel.writeString(galt);
-        parcel.writeString(galg);
         parcel.writeStringList(vU);
+        parcel.writeString(agR);
         parcel.writeInt(ag);
         parcel.writeString(sz);
         parcel.writeString(rc);
         parcel.writeString(gn);
+        parcel.writeByte((byte) (gk ? 1 : 0));
+        parcel.writeByte((byte) (gc ? 1 : 0));
+        parcel.writeByte((byte) (gd ? 1 : 0));
+        parcel.writeByte((byte) (cs ? 1 : 0));
+        parcel.writeByte((byte) (hT ? 1 : 0));
+        parcel.writeByte((byte) (sn ? 1 : 0));
         parcel.writeString(hs);
         parcel.writeStringList(iUT);
+        parcel.writeInt(dt);
     }
 }
