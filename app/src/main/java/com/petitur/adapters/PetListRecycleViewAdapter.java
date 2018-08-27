@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import com.petitur.R;
 import com.petitur.data.Pet;
@@ -17,10 +18,10 @@ import com.petitur.resources.Utilities;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
-import java.util.Locale;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 public class PetListRecycleViewAdapter extends RecyclerView.Adapter<PetListRecycleViewAdapter.PetViewHolder> {
 
@@ -53,20 +54,31 @@ public class PetListRecycleViewAdapter extends RecyclerView.Adapter<PetListRecyc
         holder.nameTextView.setText(pet.getNm());
         holder.cityTextView.setText(pet.getCt());
         holder.raceTextView.setText(pet.getRc());
-        holder.ageTextView.setText(Integer.toString(pet.getAg()));
 
-        int distanceM = Utilities.getDistanceFromLatLong(
-                mUserLatitude,
-                mUserLongitude,
-                pet.getGeo().getLatitude(),
-                pet.getGeo().getLongitude()
-        );
-        String displayableDistance = Utilities.convertDistanceToDisplayableValue(distanceM) + "km";
+        String displayedAge;
+        if (pet.getAg() > 12) {
+            double ageYears = Utilities.getYearsAgeFromYearsMonths(0, pet.getAg());
+            displayedAge = Utilities.convertAgeToDisplayableValue(ageYears) + " years";
+        }
+        else if (pet.getAg() == 12) {
+            displayedAge = "1 year";
+        }
+        else if (12 > pet.getAg() && pet.getAg() > 1){
+            displayedAge = Integer.toString(pet.getAg()) + " months";
+        }
+        else {
+            displayedAge = "1 month";
+        }
+        holder.ageTextView.setText(displayedAge);
+
+        String displayableDistance = Utilities.convertDistanceToDisplayableValue(pet.getDt()) + "km";
         holder.distanceTextView.setText(displayableDistance);
 
         String gender = pet.getGn();
         if (gender.equals("Male")) Picasso.with(mContext).load(R.drawable.ic_pet_gender_male_24dp).into(holder.genderImageView);
         else Picasso.with(mContext).load(R.drawable.ic_pet_gender_female_24dp).into(holder.genderImageView);
+
+        holder.loveImageView.setChecked(pet.getFv());
 
         updateBackground(holder, position);
     }
@@ -109,7 +121,7 @@ public class PetListRecycleViewAdapter extends RecyclerView.Adapter<PetListRecyc
         @BindView(R.id.pet_list_item_distance) TextView distanceTextView;
         @BindView(R.id.pet_list_item_image) ImageView petImageView;
         @BindView(R.id.pet_list_item_gender) ImageView genderImageView;
-        @BindView(R.id.pet_list_item_love) ImageView loveImageView;
+        @BindView(R.id.pet_list_item_love) ToggleButton loveImageView;
         @BindView(R.id.pet_list_item_container) ConstraintLayout container;
 
         PetViewHolder(View itemView) {
@@ -124,9 +136,16 @@ public class PetListRecycleViewAdapter extends RecyclerView.Adapter<PetListRecyc
             int clickedPosition = getAdapterPosition();
             mOnClickHandler.onPetListItemClick(clickedPosition);
         }
+
+        @OnClick(R.id.pet_list_item_love) public void onPetLoveClick() {
+            int clickedPosition = getAdapterPosition();
+            boolean loveState = loveImageView.isChecked();
+            mOnClickHandler.onPetLoveImageClick(clickedPosition, loveState);
+        }
     }
 
     public interface PetListItemClickHandler {
         void onPetListItemClick(int clickedItemIndex);
+        void onPetLoveImageClick(int clickedItemIndex, boolean loveState);
     }
 }

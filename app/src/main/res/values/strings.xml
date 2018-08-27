@@ -5,7 +5,7 @@
     <string name="get_advice">Get advice</string>
     <string name="favorites">Favorites</string>
     <string name="see_my_pets_list">See my pets list</string>
-    <string name="add_a_pet">Add a pet</string>
+    <string name="add_a_new_pet">Add a new pet</string>
     <string name="see_a_user_s_profile">See a user\'s profile</string>
     <string name="location_rationale">Location is required to improve the search results by checking the distance relative to you. If you don\'t allow this, search results may be less useful.</string>
     <string name="first_time_preferences">Since this is your first time using the app with this account, how about setting your preferences?</string>
@@ -17,7 +17,6 @@
     <string name="preferences">Preferences</string>
     <string name="my_profile">My profile</string>
     <string name="my_organization">My Organization</string>
-    <string name="my_pets">My pets</string>
     <string name="user_longitude">user_longitude</string>
     <string name="user_latitude">user_latitude</string>
     <string name="tindog_notification_channel">tindog_notification_channel</string>
@@ -258,6 +257,27 @@
     <string name="ascending">Ascending</string>
     <string name="descending">Descending</string>
     <string name="default_text">default</string>
+    <string name="pet_profile_parcelable">pet_profile_parcelable</string>
+    <string name="family_profile_parcelable">family_profile_parcelable</string>
+    <string name="foundation_profile_parcelable">foundation_profile_parcelable</string>
+    <string name="share_this_dog_profile">Share this dog profile</string>
+    <string name="share_this_family_profile">Share this family profile</string>
+    <string name="share_this_organization_s_profile">Share this organization\'s profile</string>
+    <string name="foundation">Foundation:</string>
+    <string name="no_associated_foundation">No associated foundation</string>
+    <string name="no_history_available">No history available</string>
+    <string name="foundation_profile_id">foundation_profile_id</string>
+    <string name="pet_distance">pet_distance</string>
+    <string name="container_scroll_position">container_scroll_position</string>
+    <string name="favorite_state">Favorite state</string>
+    <string name="find_a_user">Find a user</string>
+    <string name="my_pets">My pets</string>
+    <string name="tips_and_info">Tips and Info</string>
+    <string name="welcome">Welcome</string>
+    <string name="welcome_night">Wonderful night,\u0020</string>
+    <string name="welcome_morning">Good morning,\u0020</string>
+    <string name="welcome_day">Hello\u0020</string>
+    <string name="welcome_evening">Good evening,\u0020</string>
 
     <string-array name="foster_period">
         <item>Up to 1 week</item>

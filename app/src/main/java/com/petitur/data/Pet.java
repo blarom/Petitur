@@ -55,6 +55,7 @@ public class Pet implements Parcelable, Comparable<Pet> {
         hs = in.readString();
         iUT = in.createStringArrayList();
         dt = in.readInt();
+        fv = in.readByte() != 0;
     }
 
     public static final Creator<Pet> CREATOR = new Creator<Pet>() {
@@ -68,6 +69,7 @@ public class Pet implements Parcelable, Comparable<Pet> {
             return new Pet[size];
         }
     };
+
 
     private String nm = ""; //name
     public String getNm() {
@@ -293,6 +295,14 @@ public class Pet implements Parcelable, Comparable<Pet> {
         this.dt = dt;
     }
 
+    private boolean fv = false; //favorite flag (only used locally)
+    public boolean getFv() {
+        return fv;
+    }
+    public void setFv(boolean fv) {
+        this.fv = fv;
+    }
+
     //Comparator interface
     @Override public int compareTo(@NonNull Pet pet) {
         //see: https://www.mkyong.com/java/java-object-sorting-example-comparable-and-comparator/
@@ -416,5 +426,8 @@ public class Pet implements Parcelable, Comparable<Pet> {
         parcel.writeString(hs);
         parcel.writeStringList(iUT);
         parcel.writeInt(dt);
+        parcel.writeByte((byte) (fv ? 1 : 0));
     }
+
+
 }

@@ -22,16 +22,21 @@
             </intent-filter>
         </activity>
         <activity android:name=".ui.PetListActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ui.TaskSelectionActivity"/>
         </activity>
         <activity android:name=".ui.PreferencesActivity">
         </activity>
         <activity android:name=".ui.UpdatePetActivity">
         </activity>
-        <activity android:name=".ui.MapActivity"
+        <activity
+            android:name=".ui.MapActivity"
             android:label="@string/title_activity_map">
         </activity>
-        <activity android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
-                  android:theme="@style/Base.Theme.AppCompat"/> <!-- optional (needed if default theme has no action bar) -->
+        <activity
+            android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
+            android:theme="@style/Base.Theme.AppCompat"/> <!-- optional (needed if default theme has no action bar) -->
         <activity android:name=".ui.ShowPetProfileActivity">
         </activity>
         <activity android:name=".ui.ShowFamilyProfileActivity">
@@ -56,6 +61,10 @@
         <activity android:name=".ui.UpdateFamilyActivity">
         </activity>
         <activity android:name=".ui.UpdateFoundationActivity">
+        </activity>
+        <activity android:name=".ui.FavoritesActivity">
+        </activity>
+        <activity android:name=".ui.TipsInfoActivity">
         </activity>
     </application>
 

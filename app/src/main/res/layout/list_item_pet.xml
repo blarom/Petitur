@@ -25,7 +25,6 @@
         android:scaleType="centerCrop"
         app:ari_aspect="height"
         app:ari_ratio="1"
-        app:srcCompat="@drawable/ic_image_not_available"
         android:layout_margin="@dimen/pet_list_item_image_margins"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -82,17 +81,14 @@
         app:layout_constraintTop_toTopOf="@+id/pet_list_item_name"
         app:srcCompat="@drawable/ic_pet_gender_male_24dp"/>
 
-    <ImageView
+    <ToggleButton
         android:id="@+id/pet_list_item_love"
-        android:layout_width="@dimen/pet_list_item_love_image_size"
-        android:layout_height="@dimen/pet_list_item_love_image_size"
-        android:layout_marginEnd="@dimen/list_item_image_standard_margin"
-        android:layout_marginRight="@dimen/list_item_image_standard_margin"
-        android:layout_marginTop="@dimen/list_item_image_standard_margin"
-        android:contentDescription="@string/pet_list_item_gender"
+        style="@style/LoveButtonStyle"
+        android:checked="false"
+        android:textOff=""
+        android:textOn=""
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_love_empty_24dp"/>
+        app:layout_constraintTop_toTopOf="parent"/>
 
     <TextView
         android:id="@+id/pet_list_item_distance"

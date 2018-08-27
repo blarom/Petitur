@@ -7,4 +7,174 @@
     android:layout_height="match_parent"
     tools:context=".ui.ShowPetProfileActivity">
 
+    <android.support.v4.widget.NestedScrollView
+        android:id="@+id/show_pet_profile_scroll_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/show_pet_profile_recyclerview_images"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginStart="@dimen/standard_margin"
+                android:layout_marginLeft="@dimen/standard_margin"
+                android:layout_marginEnd="@dimen/standard_margin"
+                android:layout_marginRight="@dimen/standard_margin"/>
+
+
+            <android.support.constraint.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/background_rounded_corners_full_color"
+                android:layout_marginTop="@dimen/double_margin"
+                android:layout_marginStart="@dimen/show_pet_profile_horizontal_margin"
+                android:layout_marginLeft="@dimen/show_pet_profile_horizontal_margin"
+                android:layout_marginEnd="@dimen/show_pet_profile_horizontal_margin"
+                android:layout_marginRight="@dimen/show_pet_profile_horizontal_margin"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/show_pet_profile_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/pet_list_item_name"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"/>
+
+                <TextView
+                    android:id="@+id/show_pet_profile_city"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/list_item_image_standard_margin"
+                    android:text="@string/pet_list_item_city"
+                    app:layout_constraintStart_toStartOf="@+id/show_pet_profile_name"
+                    app:layout_constraintTop_toBottomOf="@id/show_pet_profile_name"/>
+
+                <TextView
+                    android:id="@+id/show_pet_profile_race"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/list_item_image_standard_margin"
+                    android:text="@string/pet_list_item_race"
+                    app:layout_constraintStart_toStartOf="@+id/show_pet_profile_name"
+                    app:layout_constraintTop_toBottomOf="@id/show_pet_profile_city"/>
+
+                <TextView
+                    android:id="@+id/show_pet_profile_age"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/list_item_image_standard_margin"
+                    android:text="@string/pet_list_item_age"
+                    app:layout_constraintStart_toStartOf="@+id/show_pet_profile_name"
+                    app:layout_constraintTop_toBottomOf="@id/show_pet_profile_race"/>
+
+                <ImageView
+                    android:id="@+id/show_pet_profile_gender"
+                    android:layout_width="@dimen/pet_list_item_gender_image_size"
+                    android:layout_height="@dimen/pet_list_item_gender_image_size"
+                    android:layout_marginLeft="12dp"
+                    android:layout_marginStart="12dp"
+                    android:contentDescription="@string/pet_list_item_gender"
+                    app:layout_constraintStart_toEndOf="@+id/show_pet_profile_name"
+                    app:layout_constraintTop_toTopOf="@+id/show_pet_profile_name"
+                    app:srcCompat="@drawable/ic_pet_gender_male_24dp"/>
+
+                <ToggleButton
+                    android:id="@+id/show_pet_profile_love"
+                    style="@style/LoveButtonStyle"
+                    android:checked="false"
+                    android:textOff=""
+                    android:textOn=""
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"/>
+
+                <TextView
+                    android:id="@+id/show_pet_profile_distance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/list_item_image_standard_margin"
+                    android:text="@string/pet_list_item_default_distance"
+                    app:layout_constraintBottom_toBottomOf="@id/show_pet_profile_compass_pointer"
+                    app:layout_constraintEnd_toStartOf="@id/show_pet_profile_compass_pointer"/>
+
+                <ImageView
+                    android:id="@+id/show_pet_profile_compass_pointer"
+                    android:layout_width="@dimen/pet_list_item_gender_image_size"
+                    android:layout_height="@dimen/pet_list_item_gender_image_size"
+                    android:layout_marginEnd="@dimen/standard_margin"
+                    android:layout_marginRight="@dimen/standard_margin"
+                    android:contentDescription="@string/pet_list_item_gender"
+                    app:layout_constraintBottom_toBottomOf="@id/show_pet_profile_age"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:srcCompat="@drawable/ic_compass_pointer_24dp"/>
+
+                <TextView
+                    android:id="@+id/show_pet_profile_description"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/default_text"
+                    android:layout_marginLeft="@dimen/standard_margin"
+                    android:layout_marginStart="@dimen/standard_margin"
+                    android:layout_marginRight="@dimen/standard_margin"
+                    android:layout_marginEnd="@dimen/standard_margin"
+                    android:layout_marginTop="@dimen/standard_margin"
+                    app:layout_constraintTop_toBottomOf="@id/show_pet_profile_age"/>
+
+                <TextView
+                    android:id="@+id/show_pet_profile_title_foundation"
+                    style="@style/ProfileSubtitleStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="0dp"
+                    android:layout_marginEnd="0dp"
+                    android:layout_marginTop="@dimen/standard_margin"
+                    android:text="@string/foundation"
+                    app:layout_constraintStart_toStartOf="@+id/show_pet_profile_name"
+                    app:layout_constraintTop_toBottomOf="@+id/show_pet_profile_description"/>
+
+                <TextView
+                    android:id="@+id/show_pet_profile_value_foundation"
+                    style="@style/ProfileValueStyle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/standard_margin"
+                    android:layout_marginStart="@dimen/standard_margin"
+                    android:layout_marginRight="@dimen/standard_margin"
+                    android:layout_marginEnd="@dimen/standard_margin"
+                    android:text="@string/no_associated_foundation"
+                    app:layout_constraintBottom_toBottomOf="@+id/show_pet_profile_title_foundation"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/show_pet_profile_title_foundation"
+                    app:layout_constraintTop_toTopOf="@+id/show_pet_profile_title_foundation"/>
+
+            </android.support.constraint.ConstraintLayout>
+
+        </LinearLayout>
+
+    </android.support.v4.widget.NestedScrollView>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/show_pet_profile_share_fab"
+        style="@style/DefaultFabStyle"
+        android:contentDescription="@string/share_this_dog_profile"
+        android:elevation="@dimen/fab_button_default_elevation"
+        app:fabSize="normal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:pressedTranslationZ="@dimen/fab_button_default_translation"
+        app:srcCompat="@drawable/ic_share_24dp"/> <!--translation 6dp added to initial elevation at 6dp-->
+
 </android.support.constraint.ConstraintLayout>

@@ -289,11 +289,30 @@ public class Utilities {
         }
 
     }
+    public static String convertDistanceToDisplayableValue(int distanceM) {
+
+        //see: https://stackoverflow.com/questions/153724/how-to-round-a-number-to-n-decimal-places-in-java
+        DecimalFormat df = new DecimalFormat("#.#");
+        df.setRoundingMode(RoundingMode.CEILING);
+        Number distanceKm = distanceM / 1000.000;
+        Double distanceKmRounded = distanceKm.doubleValue();
+        return df.format(distanceKmRounded);
+    }
+    public static String convertAgeToDisplayableValue(double age) {
+
+        //see: https://stackoverflow.com/questions/153724/how-to-round-a-number-to-n-decimal-places-in-java
+        DecimalFormat df = new DecimalFormat("#.#");
+        df.setRoundingMode(RoundingMode.CEILING);
+        return df.format(age);
+    }
 
 
     //Image utilities
     public static void loadGenericImageIntoImageView(Context context, Object object, ImageView image) {
-
+        Uri imageUri = getGenericImageUri(object);
+        displayUriInImageView(context, imageUri, image);
+    }
+    public static Uri getGenericImageUri(Object object) {
         Uri imageUri = null;
         if (object instanceof Pet) {
             Pet pet = (Pet) object;
@@ -308,13 +327,7 @@ public class Utilities {
         else if (object instanceof Foundation) {
             imageUri = Uri.fromFile(new File("//android_asset/default_dog_image.jpg"));
         }
-
-        Picasso.with(context)
-                .load(imageUri)
-                .placeholder(image.getDrawable()) //inspired by: https://github.com/square/picasso/issues/257
-                //.error(R.drawable.ic_image_not_available)
-                .noFade()
-                .into(image);
+        return imageUri;
     }
     public static boolean shrinkImageWithUri(Context context, Uri uri, int width, int height){
 
@@ -859,15 +872,6 @@ public class Utilities {
         //Prevents math errors caused by rounding
         return Math.acos(Math.max(-1,Math.min(x,1)));
     }
-    public static String convertDistanceToDisplayableValue(int distanceM) {
-
-        //see: https://stackoverflow.com/questions/153724/how-to-round-a-number-to-n-decimal-places-in-java
-        DecimalFormat df = new DecimalFormat("#.#");
-        df.setRoundingMode(RoundingMode.CEILING);
-        Number distanceKm = distanceM / 1000.000;
-        Double distanceKmRounded = distanceKm.doubleValue();
-        return df.format(distanceKmRounded);
-    }
 
 
     //Database utilities
@@ -1189,8 +1193,11 @@ public class Utilities {
     public static int getMonthsFromAge(int age) {
         return age - ((int) age/12)*12;
     }
-    public static int getAgeFromYearsMonths(int years, int months) {
+    public static int getMonthsAgeFromYearsMonths(int years, int months) {
         return 12*years+months;
+    }
+    public static double getYearsAgeFromYearsMonths(int years, int months) {
+        return years + (double) months / 12.0;
     }
     public static String getAgeRange(Context context, String type, int years, int months) {
 
@@ -1199,7 +1206,7 @@ public class Utilities {
         else if (type.equals(context.getString(R.string.cat))) ageBorders = context.getResources().getIntArray(R.array.cat_age_borders);
         else if (type.equals(context.getString(R.string.parrot))) ageBorders = context.getResources().getIntArray(R.array.parrot_age_borders);
 
-        int totalMonths = getAgeFromYearsMonths(years, months);
+        int totalMonths = getMonthsAgeFromYearsMonths(years, months);
         if (totalMonths < ageBorders[0]) return context.getString(R.string.toddler);
         else if (totalMonths >= ageBorders[0] && totalMonths < ageBorders[1]) return context.getString(R.string.young);
         else if (totalMonths >= ageBorders[1] && totalMonths < ageBorders[2]) return context.getString(R.string.adult);

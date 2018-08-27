@@ -25,6 +25,8 @@ import com.petitur.R;
 import com.petitur.data.*;
 import com.petitur.resources.Utilities;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -42,12 +44,13 @@ public class TaskSelectionActivity extends AppCompatActivity implements
 
     //region Parameters
     @BindView(R.id.task_selection_find_pet) Button mFindPetButton;
-    @BindView(R.id.task_selection_get_advice) Button mGetAdviceButton;
+    @BindView(R.id.task_selection_get_tips_info) Button mGetAdviceButton;
     @BindView(R.id.task_selection_see_favorites) Button mSeeFavoritesButton;
     @BindView(R.id.task_selection_see_my_pets) Button mSeeMyPetsButton;
     @BindView(R.id.task_selection_add_pet) Button mAddPetButton;
     @BindView(R.id.task_selection_search_users) Button mSearchUsersButton;
     @BindView(R.id.task_selection_please_sign_in) TextView mPleaseSignInTextView;
+    @BindView(R.id.task_selection_welcome) TextView mWelcomeTextView;
     private static final String DEBUG_TAG = "Petitur TaskSelection";
     public static final int APP_PERMISSIONS_REQUEST_CODE_WRITE_EXTERNAL_STORAGE = 555;
     private static final int APP_PERMISSIONS_REQUEST_CODE_ACCESS_FINE_LOCATION = 123;
@@ -200,6 +203,7 @@ public class TaskSelectionActivity extends AppCompatActivity implements
                     // TinDogUser is signed in
                     Utilities.setAppPreferenceUserHasNotRefusedSignIn(getApplicationContext(), true);
                     Utilities.setAppPreferenceFirstTimeUsingApp(getApplicationContext(), false);
+                    showWelcomeMessage();
                     Log.d(DEBUG_TAG, "onAuthStateChanged:signed_in:" + mCurrentFirebaseUser.getUid());
                 } else {
                     // TinDogUser is signed out
@@ -328,20 +332,49 @@ public class TaskSelectionActivity extends AppCompatActivity implements
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         startActivity(intent);
     }
+    private void openFavorites() {
+        if (mFamilyNotCreatedYet) return;
+        Intent intent = new Intent(this, FavoritesActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        startActivity(intent);
+    }
+    private void showWelcomeMessage() {
+        Calendar calendar = Calendar.getInstance();
+        Date currentTime = calendar.getTime();
+        int hour = calendar.get(Calendar.HOUR_OF_DAY);
+        String welcomeMessage = getString(R.string.welcome);
+        String name = mCurrentFirebaseUser.getDisplayName();
+
+        if (0 < hour && hour <= 5 || 22 < hour && hour <= 24) {
+            welcomeMessage = getString(R.string.welcome_night) + name + "!";
+        }
+        else if (5 < hour && hour <= 11) {
+            welcomeMessage = getString(R.string.welcome_morning) + name + "!";
+        }
+        else if (11 < hour && hour <= 17) {
+            welcomeMessage = getString(R.string.welcome_day) + name + "!";
+        }
+        else if (17 < hour && hour <= 22) {
+            welcomeMessage = getString(R.string.welcome_evening) + name + "!";
+        }
+
+        mWelcomeTextView.setText(welcomeMessage);
+    }
 
 
     //View click listeners
     @OnClick(R.id.task_selection_find_pet) public void onFindPetButtonClick() {
         openPetList();
     }
-    @OnClick(R.id.task_selection_get_advice) public void onGetAdviceButtonClick() {
-    }
     @OnClick(R.id.task_selection_see_favorites) public void onSeeFavoritesButtonClick() {
+        openFavorites();
     }
-    @OnClick(R.id.task_selection_see_my_pets) public void onSeeMyPetsButtonClick() {
+    @OnClick(R.id.task_selection_get_tips_info) public void onGetAdviceButtonClick() {
     }
     @OnClick(R.id.task_selection_add_pet) public void onAddPetButtonClick() {
         openPetProfile(new Pet());
+    }
+    @OnClick(R.id.task_selection_see_my_pets) public void onSeeMyPetsButtonClick() {
     }
     @OnClick(R.id.task_selection_search_users) public void onSearchUsersButtonClick() {
     }

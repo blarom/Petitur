@@ -550,7 +550,7 @@ public class FirebaseDao {
         if (object instanceof User) {
             List<User> users = new ArrayList<>();
             for (QueryDocumentSnapshot document : task.getResult()) {
-                Log.d(DEBUG_TAG, document.getId() + " => " + document.getData());
+                //Log.d(DEBUG_TAG, document.getId() + " => " + document.getData());
                 if (document.exists()) {
                     User user = document.toObject(User.class);
                     users.add(user);
@@ -561,7 +561,7 @@ public class FirebaseDao {
         else if (object instanceof Pet) {
             List<Pet> pets = new ArrayList<>();
             for (QueryDocumentSnapshot document : task.getResult()) {
-                Log.d(DEBUG_TAG, document.getId() + " => " + document.getData());
+                //Log.d(DEBUG_TAG, document.getId() + " => " + document.getData());
                 if (document.exists()) {
                     Pet pet = document.toObject(Pet.class);
                     pets.add(pet);
@@ -572,7 +572,7 @@ public class FirebaseDao {
         else if (object instanceof Family) {
             List<Family> families = new ArrayList<>();
             for (QueryDocumentSnapshot document : task.getResult()) {
-                Log.d(DEBUG_TAG, document.getId() + " => " + document.getData());
+                //Log.d(DEBUG_TAG, document.getId() + " => " + document.getData());
                 if (document.exists()) {
                     Family family = document.toObject(Family.class);
                     families.add(family);
@@ -583,7 +583,7 @@ public class FirebaseDao {
         else if (object instanceof Foundation) {
             List<Foundation> foundations = new ArrayList<>();
             for (QueryDocumentSnapshot document : task.getResult()) {
-                Log.d(DEBUG_TAG, document.getId() + " => " + document.getData());
+                //Log.d(DEBUG_TAG, document.getId() + " => " + document.getData());
                 if (document.exists()) {
                     Foundation foundation = document.toObject(Foundation.class);
                     foundations.add(foundation);
@@ -594,7 +594,7 @@ public class FirebaseDao {
         else if (object instanceof MapMarker) {
             List<MapMarker> mapMarkers = new ArrayList<>();
             for (QueryDocumentSnapshot document : task.getResult()) {
-                Log.d(DEBUG_TAG, document.getId() + " => " + document.getData());
+                //Log.d(DEBUG_TAG, document.getId() + " => " + document.getData());
                 if (document.exists()) {
                     MapMarker mapMarker = document.toObject(MapMarker.class);
                     mapMarkers.add(mapMarker);

@@ -7,7 +7,6 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.LoaderManager;
@@ -18,6 +17,8 @@ import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -68,6 +69,7 @@ public class PetListActivity extends AppCompatActivity implements
     //regionParameters
     private static final String DEBUG_TAG = "Petitur Pet List";
     private static final int LIST_MAIN_IMAGES_SYNC_LOADER = 3698;
+    public static final int SHOW_PET_ACTIVITY_KEY = 1234;
     @BindView(R.id.pet_list_loading_indicator) ProgressBar mProgressBarLoadingIndicator;
     @BindView(R.id.pet_list_pets_recyclerview) RecyclerView mPetsRecyclerView;
     private Unbinder mBinding;
@@ -80,21 +82,10 @@ public class PetListActivity extends AppCompatActivity implements
     private LocationManager mLocationManager;
     private CustomLocationListener mLocationListener;
     private List<Pet> mPetsAtDistance;
-    private List<Pet> mSortedPetsAtDistance;
-    private String mProfileType;
-    private String mRequestedDogProfileUI;
-    private String mRequestedFamilyProfileUI;
-    private String mRequestedFoundationProfileUI;
-    private boolean mFoundResults;
     private ImageSyncAsyncTaskLoader mImageSyncAsyncTaskLoader;
-    private int mSelectedProfileIndex;
     private int mPetsRecyclerViewPosition;
-    private CountDownTimer mTimer;
-    private boolean mUpdatedRecyclerView;
     private FirebaseDao mFirebaseDao;
     private int mPetDistance;
-    private List<String> mSelectedBreedsList;
-    private List<String> mSelectedCoatLengthsList;
     private String mSelectedGender;
     private String mSelectedAgeRange;
     private String mSelectedSize;
@@ -104,11 +95,6 @@ public class PetListActivity extends AppCompatActivity implements
     private List<String> mPetGendersList;
     private List<String> mPetAgesList;
     private List<String> mPetSizesList;
-    private List<String> mSelectedAges;
-    private List<String> mSelectedSizes;
-    private List<String> mTempSelectedAges;
-    private List<String> mTempSelectedSizes;
-    private boolean[] mTempSelectedAgesArray;
     private boolean mTempSelectedGoodWithKids;
     private boolean mTempSelectedGoodWithCats;
     private boolean mTempSelectedGoodWithDogs;
@@ -138,7 +124,6 @@ public class PetListActivity extends AppCompatActivity implements
     private ArrayList<String> mAvailableParrotBreeds;
     private double[] mCoordinateLimits;
     private int mTempPetDistance;
-    private List<Integer> mPetDistances;
     private String mTempSortField;
     private SortOptionsRecycleViewAdapter mListAdapter;
     private String mSortField;
@@ -174,6 +159,47 @@ public class PetListActivity extends AppCompatActivity implements
     @Override protected void onDestroy() {
         super.onDestroy();
         mBinding.unbind();
+    }
+    @Override public void onBackPressed() {
+        super.onBackPressed();
+    }
+    @Override public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.pet_list_menu, menu);
+        return true;
+    }
+    @Override public boolean onOptionsItemSelected(MenuItem item) {
+        int itemThatWasClickedId = item.getItemId();
+
+        switch (itemThatWasClickedId) {
+            case android.R.id.home:
+                onBackPressed();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+    @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == SHOW_PET_ACTIVITY_KEY) {
+            if (resultCode == RESULT_OK) {
+
+                //Get the new data
+                boolean petWasLoved = data.getBooleanExtra(getString(R.string.favorite_state), false);
+                String petId = data.getStringExtra(getString(R.string.selected_pet_id));
+                Family family = data.getParcelableExtra(getString(R.string.family_profile));
+
+                //Update this activity's instance of mFamily (prevents an extra call to Firebase)
+                mFamily = family;
+
+                //Update the pets recyclerview
+                for (Pet pet : mPetsAtDistance) {
+                    if (pet.getUI().equals(petId)) {
+                        pet.setFv(petWasLoved);
+                    }
+                }
+                mPetsRecyclerViewAdapter.setContents(mPetsAtDistance);
+            }
+        }
     }
 
 
@@ -293,7 +319,7 @@ public class PetListActivity extends AppCompatActivity implements
 
         if (mPetsRecyclerViewAdapter ==null) mPetsRecyclerViewAdapter = new PetListRecycleViewAdapter(this, this, null, mUserLatitude, mUserLongitude);
         mPetsRecyclerView.setAdapter(mPetsRecyclerViewAdapter);
-        mPetsRecyclerViewAdapter.setSelectedProfile(mSelectedProfileIndex);
+        mPetsRecyclerViewAdapter.setSelectedProfile(0);
 
         mPetsRecyclerView.scrollToPosition(mPetsRecyclerViewPosition);
         mPetsRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -330,7 +356,7 @@ public class PetListActivity extends AppCompatActivity implements
         }
 
     }
-    public void stopImageSyncThread() {
+    private void stopImageSyncThread() {
         if (mImageSyncAsyncTaskLoader!=null) {
             mImageSyncAsyncTaskLoader.stopUpdatingImagesForObjects();
             if (getLoaderManager()!=null) getLoaderManager().destroyLoader(LIST_MAIN_IMAGES_SYNC_LOADER);
@@ -1068,10 +1094,33 @@ public class PetListActivity extends AppCompatActivity implements
     private void sortAndDisplayPetList() {
 
         getPetsAtDistance();
+        updatePetsWithFavorites();
         sortPets();
         startImageSyncThread();
         hideLoadingIndicator();
         mPetsRecyclerViewAdapter.setContents(mPetsAtDistance);
+    }
+    private void updatePetsWithFavorites() {
+        List<String> favoriteIds = new ArrayList<>(mFamily.getFPI());
+        for (Pet pet : mPetsAtDistance) {
+            for (String id : favoriteIds) {
+                if (pet.getUI().equals(id)) {
+                    pet.setFv(true);
+                    favoriteIds.remove(id);
+                    break;
+                }
+            }
+        }
+    }
+    private void getPetsAtDistance() {
+        mPetsAtDistance = new ArrayList<>();
+        for (Pet pet : mPetList) {
+            int distance = Utilities.getDistanceFromLatLong(mUserLatitude, mUserLongitude, pet.getGeo().getLatitude(), pet.getGeo().getLongitude());
+            if (distance <= mPetDistance) {
+                pet.setDt(distance);
+                mPetsAtDistance.add(pet);
+            }
+        }
     }
     private void sortPets() {
 
@@ -1087,17 +1136,6 @@ public class PetListActivity extends AppCompatActivity implements
         else Arrays.sort(pets, Pet.PetDistanceComparatorAscending);
 
         mPetsAtDistance = Arrays.asList(pets);
-    }
-    private void getPetsAtDistance() {
-        mPetsAtDistance = new ArrayList<>();
-        mPetDistances = new ArrayList<>();
-        for (Pet pet : mPetList) {
-            int distance = Utilities.getDistanceFromLatLong(mUserLatitude, mUserLongitude, pet.getGeo().getLatitude(), pet.getGeo().getLongitude());
-            if (distance <= mPetDistance) {
-                pet.setDt(distance);
-                mPetsAtDistance.add(pet);
-            }
-        }
     }
     private void setTempFiltersAccordingToFamilyPreferences() {
 
@@ -1125,6 +1163,15 @@ public class PetListActivity extends AppCompatActivity implements
 
         mTempSortAscending = mFamily.getSrA();
     }
+    private void openPetProfile(int clickedItemIndex) {
+        Intent intent = new Intent(this, ShowPetProfileActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putParcelable(getString(R.string.pet_profile_parcelable), mPetsAtDistance.get(clickedItemIndex));
+        bundle.putParcelable(getString(R.string.family_profile_parcelable), mFamily);
+        intent.putExtras(bundle);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        startActivityForResult(intent, SHOW_PET_ACTIVITY_KEY);
+    }
 
 
     //View click listeners
@@ -1144,7 +1191,33 @@ public class PetListActivity extends AppCompatActivity implements
 
     //Communication with RecyclerView adapters
     @Override public void onPetListItemClick(int clickedItemIndex) {
+        if (mPetsAtDistance!=null && mPetsAtDistance.size()>0) {
+            mPetsRecyclerViewAdapter.setSelectedProfile(clickedItemIndex);
+            openPetProfile(clickedItemIndex);
+        }
+    }
+    @Override public void onPetLoveImageClick(int clickedItemIndex, boolean isFavorited) {
 
+        Pet pet = mPetsAtDistance.get(clickedItemIndex);
+        String currentPetUI = pet.getUI();
+        List<String> favoriteIds = mFamily.getFPI();
+        if (favoriteIds==null) favoriteIds = new ArrayList<>();
+        boolean isInFavoritesList = false;
+        for (String id : favoriteIds) {
+            if (currentPetUI.equals(id)) {
+                mPetsAtDistance.get(clickedItemIndex).setFv(isFavorited);
+                isInFavoritesList = true;
+                break;
+            }
+        }
+
+        if (isFavorited && !isInFavoritesList) favoriteIds.add(currentPetUI);
+        else if (!isFavorited&& isInFavoritesList) favoriteIds.remove(currentPetUI);
+
+        //mPetsRecyclerViewAdapter.setContents(mPetsAtDistance);
+
+        mFamily.setFPI(favoriteIds);
+        mFirebaseDao.updateObjectKeyValuePair(mFamily, "fpi", favoriteIds);
     }
 
     //Communication with Location handler
@@ -1166,7 +1239,7 @@ public class PetListActivity extends AppCompatActivity implements
 
         if (id == LIST_MAIN_IMAGES_SYNC_LOADER && mImageSyncAsyncTaskLoader==null) {
             mImageSyncAsyncTaskLoader =  new ImageSyncAsyncTaskLoader(this, getString(R.string.task_sync_list_main_images),
-                    mProfileType, mPetsAtDistance, null, null, this);
+                    getString(R.string.pet_profile), mPetsAtDistance, null, null, this);
             return mImageSyncAsyncTaskLoader;
         }
         return new ImageSyncAsyncTaskLoader(this, "", null, null, null, null, this);
@@ -1195,7 +1268,7 @@ public class PetListActivity extends AppCompatActivity implements
     @Override public void onFamilyListFound(List<Family> families) {
         if (families == null) return;
 
-        //If pet is not in database then create it, otherwise update mPet
+        //If family is not in database then create it, otherwise update mPet
         if (families.size() == 0 || families.get(0)==null) {
             Toast.makeText(getBaseContext(), R.string.must_create_family_profile, Toast.LENGTH_SHORT).show();
             Utilities.startUpdateFamilyProfileActivity(PetListActivity.this);

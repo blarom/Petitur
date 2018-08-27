@@ -541,7 +541,7 @@ public class UpdatePetActivity extends AppCompatActivity implements
         String monthsString = mAgeMonthsEditText.getText().toString();
         int years = (yearsString.equals("") || yearsString.length()>2) ? 0 : Integer.parseInt(yearsString);
         int months = (monthsString.equals("") || monthsString.length()>2) ? 0 : Integer.parseInt(monthsString);
-        mPet.setAg(Utilities.getAgeFromYearsMonths(years, months));
+        mPet.setAg(Utilities.getMonthsAgeFromYearsMonths(years, months));
         mPet.setAgR(Utilities.getAgeRange(this, mPet.getTp(), years, months));
         mPet.setSz(mSpinnerSize.getSelectedItem().toString());
         mPet.setRc(mAutoCompleteTextViewBreed.getText().toString());

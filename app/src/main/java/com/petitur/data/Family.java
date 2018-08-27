@@ -26,6 +26,7 @@ public class Family implements Parcelable{
         setUniqueIdentifierFromDetails();
     }
 
+
     protected Family(Parcel in) {
         oI = in.readString();
         pn = in.readString();
@@ -69,6 +70,8 @@ public class Family implements Parcelable{
         snP = in.readByte() != 0;
         dP = in.readInt();
         srT = in.readString();
+        srA = in.readByte() != 0;
+        fPI = in.createStringArrayList();
     }
 
     public static final Creator<Family> CREATOR = new Creator<Family>() {
@@ -82,7 +85,6 @@ public class Family implements Parcelable{
             return new Family[size];
         }
     };
-
 
     private String oI; //Owner identifier
     public String getOI() {
@@ -443,6 +445,15 @@ public class Family implements Parcelable{
         this.srA = srA;
     }
 
+    private List<String> fPI; //favorite pet ids
+    public List<String> getFPI() {
+        return fPI;
+    }
+    public void setFPI(List<String> fPI) {
+        this.fPI = fPI;
+    }
+
+
     @Override
     public int describeContents() {
         return 0;
@@ -492,5 +503,7 @@ public class Family implements Parcelable{
         parcel.writeByte((byte) (snP ? 1 : 0));
         parcel.writeInt(dP);
         parcel.writeString(srT);
+        parcel.writeByte((byte) (srA ? 1 : 0));
+        parcel.writeStringList(fPI);
     }
 }
