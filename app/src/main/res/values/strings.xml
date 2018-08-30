@@ -278,6 +278,10 @@
     <string name="welcome_morning">Good morning,\u0020</string>
     <string name="welcome_day">Hello\u0020</string>
     <string name="welcome_evening">Good evening,\u0020</string>
+    <string name="dialog_filter_my_pets">My Pets</string>
+    <string name="dialog_filter_all_pets">All Pets</string>
+    <string name="bundled_requested_favorites">bundled_requested_favorites</string>
+    <string name="dialog_filter_my_favorites">My Favorites</string>
 
     <string-array name="foster_period">
         <item>Up to 1 week</item>

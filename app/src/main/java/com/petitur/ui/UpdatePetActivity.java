@@ -127,7 +127,7 @@ public class UpdatePetActivity extends AppCompatActivity implements
     private String mFoundationStreet;
     private String mFoundationStreetNumber;
     private int mScrollPosition;
-    private String mFoundationId;
+    private String mFoundationUI;
     private Uri[] mTempImageUris;
     private boolean mCurrentlySyncingImages;
     private boolean mRequireOnlineSync;
@@ -257,7 +257,7 @@ public class UpdatePetActivity extends AppCompatActivity implements
         outState.putString(getString(R.string.profile_update_image_name), mImageName);
         outState.putString(getString(R.string.saved_foundation_name), mFoundationName);
         outState.putString(getString(R.string.saved_foundation_city), mFoundationCity);
-        outState.putString(getString(R.string.saved_foundation_id), mFoundationId);
+        outState.putString(getString(R.string.saved_foundation_id), mFoundationUI);
         outState.putString(getString(R.string.saved_foundation_country), mFoundationCountry);
         outState.putString(getString(R.string.saved_foundation_street), mFoundationStreet);
         outState.putString(getString(R.string.saved_foundation_street_number), mFoundationStreetNumber);
@@ -275,7 +275,7 @@ public class UpdatePetActivity extends AppCompatActivity implements
             mImageName = savedInstanceState.getString(getString(R.string.profile_update_image_name));
             mFoundationName = savedInstanceState.getString(getString(R.string.saved_foundation_name));
             mFoundationCity = savedInstanceState.getString(getString(R.string.saved_foundation_city));
-            mFoundationId = savedInstanceState.getString(getString(R.string.saved_foundation_id));
+            mFoundationUI = savedInstanceState.getString(getString(R.string.saved_foundation_id));
             mFoundationCountry = savedInstanceState.getString(getString(R.string.saved_foundation_country));
             mFoundationStreet = savedInstanceState.getString(getString(R.string.saved_foundation_street));
             mFoundationStreetNumber = savedInstanceState.getString(getString(R.string.saved_foundation_street_number));
@@ -563,7 +563,7 @@ public class UpdatePetActivity extends AppCompatActivity implements
     }
     private void updatePetWithFoundationData() {
         mPet.setFN(mFoundationName);
-        mPet.setOI(mFoundationId);
+        mPet.setOI(mFoundationUI);
     }
     private void updateLayoutWithFoundationData() {
         if (!TextUtils.isEmpty(mFoundationName)) mEditTextFoundation.setText(mFoundationName);
@@ -649,7 +649,7 @@ public class UpdatePetActivity extends AppCompatActivity implements
         }
         else {
             if (foundations.get(0) != null) {
-                mFoundationId = foundations.get(0).getUI();
+                mFoundationUI = foundations.get(0).getUI();
                 mFoundationName = foundations.get(0).getNm();
                 mFoundationCity = foundations.get(0).getCt();
                 mFoundationCountry = foundations.get(0).getCn();

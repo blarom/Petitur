@@ -1,10 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
+<ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ui.TipsInfoActivity">
 
-</android.support.constraint.ConstraintLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <android.support.constraint.ConstraintLayout
+            android:id="@+id/tips_info_container1"
+            style="@style/TipsContainerStyle">
+
+            <com.makeramen.roundedimageview.RoundedImageView
+                style="@style/TipsCardImageStyle"/>
+
+            <LinearLayout
+                style="@style/TipsTextContainerStyle">
+
+                <TextView
+                    style="@style/TipsCardTitleStyle"
+                    android:text="First 30 Days With A New Dog"/>
+
+                <TextView
+                    style="@style/TipsCardSubTitleStyle"
+                    android:text="The first month is the most important to bond with a new dog.\nLearn what to expect."/>
+            </LinearLayout>
+
+        </android.support.constraint.ConstraintLayout>
+
+        <android.support.constraint.ConstraintLayout
+            android:id="@+id/tips_info_container2"
+            style="@style/TipsContainerStyle">
+
+            <com.makeramen.roundedimageview.RoundedImageView
+                style="@style/TipsCardImageStyle"/>
+
+            <LinearLayout
+                style="@style/TipsTextContainerStyle">
+
+                <TextView
+                    style="@style/TipsCardTitleStyle"
+                    android:text="Why Are Dogs Given Up?"/>
+
+                <TextView
+                    style="@style/TipsCardSubTitleStyle"
+                    android:text="Find out the most common reasons for pet relinquishment.\nThe truth may surprise you."/>
+            </LinearLayout>
+
+        </android.support.constraint.ConstraintLayout>
+
+    </LinearLayout>
+</ScrollView>

@@ -171,4 +171,63 @@
         <item name="android:layout_height">wrap_content</item>
     </style>
 
+    <style name="TipsContainerStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">@dimen/tips_card_height</item>
+        <item name="android:layout_marginStart">@dimen/double_margin</item>
+        <item name="android:layout_marginLeft">@dimen/double_margin</item>
+        <item name="android:layout_marginEnd">@dimen/double_margin</item>
+        <item name="android:layout_marginRight">@dimen/double_margin</item>
+        <item name="android:layout_marginTop">@dimen/standard_margin</item>
+        <item name="android:gravity">center</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:orientation">vertical</item>
+    </style>
+
+    <style name="TipsTextContainerStyle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:orientation">vertical</item>
+        <item name="layout_constraintBottom_toBottomOf">parent</item>
+        <item name="layout_constraintTop_toTopOf">parent</item>
+        <item name="layout_constraintLeft_toLeftOf">parent</item>
+        <item name="layout_constraintStart_toStartOf">parent</item>
+        <item name="layout_constraintRight_toRightOf">parent</item>
+        <item name="layout_constraintEnd_toEndOf">parent</item>
+    </style>
+
+    <style name="TipsCardTitleStyle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_margin">2dp</item>
+        <item name="android:shadowColor">#000000</item>
+        <item name="android:shadowDx">1</item>
+        <item name="android:shadowDy">1</item>
+        <item name="android:shadowRadius">1</item>
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:gravity">center_horizontal</item>
+        <item name="android:layout_gravity">center_horizontal</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="TipsCardSubTitleStyle">
+        <item name="android:gravity">center_horizontal</item>
+        <item name="android:textSize">10sp</item>
+        <item name="android:shadowColor">#000000</item>
+        <item name="android:shadowDx">1</item>
+        <item name="android:shadowDy">1</item>
+        <item name="android:shadowRadius">1</item>
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="TipsCardImageStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:background">@color/greenBackground</item>
+        <item name="android:scaleType">fitCenter</item>
+        <item name="riv_corner_radius">20dp</item>
+        <item name="riv_mutate_background">true</item>
+    </style>
+
 </resources>

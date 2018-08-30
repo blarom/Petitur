@@ -6,7 +6,7 @@
     <integer name="checkbox_grid_row_count">2</integer>
     <integer name="max_website_length">2000</integer> <!--number of characters in the string-->
     <integer name="max_image_file_size">100</integer> <!--in kB-->
-    <integer name="default_pet_distance">100</integer> <!--in km-->
+    <integer name="default_pet_distance">1000000</integer> <!--in m-->
 
     <integer-array name="dog_age_borders">
         <item>13</item>

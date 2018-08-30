@@ -24,6 +24,28 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
+            <LinearLayout
+                android:id="@+id/dialog_filter_buttons_pet_list"
+                style="@style/FilterButtonsContainerStyle">
+
+                <ToggleButton
+                    android:id="@+id/dialog_filter_button_pet_list_my_pets"
+                    style="@style/FilterButtonStyle"
+                    android:checked="true"
+                    android:textOff="@string/dialog_filter_my_pets"
+                    android:textOn="@string/dialog_filter_my_pets"/>
+
+                <View style="@style/FilterSeparatorStyle"/>
+
+                <ToggleButton
+                    android:id="@+id/dialog_filter_button_pet_list_all_pets"
+                    style="@style/FilterButtonStyle"
+                    android:textOff="@string/dialog_filter_all_pets"
+                    android:textOn="@string/dialog_filter_all_pets"/>
+
+
+            </LinearLayout>
+
             <TextView
                 android:id="@+id/dialog_filter_title_type"
                 style="@style/FilterSubtitleStyle"

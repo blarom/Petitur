@@ -7,6 +7,7 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.LoaderManager;
@@ -115,6 +116,7 @@ public class PetListActivity extends AppCompatActivity implements
     private List<String> mPetTypesList;
     private String mTempSelectedType;
     private Family mFamily;
+    private Foundation mFoundation;
     private FirebaseUser mCurrentFirebaseUser;
     private String mTempSelectedDogBreed;
     private String mTempSelectedCoatLength;
@@ -131,6 +133,10 @@ public class PetListActivity extends AppCompatActivity implements
     private boolean mTempSortAscending;
     private List<String> mSortOptions;
     private String mTempSelectedBreed;
+    private boolean mRequestedFavorites;
+    private String mTempListChoice;
+    private int mDocumentCounter;
+    private List<String> mFavoritePetIds;
     //endregion
 
 
@@ -141,7 +147,7 @@ public class PetListActivity extends AppCompatActivity implements
 
         getExtras();
         initializeParameters();
-        getFamilyProfileFromFirebase();
+        getFamilyOrFoundationProfileFromFirebase();
         if (!Utilities.internetIsAvailable(this)) {
             Toast.makeText(this, R.string.no_internet_bad_results_warning, Toast.LENGTH_SHORT).show();
         }
@@ -164,7 +170,7 @@ public class PetListActivity extends AppCompatActivity implements
         super.onBackPressed();
     }
     @Override public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.pet_list_menu, menu);
+        getMenuInflater().inflate(R.menu.tips_info_menu, menu);
         return true;
     }
     @Override public boolean onOptionsItemSelected(MenuItem item) {
@@ -208,6 +214,7 @@ public class PetListActivity extends AppCompatActivity implements
         Intent intent = getIntent();
         if (intent.hasExtra(getString(R.string.bundled_user))) {
             mUser = intent.getParcelableExtra(getString(R.string.bundled_user));
+            mRequestedFavorites = intent.getBooleanExtra(getString(R.string.bundled_requested_favorites), false);
         }
     }
     private void initializeParameters() {
@@ -226,7 +233,11 @@ public class PetListActivity extends AppCompatActivity implements
         mUserLongitude = Utilities.getAppPreferenceUserLongitude(this);
         mUserLatitude = Utilities.getAppPreferenceUserLatitude(this);
 
-        //Getting the string lists
+        //Initilalizing the dialog temp elements
+        if (mRequestedFavorites) mTempListChoice = getString(R.string.dialog_filter_my_favorites);
+        else if (mUser!=null && mUser.getIF()) mTempListChoice = getString(R.string.dialog_filter_my_pets);
+        else mTempListChoice = getString(R.string.dialog_filter_all_pets);
+
         mPetTypesList = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.pet_types)));
         mPetTypesList.add(0,getString(R.string.filter_option_any));
         mTempSelectedType = mPetTypesList.get(0);
@@ -276,15 +287,25 @@ public class PetListActivity extends AppCompatActivity implements
         mPetDistance = getResources().getInteger(R.integer.default_pet_distance);
         mTempPetDistance = mPetDistance;
     }
-    private void getFamilyProfileFromFirebase() {
+    private void getFamilyOrFoundationProfileFromFirebase() {
         if (mCurrentFirebaseUser != null) {
 
-            //Setting the requested Family's id
-            mFamily = new Family();
-            mFamily.setOI(mCurrentFirebaseUser.getUid());
+            if (mUser.getIF()) {
+                //Setting the requested Foundation's id
+                mFoundation = new Foundation();
+                mFoundation.setOI(mCurrentFirebaseUser.getUid());
 
-            //Getting the rest of the family's parameters
-            mFirebaseDao.requestObjectsWithConditions(mFamily, Utilities.getQueryConditionsForSingleObjectSearchByOwnerId(this, mFamily));
+                //Getting the rest of the family's parameters
+                mFirebaseDao.requestObjectsWithConditions(mFoundation, Utilities.getQueryConditionsForSingleObjectSearchByOwnerId(this, mFoundation));
+            }
+            else {
+                //Setting the requested Family's id
+                mFamily = new Family();
+                mFamily.setOI(mCurrentFirebaseUser.getUid());
+
+                //Getting the rest of the family's parameters
+                mFirebaseDao.requestObjectsWithConditions(mFamily, Utilities.getQueryConditionsForSingleObjectSearchByOwnerId(this, mFamily));
+            }
         }
     }
     private void showLoadingIndicator() {
@@ -317,7 +338,7 @@ public class PetListActivity extends AppCompatActivity implements
         //Setting up the RecyclerView adapters
         mPetsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        if (mPetsRecyclerViewAdapter ==null) mPetsRecyclerViewAdapter = new PetListRecycleViewAdapter(this, this, null, mUserLatitude, mUserLongitude);
+        if (mPetsRecyclerViewAdapter ==null) mPetsRecyclerViewAdapter = new PetListRecycleViewAdapter(this, this, null, mUser.getIF());
         mPetsRecyclerView.setAdapter(mPetsRecyclerViewAdapter);
         mPetsRecyclerViewAdapter.setSelectedProfile(0);
 
@@ -400,6 +421,63 @@ public class PetListActivity extends AppCompatActivity implements
         //Get the dialog view
         LayoutInflater inflater = LayoutInflater.from(this);
         View dialogView = inflater.inflate(R.layout.dialog_filter, null);
+
+        //region Setting the my/all pets buttons behavior
+        final ToggleButton dialogFilterButtonListMyPets = dialogView.findViewById(R.id.dialog_filter_button_pet_list_my_pets);
+        final ToggleButton dialogFilterButtonListAllPets = dialogView.findViewById(R.id.dialog_filter_button_pet_list_all_pets);
+        if (mUser!=null && mUser.getIF()) {
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    dialogFilterButtonListMyPets.setChecked(mTempListChoice.equals(getString(R.string.dialog_filter_my_pets)));
+                    dialogFilterButtonListAllPets.setChecked(!mTempListChoice.equals(getString(R.string.dialog_filter_my_pets)));
+                }
+            }, 100);
+            dialogFilterButtonListMyPets.setTextOn(getString(R.string.dialog_filter_my_pets));
+            dialogFilterButtonListMyPets.setTextOff(getString(R.string.dialog_filter_my_pets));
+        }
+        else if (mUser!=null && !mUser.getIF()) {
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    dialogFilterButtonListMyPets.setChecked(mTempListChoice.equals(getString(R.string.dialog_filter_my_favorites)));
+                    dialogFilterButtonListAllPets.setChecked(!mTempListChoice.equals(getString(R.string.dialog_filter_my_favorites)));
+                }
+            }, 100);
+            dialogFilterButtonListMyPets.setTextOn(getString(R.string.dialog_filter_my_favorites));
+            dialogFilterButtonListMyPets.setTextOff(getString(R.string.dialog_filter_my_favorites));
+        }
+        else {
+            dialogFilterButtonListMyPets.setChecked(false);
+            dialogFilterButtonListAllPets.setChecked(true);
+        }
+        dialogFilterButtonListMyPets.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                if (isChecked) {
+                    dialogFilterButtonListAllPets.setChecked(false);
+                    if (mUser!=null && !mUser.getIF()) mTempListChoice = getString(R.string.dialog_filter_my_favorites);
+                    else mTempListChoice = getString(R.string.dialog_filter_my_pets);
+                }
+                else {
+                    dialogFilterButtonListAllPets.setChecked(true);
+                    mTempListChoice = getString(R.string.dialog_filter_all_pets);
+                }
+            }
+        });
+        dialogFilterButtonListAllPets.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                if (isChecked) {
+                    dialogFilterButtonListMyPets.setChecked(false);
+                    mTempListChoice = getString(R.string.dialog_filter_all_pets);
+                }
+                else {
+                    dialogFilterButtonListMyPets.setChecked(true);
+                }
+            }
+        });
+        //endregion
 
         //region Getting the pet type
         ArrayAdapter<String> spinnerAdapterType = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, mPetTypesList);
@@ -845,7 +923,7 @@ public class PetListActivity extends AppCompatActivity implements
         dialogFilterButtonSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (TextUtils.isEmpty(mFamily.getOI())) {
+                if (mUser.getIF() && TextUtils.isEmpty(mFoundation.getOI()) || !mUser.getIF() && TextUtils.isEmpty(mFamily.getOI())) {
                     Toast.makeText(getBaseContext(), R.string.could_not_save_preferences, Toast.LENGTH_SHORT).show();
                 }
                 else {
@@ -854,9 +932,14 @@ public class PetListActivity extends AppCompatActivity implements
                     mTempSelectedBreed = dialogFilterAutoCompleteTextViewBreed.getText().toString();
                     mTempSelectedCoatLength = dialogFilterAutoCompleteTextViewCoatLength.getText().toString();
 
-                    saveSearchParametersInFamilyProfile();
-
-                    mFirebaseDao.updateObject(mFamily);
+                    if (mUser.getIF()) {
+                        saveSearchParametersInFoundationProfile();
+                        mFirebaseDao.updateObject(mFoundation);
+                    }
+                    else {
+                        saveSearchParametersInFamilyProfile();
+                        mFirebaseDao.updateObject(mFamily);
+                    }
                 }
             }
         });
@@ -871,7 +954,12 @@ public class PetListActivity extends AppCompatActivity implements
                 mTempSelectedBreed = dialogFilterAutoCompleteTextViewBreed.getText().toString();
                 mTempSelectedCoatLength = dialogFilterAutoCompleteTextViewCoatLength.getText().toString();
 
-                saveSearchParametersInFamilyProfile();
+                if (mUser.getIF()) {
+                    saveSearchParametersInFoundationProfile();
+                }
+                else {
+                    saveSearchParametersInFamilyProfile();
+                }
                 setSearchParametersEqualToTempParameters();
                 requestFilteredListFromFirebase();
 
@@ -944,16 +1032,22 @@ public class PetListActivity extends AppCompatActivity implements
                 mSortField = mTempSortField;
                 mSortAscending = mTempSortAscending;
 
-                saveSearchParametersInFamilyProfile();
-
                 //Sorting the pets
                 if (mPetsAtDistance!=null && mPetsAtDistance.size()>0) {
                     sortPets();
                     mPetsRecyclerViewAdapter.setContents(mPetsAtDistance);
                 }
 
-                //TODO: update only the data that was changed to lower bandwidth usage
-                mFirebaseDao.updateObject(mFamily);
+                if (mUser.getIF()) {
+                    saveSearchParametersInFoundationProfile();
+                    //TODO: update only the data that was changed to lower bandwidth usage
+                    mFirebaseDao.updateObject(mFoundation);
+                }
+                else {
+                    saveSearchParametersInFamilyProfile();
+                    //TODO: update only the data that was changed to lower bandwidth usage
+                    mFirebaseDao.updateObject(mFamily);
+                }
 
                 dialog.dismiss();
             }
@@ -996,9 +1090,33 @@ public class PetListActivity extends AppCompatActivity implements
         mFamily.setSrT(mTempSortField);
         mFamily.setSrA(mTempSortAscending);
     }
+    private void saveSearchParametersInFoundationProfile() {
+        mFoundation.setTP(mTempSelectedType);
+        mFoundation.setGP(mTempSelectedGender);
+        mFoundation.setAP(mTempSelectedAgeRange);
+        mFoundation.setSP(mTempSelectedSize);
+
+        if (mTempSelectedType.equals(getString(R.string.dog))) mFoundation.setDRP(mTempSelectedBreed);
+        else if (mTempSelectedType.equals(getString(R.string.cat))) mFoundation.setCRP(mTempSelectedBreed);
+        else if (mTempSelectedType.equals(getString(R.string.parrot))) mFoundation.setPRP(mTempSelectedBreed);
+
+        mFoundation.setCLP(mTempSelectedCoatLength);
+
+        mFoundation.setGKP(mTempSelectedGoodWithKids);
+        mFoundation.setGCP(mTempSelectedGoodWithCats);
+        mFoundation.setGDP(mTempSelectedGoodWithDogs);
+        mFoundation.setCsP(mTempSelectedCastrated);
+        mFoundation.setHTP(mTempSelectedHouseTrained);
+        mFoundation.setSNP(mTempSelectedSpecialNeeds);
+
+        mFoundation.setDP(mTempPetDistance);
+
+        mFoundation.setSrT(mTempSortField);
+        mFoundation.setSrA(mTempSortAscending);
+    }
     private void requestFilteredListFromFirebase() {
 
-        List<QueryCondition> queryConditions = new ArrayList<>();
+        final List<QueryCondition> queryConditions = new ArrayList<>();
         QueryCondition queryCondition;
 
         //Setting the pet type
@@ -1066,11 +1184,11 @@ public class PetListActivity extends AppCompatActivity implements
         //Limiting the search to the user's state (if it's not null) or country
         //if (!TextUtils.isEmpty(mFamily.getSe())) { //TODO: stub - complete country/state selection when creating a pet
         if (false) {
-            queryCondition = new QueryCondition(getString(R.string.query_condition_equalsString), "se", "Israel", mSelectedSpecialNeeds, 0);
+            queryCondition = new QueryCondition(getString(R.string.query_condition_equalsString), "se", "Israel", false, 0);
             queryConditions.add(queryCondition);
         }
         else {
-            queryCondition = new QueryCondition(getString(R.string.query_condition_equalsString), "cn", "Israel", mSelectedSpecialNeeds, 0);
+            queryCondition = new QueryCondition(getString(R.string.query_condition_equalsString), "cn", "Israel", false, 0);
             queryConditions.add(queryCondition);
         }
 
@@ -1087,27 +1205,66 @@ public class PetListActivity extends AppCompatActivity implements
 //        queryCondition = new QueryCondition(getString(R.string.query_condition_limit), "", "", true, 40);
 //        queryConditions.add(queryCondition);
 
-        //Requesting the list
+
+        //Requesting the list depending on the type of list
         showLoadingIndicator();
-        mFirebaseDao.requestObjectsWithConditions(new Pet(), queryConditions);
+        if (!TextUtils.isEmpty(mTempListChoice) && mTempListChoice.equals(getString(R.string.dialog_filter_my_pets))) {
+            if (mFoundation==null) {
+                //If the Foundation is mull, then try waiting for Firebase to fetch the Foundation data before searching for the pets
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        QueryCondition queryCondition = new QueryCondition(getString(R.string.query_condition_equalsString), "oi", mFoundation.getUI(), true, 0);
+                        queryConditions.add(queryCondition);
+                        mFirebaseDao.requestObjectsWithConditions(new Pet(), queryConditions);
+                    }
+                }, 100);
+            }
+            else {
+                //Othersiee, perform a search now
+                queryCondition = new QueryCondition(getString(R.string.query_condition_equalsString), "oi", mFoundation.getUI(), true, 0);
+                queryConditions.add(queryCondition);
+                mFirebaseDao.requestObjectsWithConditions(new Pet(), queryConditions);
+            }
+        }
+        else if (!TextUtils.isEmpty(mTempListChoice) && mTempListChoice.equals(getString(R.string.dialog_filter_my_favorites))) {
+
+            mFavoritePetIds = mFamily.getFPI();
+            mDocumentCounter = 0;
+            mPetList = new ArrayList<>();
+
+            for (String id : mFavoritePetIds) {
+                List<QueryCondition> currentQueryConditions = new ArrayList<>(queryConditions);
+                queryCondition = new QueryCondition(getString(R.string.query_condition_equalsString), "ui", id, true, 0);
+                currentQueryConditions.add(queryCondition);
+                mFirebaseDao.requestObjectsWithConditions(new Pet(), currentQueryConditions);
+            }
+        }
+        else {
+            mFirebaseDao.requestObjectsWithConditions(new Pet(), queryConditions);
+        }
+
     }
     private void sortAndDisplayPetList() {
 
         getPetsAtDistance();
-        updatePetsWithFavorites();
+        handlePetFavorites();
         sortPets();
         startImageSyncThread();
         hideLoadingIndicator();
         mPetsRecyclerViewAdapter.setContents(mPetsAtDistance);
     }
-    private void updatePetsWithFavorites() {
-        List<String> favoriteIds = new ArrayList<>(mFamily.getFPI());
-        for (Pet pet : mPetsAtDistance) {
-            for (String id : favoriteIds) {
-                if (pet.getUI().equals(id)) {
-                    pet.setFv(true);
-                    favoriteIds.remove(id);
-                    break;
+    private void handlePetFavorites() {
+
+        if (mFamily!=null) {
+            List<String> favoriteIds = new ArrayList<>(mFamily.getFPI());
+            for (Pet pet : mPetsAtDistance) {
+                for (String id : favoriteIds) {
+                    if (pet.getUI().equals(id)) {
+                        pet.setFv(true);
+                        favoriteIds.remove(id);
+                        break;
+                    }
                 }
             }
         }
@@ -1137,51 +1294,88 @@ public class PetListActivity extends AppCompatActivity implements
 
         mPetsAtDistance = Arrays.asList(pets);
     }
-    private void setTempFiltersAccordingToFamilyPreferences() {
+    private void setTempFiltersAccordingToFamilyOrFoundationPreferences() {
 
-        if (!TextUtils.isEmpty(mFamily.getTP())) mTempSelectedType = mFamily.getTP();
-        if (!TextUtils.isEmpty(mFamily.getGP())) mTempSelectedGender = mFamily.getGP();
-        if (!TextUtils.isEmpty(mFamily.getAP())) mTempSelectedAgeRange = mFamily.getAP();
-        if (!TextUtils.isEmpty(mFamily.getSP())) mTempSelectedSize = mFamily.getSP();
-        if (!TextUtils.isEmpty(mFamily.getDRP())) mTempSelectedDogBreed = mFamily.getDRP();
-        if (!TextUtils.isEmpty(mFamily.getCRP())) mTempSelectedCatBreed = mFamily.getCRP();
-        if (!TextUtils.isEmpty(mFamily.getPRP())) mTempSelectedParrotBreed = mFamily.getPRP();
-        if (!TextUtils.isEmpty(mFamily.getCLP())) mTempSelectedCoatLength = mFamily.getCLP();
+        if (mUser.getIF()) {
+            if (!TextUtils.isEmpty(mFoundation.getTP())) mTempSelectedType = mFoundation.getTP();
+            if (!TextUtils.isEmpty(mFoundation.getGP())) mTempSelectedGender = mFoundation.getGP();
+            if (!TextUtils.isEmpty(mFoundation.getAP())) mTempSelectedAgeRange = mFoundation.getAP();
+            if (!TextUtils.isEmpty(mFoundation.getSP())) mTempSelectedSize = mFoundation.getSP();
+            if (!TextUtils.isEmpty(mFoundation.getDRP())) mTempSelectedDogBreed = mFoundation.getDRP();
+            if (!TextUtils.isEmpty(mFoundation.getCRP())) mTempSelectedCatBreed = mFoundation.getCRP();
+            if (!TextUtils.isEmpty(mFoundation.getPRP())) mTempSelectedParrotBreed = mFoundation.getPRP();
+            if (!TextUtils.isEmpty(mFoundation.getCLP())) mTempSelectedCoatLength = mFoundation.getCLP();
 
-        mTempSelectedGoodWithKids = mFamily.getGKP();
-        mTempSelectedGoodWithCats = mFamily.getGCP();
-        mTempSelectedGoodWithDogs = mFamily.getGDP();
-        mTempSelectedCastrated = mFamily.getCsP();
-        mTempSelectedHouseTrained = mFamily.getHTP();
-        mTempSelectedSpecialNeeds = mFamily.getSNP();
+            mTempSelectedGoodWithKids = mFoundation.getGKP();
+            mTempSelectedGoodWithCats = mFoundation.getGCP();
+            mTempSelectedGoodWithDogs = mFoundation.getGDP();
+            mTempSelectedCastrated = mFoundation.getCsP();
+            mTempSelectedHouseTrained = mFoundation.getHTP();
+            mTempSelectedSpecialNeeds = mFoundation.getSNP();
 
-        mTempPetDistance = mFamily.getDP();
+            mTempPetDistance = mFoundation.getDP();
+        }
+        else {
+            if (!TextUtils.isEmpty(mFamily.getTP())) mTempSelectedType = mFamily.getTP();
+            if (!TextUtils.isEmpty(mFamily.getGP())) mTempSelectedGender = mFamily.getGP();
+            if (!TextUtils.isEmpty(mFamily.getAP())) mTempSelectedAgeRange = mFamily.getAP();
+            if (!TextUtils.isEmpty(mFamily.getSP())) mTempSelectedSize = mFamily.getSP();
+            if (!TextUtils.isEmpty(mFamily.getDRP())) mTempSelectedDogBreed = mFamily.getDRP();
+            if (!TextUtils.isEmpty(mFamily.getCRP())) mTempSelectedCatBreed = mFamily.getCRP();
+            if (!TextUtils.isEmpty(mFamily.getPRP())) mTempSelectedParrotBreed = mFamily.getPRP();
+            if (!TextUtils.isEmpty(mFamily.getCLP())) mTempSelectedCoatLength = mFamily.getCLP();
+
+            mTempSelectedGoodWithKids = mFamily.getGKP();
+            mTempSelectedGoodWithCats = mFamily.getGCP();
+            mTempSelectedGoodWithDogs = mFamily.getGDP();
+            mTempSelectedCastrated = mFamily.getCsP();
+            mTempSelectedHouseTrained = mFamily.getHTP();
+            mTempSelectedSpecialNeeds = mFamily.getSNP();
+
+            mTempPetDistance = mFamily.getDP();
+        }
     }
-    private void setTempSortParametersAccordingToFamilyPreferences() {
-        if (!TextUtils.isEmpty(mFamily.getSrT())) mTempSortField = mFamily.getSrT();
-        else mTempSortField = getString(R.string.distance);
-
-        mTempSortAscending = mFamily.getSrA();
+    private void setTempSortParametersAccordingToFamilyOrFoundationPreferences() {
+        if (mUser.getIF()) {
+            if (!TextUtils.isEmpty(mFoundation.getSrT())) mTempSortField = mFoundation.getSrT();
+            else mTempSortField = getString(R.string.distance);
+            mTempSortAscending = mFoundation.getSrA();
+        }
+        else {
+            if (!TextUtils.isEmpty(mFamily.getSrT())) mTempSortField = mFamily.getSrT();
+            else mTempSortField = getString(R.string.distance);
+            mTempSortAscending = mFamily.getSrA();
+        }
     }
     private void openPetProfile(int clickedItemIndex) {
-        Intent intent = new Intent(this, ShowPetProfileActivity.class);
-        Bundle bundle = new Bundle();
-        bundle.putParcelable(getString(R.string.pet_profile_parcelable), mPetsAtDistance.get(clickedItemIndex));
-        bundle.putParcelable(getString(R.string.family_profile_parcelable), mFamily);
-        intent.putExtras(bundle);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-        startActivityForResult(intent, SHOW_PET_ACTIVITY_KEY);
+        if (mUser.getIF()) {
+            Intent intent = new Intent(this, UpdatePetActivity.class);
+            Bundle bundle = new Bundle();
+            bundle.putString(getString(R.string.selected_pet_id), mPetsAtDistance.get(clickedItemIndex).getUI());
+            intent.putExtras(bundle);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+            startActivity(intent);
+        }
+        else {
+            Intent intent = new Intent(this, ShowPetProfileActivity.class);
+            Bundle bundle = new Bundle();
+            bundle.putParcelable(getString(R.string.pet_profile_parcelable), mPetsAtDistance.get(clickedItemIndex));
+            bundle.putParcelable(getString(R.string.family_profile_parcelable), mFamily);
+            intent.putExtras(bundle);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+            startActivityForResult(intent, SHOW_PET_ACTIVITY_KEY);
+        }
     }
 
 
     //View click listeners
     @OnClick(R.id.pet_list_filter_button) public void onFilterButtonClick() {
-        setTempFiltersAccordingToFamilyPreferences();
+        setTempFiltersAccordingToFamilyOrFoundationPreferences();
         setSearchParametersEqualToTempParameters();
         showFilterDialog();
     }
     @OnClick(R.id.pet_list_sort_button) public void onSortButtonClick() {
-        setTempSortParametersAccordingToFamilyPreferences();
+        setTempSortParametersAccordingToFamilyOrFoundationPreferences();
         setSearchParametersEqualToTempParameters();
         showSortDialog();
     }
@@ -1262,8 +1456,23 @@ public class PetListActivity extends AppCompatActivity implements
     //Communication with Firebase Dao handler
     @Override public void onPetListFound(List<Pet> pets) {
         if (pets == null) return;
-        mPetList = pets;
-        sortAndDisplayPetList();
+
+        if (!TextUtils.isEmpty(mTempListChoice) && mTempListChoice.equals(getString(R.string.dialog_filter_my_favorites))) {
+            if (pets.size()>0 && pets.get(0) !=null) {
+                mPetList = new ArrayList<>(mPetList); //A new arraylist is built since the old one may be "busy" while trying to update it, resulting in an error
+                Pet pet = pets.get(0);
+                pet.setFv(true);
+                mPetList.add(pet);
+            }
+            mDocumentCounter++;
+            if (mDocumentCounter == mFavoritePetIds.size()) {
+                sortAndDisplayPetList();
+            }
+        }
+        else {
+            mPetList = pets;
+            sortAndDisplayPetList();
+        }
     }
     @Override public void onFamilyListFound(List<Family> families) {
         if (families == null) return;
@@ -1275,13 +1484,27 @@ public class PetListActivity extends AppCompatActivity implements
         }
         else {
             mFamily = families.get(0);
-            setTempSortParametersAccordingToFamilyPreferences();
-            setTempFiltersAccordingToFamilyPreferences();
+            setTempSortParametersAccordingToFamilyOrFoundationPreferences();
+            setTempFiltersAccordingToFamilyOrFoundationPreferences();
             setSearchParametersEqualToTempParameters();
             requestFilteredListFromFirebase();
         }
     }
     @Override public void onFoundationListFound(List<Foundation> foundations) {
+        if (foundations == null) return;
+
+        //If family is not in database then create it, otherwise update mPet
+        if (foundations.size() == 0 || foundations.get(0)==null) {
+            Toast.makeText(getBaseContext(), R.string.must_create_family_profile, Toast.LENGTH_SHORT).show();
+            Utilities.startUpdateFamilyProfileActivity(PetListActivity.this);
+        }
+        else {
+            mFoundation = foundations.get(0);
+            setTempSortParametersAccordingToFamilyOrFoundationPreferences();
+            setTempFiltersAccordingToFamilyOrFoundationPreferences();
+            setSearchParametersEqualToTempParameters();
+            requestFilteredListFromFirebase();
+        }
     }
     @Override public void onUserListFound(List<User> users) {
     }

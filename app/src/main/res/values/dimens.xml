@@ -41,5 +41,6 @@
     <dimen name="dialog_filter_bottom_buttons_height">32dp</dimen>
     <dimen name="dialog_filter_bottom_buttons_corner_radius">16dp</dimen>
     <dimen name="show_pet_profile_horizontal_margin">24dp</dimen>
+    <dimen name="tips_card_height">100dp</dimen>
 
 </resources>

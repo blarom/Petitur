@@ -26,18 +26,16 @@ import butterknife.OnClick;
 public class PetListRecycleViewAdapter extends RecyclerView.Adapter<PetListRecycleViewAdapter.PetViewHolder> {
 
     private final Context mContext;
-    private final double mUserLatitude;
-    private final double mUserLongitude;
+    private final boolean mUserIsFoundation;
     private List<Pet> mPets;
     final private PetListItemClickHandler mOnClickHandler;
     private int mSelectedProfileIndex;
 
-    public PetListRecycleViewAdapter(Context context, PetListItemClickHandler listener, List<Pet> pets, double userLatitude, double userLongitude) {
+    public PetListRecycleViewAdapter(Context context, PetListItemClickHandler listener, List<Pet> pets, boolean userIsFoundation) {
         this.mContext = context;
         this.mOnClickHandler = listener;
         this.mPets = pets;
-        this.mUserLatitude = userLatitude;
-        this.mUserLongitude = userLongitude;
+        this.mUserIsFoundation = userIsFoundation;
     }
 
     @NonNull @Override public PetViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {LayoutInflater inflater = LayoutInflater.from(mContext);
@@ -78,7 +76,12 @@ public class PetListRecycleViewAdapter extends RecyclerView.Adapter<PetListRecyc
         if (gender.equals("Male")) Picasso.with(mContext).load(R.drawable.ic_pet_gender_male_24dp).into(holder.genderImageView);
         else Picasso.with(mContext).load(R.drawable.ic_pet_gender_female_24dp).into(holder.genderImageView);
 
-        holder.loveImageView.setChecked(pet.getFv());
+        if (mUserIsFoundation) {
+            holder.loveImageView.setVisibility(View.INVISIBLE);
+        }
+        else {
+            holder.loveImageView.setChecked(pet.getFv());
+        }
 
         updateBackground(holder, position);
     }

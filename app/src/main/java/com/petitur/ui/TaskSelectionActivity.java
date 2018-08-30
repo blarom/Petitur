@@ -185,12 +185,7 @@ public class TaskSelectionActivity extends AppCompatActivity implements
         mFoundationNotCreatedYet = true;
         mFamilyNotCreatedYet = true;
 
-        mFindPetButton.setVisibility(View.GONE);
-        mGetAdviceButton.setVisibility(View.GONE);
-        mSeeFavoritesButton.setVisibility(View.GONE);
-        mSeeMyPetsButton.setVisibility(View.GONE);
-        mAddPetButton.setVisibility(View.GONE);
-        mSearchUsersButton.setVisibility(View.GONE);
+        showBlankTaskSelectionMenu();
     }
     private void setupFirebaseAuthentication() {
         // Check if user is signed in (non-null) and update UI accordingly.
@@ -203,7 +198,7 @@ public class TaskSelectionActivity extends AppCompatActivity implements
                     // TinDogUser is signed in
                     Utilities.setAppPreferenceUserHasNotRefusedSignIn(getApplicationContext(), true);
                     Utilities.setAppPreferenceFirstTimeUsingApp(getApplicationContext(), false);
-                    showWelcomeMessage();
+                    updateWelcomeMessage();
                     Log.d(DEBUG_TAG, "onAuthStateChanged:signed_in:" + mCurrentFirebaseUser.getUid());
                 } else {
                     // TinDogUser is signed out
@@ -282,6 +277,7 @@ public class TaskSelectionActivity extends AppCompatActivity implements
     }
     private void modifyUserInterfaceAccordingToCredentials() {
         if (mUser!=null) {
+            mWelcomeTextView.setVisibility(View.VISIBLE);
             if (mUser.getIF()) {
                 mFindPetButton.setVisibility(View.GONE);
                 mGetAdviceButton.setVisibility(View.GONE);
@@ -306,6 +302,7 @@ public class TaskSelectionActivity extends AppCompatActivity implements
         }
     }
     private void showBlankTaskSelectionMenu() {
+        mWelcomeTextView.setVisibility(View.GONE);
         mFindPetButton.setVisibility(View.GONE);
         mGetAdviceButton.setVisibility(View.GONE);
         mSeeFavoritesButton.setVisibility(View.GONE);
@@ -314,17 +311,18 @@ public class TaskSelectionActivity extends AppCompatActivity implements
         mSearchUsersButton.setVisibility(View.GONE);
         mPleaseSignInTextView.setVisibility(View.VISIBLE);
     }
-    private void openPetList() {
-        if (mFamilyNotCreatedYet) return;
+    private void openPetList(boolean requestedFavorites) {
+        if (mUser.getIF() && mFoundationNotCreatedYet || !mUser.getIF() && mFamilyNotCreatedYet) return;
         Intent intent = new Intent(this, PetListActivity.class);
         Bundle bundle = new Bundle();
         bundle.putParcelable(getString(R.string.bundled_user), mUser);
+        if (requestedFavorites) bundle.putBoolean(getString(R.string.bundled_requested_favorites), true);
         intent.putExtras(bundle);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         startActivity(intent);
     }
-    private void openPetProfile(@Nonnull Pet pet) {
-        if (mFoundationNotCreatedYet) return;
+    private void openUpdatePetProfile(@Nonnull Pet pet) {
+        if (mUser.getIF() && mFoundationNotCreatedYet || !mUser.getIF() && mFamilyNotCreatedYet) return;
         Intent intent = new Intent(this, UpdatePetActivity.class);
         Bundle bundle = new Bundle();
         bundle.putString(getString(R.string.selected_pet_id), pet.getUI());
@@ -332,13 +330,7 @@ public class TaskSelectionActivity extends AppCompatActivity implements
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         startActivity(intent);
     }
-    private void openFavorites() {
-        if (mFamilyNotCreatedYet) return;
-        Intent intent = new Intent(this, FavoritesActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-        startActivity(intent);
-    }
-    private void showWelcomeMessage() {
+    private void updateWelcomeMessage() {
         Calendar calendar = Calendar.getInstance();
         Date currentTime = calendar.getTime();
         int hour = calendar.get(Calendar.HOUR_OF_DAY);
@@ -360,21 +352,29 @@ public class TaskSelectionActivity extends AppCompatActivity implements
 
         mWelcomeTextView.setText(welcomeMessage);
     }
+    private void openTipsInfoActivity() {
+
+        Intent intent = new Intent(this, TipsInfoActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        startActivity(intent);
+    }
 
 
     //View click listeners
     @OnClick(R.id.task_selection_find_pet) public void onFindPetButtonClick() {
-        openPetList();
+        openPetList(false);
     }
     @OnClick(R.id.task_selection_see_favorites) public void onSeeFavoritesButtonClick() {
-        openFavorites();
+        openPetList(true);
     }
-    @OnClick(R.id.task_selection_get_tips_info) public void onGetAdviceButtonClick() {
+    @OnClick(R.id.task_selection_get_tips_info) public void onTipsInfoButtonClick() {
+        openTipsInfoActivity();
     }
     @OnClick(R.id.task_selection_add_pet) public void onAddPetButtonClick() {
-        openPetProfile(new Pet());
+        openUpdatePetProfile(new Pet());
     }
     @OnClick(R.id.task_selection_see_my_pets) public void onSeeMyPetsButtonClick() {
+        openPetList(false);
     }
     @OnClick(R.id.task_selection_search_users) public void onSearchUsersButtonClick() {
     }
