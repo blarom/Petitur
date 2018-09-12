@@ -8,13 +8,6 @@
     android:padding="?dialogPreferredPadding"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <TextView
-        android:id="@+id/dialog_filter_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:text="@string/filters"/>
-
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -23,6 +16,17 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/dialog_filter_sort_title"
+                style="@style/FilterSubtitleStyle"
+                android:text="@string/sort_by"/>
+
+            <Spinner
+                android:id="@+id/dialog_filter_sort_spinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                />
 
             <LinearLayout
                 android:id="@+id/dialog_filter_buttons_pet_list"
@@ -335,30 +339,6 @@
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="@dimen/double_margin">
 
-                <Button
-                    android:id="@+id/dialog_filter_button_reset"
-                    android:layout_width="0dp"
-                    android:layout_height="@dimen/dialog_filter_bottom_buttons_height"
-                    android:layout_marginEnd="@dimen/standard_margin"
-                    android:layout_marginRight="@dimen/standard_margin"
-                    android:layout_weight="1"
-                    android:textAllCaps="false"
-                    android:background="@drawable/background_rounded_corners_edge_only"
-                    android:gravity="center"
-                    android:text="@string/reset_filters"/>
-
-                <Button
-                    android:id="@+id/dialog_filter_button_save"
-                    android:layout_width="0dp"
-                    android:layout_height="@dimen/dialog_filter_bottom_buttons_height"
-                    android:layout_marginLeft="@dimen/standard_margin"
-                    android:layout_marginStart="@dimen/standard_margin"
-                    android:layout_weight="1"
-                    android:textAllCaps="false"
-                    android:background="@drawable/background_rounded_corners_full_color"
-                    android:gravity="center"
-                    android:text="@string/save_filters"
-                    android:textColor="@color/white"/>
             </LinearLayout>
 
         </LinearLayout>

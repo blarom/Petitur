@@ -1,5 +1,7 @@
 package com.petitur.ui;
 
+import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
@@ -7,7 +9,6 @@ import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.TextInputLayout;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.InputType;
 import android.text.TextUtils;
@@ -16,10 +17,12 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.firebase.ui.auth.IdpResponse;
@@ -32,6 +35,7 @@ import com.petitur.data.Foundation;
 import com.petitur.data.MapMarker;
 import com.petitur.data.Pet;
 import com.petitur.data.User;
+import com.petitur.resources.LocaleHelper;
 import com.petitur.resources.Utilities;
 
 import java.util.List;
@@ -41,7 +45,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 
-public class PreferencesActivity extends AppCompatActivity implements FirebaseDao.FirebaseOperationsHandler {
+public class PreferencesActivity extends BaseActivity implements FirebaseDao.FirebaseOperationsHandler {
 
 
     //region Parameters
@@ -54,6 +58,7 @@ public class PreferencesActivity extends AppCompatActivity implements FirebaseDa
     @BindView(R.id.preferences_change_password) ImageView mImageViewChangePassword;
     @BindView(R.id.preferences_search_country_only_checkbox) CheckBox mCheckBoxLimitToCountry;
     @BindView(R.id.preferences_please_sign_in) TextView mPleaseSignInTextView;
+    @BindView(R.id.preferences_language_selection_spinner) Spinner mLanguageSelectionSpinner;
     private Unbinder mBinding;
     private User mUser;
     private FirebaseDao mFirebaseDao;
@@ -63,6 +68,10 @@ public class PreferencesActivity extends AppCompatActivity implements FirebaseDa
     private boolean mLimitToCountry;
     private Bundle mSavedInstanceState;
     private Menu mMenu;
+    private String mLanguageCode;
+    private int mLastSelectedPosition;
+    private String mLanguageEnglish;
+    private String mLanguageHebrew;
     //endregion
 
 
@@ -176,6 +185,63 @@ public class PreferencesActivity extends AppCompatActivity implements FirebaseDa
             }
         });
 
+        mLanguageEnglish = getString(R.string.language_selection_english);
+        mLanguageHebrew = getString(R.string.language_selection_hebrew);
+
+        setLanguageInSpinner();
+
+        mLanguageSelectionSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int pos, long id) {
+
+                if (pos == mLastSelectedPosition) return;
+
+                //Getting the selected language
+                String selectedItem = (String) adapterView.getItemAtPosition(pos);
+                mLanguageCode = "en";
+
+                if (selectedItem.equals(mLanguageEnglish)) {
+                    mLanguageCode = "en";
+                }
+                else if (selectedItem.equals(mLanguageHebrew)) {
+                    mLanguageCode = "he";
+                }
+
+                //Creating an alert dialog to make sure the user wants to change the language
+                AlertDialog alertDialog = new AlertDialog.Builder(PreferencesActivity.this).create();
+                alertDialog.setMessage(getString(R.string.sure_to_change_app_language));
+
+                alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.yes), new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+
+                        mUser.setLg(mLanguageCode);
+                        mFirebaseDao.updateObject(mUser);
+
+                        Utilities.setAppPreferenceLanguage(getApplicationContext(), mLanguageCode);
+                        Context context = LocaleHelper.setLocale(getApplicationContext(), mLanguageCode);
+
+                        //Relaunching the app
+                        Intent intent = getPackageManager().getLaunchIntentForPackage( getPackageName() );
+                        if (intent!=null) {
+                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                            startActivity(intent);
+                        }
+                    }
+                });
+                alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, getString(R.string.no), new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                    }
+                });
+
+                alertDialog.show();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+
         Utilities.hideSoftKeyboard(this);
     }
     private void updateUserInfoShownToUser() {
@@ -224,7 +290,6 @@ public class PreferencesActivity extends AppCompatActivity implements FirebaseDa
                     Utilities.setAppPreferenceUserHasNotRefusedSignIn(getApplicationContext(), true);
                     updateUserInfoShownToUser();
                     if (mSavedInstanceState==null) updatePreferencesShownToUser();
-                    getUserProfile();
                     Log.d(DEBUG_TAG, "onAuthStateChanged:signed_in:" + mCurrentFirebaseUser.getUid());
                 } else {
                     // User is signed out
@@ -327,14 +392,40 @@ public class PreferencesActivity extends AppCompatActivity implements FirebaseDa
         mPreferencesContainer.setVisibility(View.GONE);
         mPleaseSignInTextView.setVisibility(View.VISIBLE);
     }
-    private void modifyUserInterfaceAccordingToCredentials() {
-        if (mUser!=null) {
+    private void modifyLayoutAccordingToCredentials() {
+        if (mUser!=null && mPreferencesContainer!=null) {
             mPreferencesContainer.setVisibility(View.VISIBLE);
             mPleaseSignInTextView.setVisibility(View.GONE);
         }
         else {
             showBlankPreferences();
         }
+    }
+    private void setLanguageInSpinner() {
+
+        int position = 0;
+        if (!TextUtils.isEmpty(mUser.getUI())) {
+            switch (mUser.getLg()) {
+                case "en":
+                    position = Utilities.getSpinnerPositionFromText(mLanguageSelectionSpinner, mLanguageEnglish);
+                    break;
+                case "he":
+                    position = Utilities.getSpinnerPositionFromText(mLanguageSelectionSpinner, mLanguageHebrew);
+                    break;
+            }
+        }
+        else {
+            switch (Utilities.getAppPreferenceLanguage(getApplicationContext())) {
+                case "en":
+                    position = Utilities.getSpinnerPositionFromText(mLanguageSelectionSpinner, mLanguageEnglish);
+                    break;
+                case "he":
+                    position = Utilities.getSpinnerPositionFromText(mLanguageSelectionSpinner, mLanguageHebrew);
+                    break;
+            }
+        }
+        mLastSelectedPosition = position;
+        mLanguageSelectionSpinner.setSelection(position);
     }
 
 
@@ -367,21 +458,14 @@ public class PreferencesActivity extends AppCompatActivity implements FirebaseDa
 
         //If user is not in database then create it, otherwise update mUser
         if (users.size() == 0 || users.get(0)==null) {
-            if (!mUser.getOI().equals("")) {
-                String id = mFirebaseDao.createObject(mUser);
-                if (!TextUtils.isEmpty(id)) {
-                    mUser.setUI(id);
-                    mFirebaseDao.updateObject(mUser);
-                    modifyUserInterfaceAccordingToCredentials();
-                }
-                else {
-                    Log.i(DEBUG_TAG, "Failed to create user in Firestore");
-                }
-            }
+
+            mUser = (User) mFirebaseDao.createObjectWithUIAndReturnIt(mUser);
+            modifyLayoutAccordingToCredentials();
         }
         else {
             mUser = users.get(0);
-            modifyUserInterfaceAccordingToCredentials();
+            modifyLayoutAccordingToCredentials();
+            setLanguageInSpinner();
         }
     }
     @Override public void onMapMarkerListFound(List<MapMarker> mapMarkers) {

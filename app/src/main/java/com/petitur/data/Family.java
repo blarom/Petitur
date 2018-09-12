@@ -26,17 +26,23 @@ public class Family implements Parcelable{
         setUniqueIdentifierFromDetails();
     }
 
+    private String oI; //Owner identifier
 
     protected Family(Parcel in) {
         oI = in.readString();
         pn = in.readString();
+        pnL = in.readString();
         uI = in.readString();
         em = in.readString();
         cp = in.readString();
         cn = in.readString();
-        se = in.readString();
+        cnL = in.readString();
         ct = in.readString();
+        ctL = in.readString();
+        se = in.readString();
+        seL = in.readString();
         st = in.readString();
+        stL = in.readString();
         xp = in.readString();
         fD = in.readByte() != 0;
         aD = in.readByte() != 0;
@@ -70,8 +76,11 @@ public class Family implements Parcelable{
         snP = in.readByte() != 0;
         dP = in.readInt();
         srT = in.readString();
-        srA = in.readByte() != 0;
         fPI = in.createStringArrayList();
+
+        Double lat = in.readDouble();
+        Double lng = in.readDouble();
+        geo = new GeoPoint(lat, lng);
     }
 
     public static final Creator<Family> CREATOR = new Creator<Family>() {
@@ -86,7 +95,6 @@ public class Family implements Parcelable{
         }
     };
 
-    private String oI; //Owner identifier
     public String getOI() {
         return oI;
     }
@@ -101,6 +109,14 @@ public class Family implements Parcelable{
     }
     public void setPn(String pseudonym) {
         this.pn = pseudonym;
+    }
+
+    private String pnL = "Default"; //name in local language
+    public String getPnL() {
+        return pnL;
+    }
+    public void setPnL(String pnL) {
+        this.pnL = pnL;
     }
 
     private String uI = ""; //unique identifier
@@ -141,12 +157,28 @@ public class Family implements Parcelable{
         this.cn = cn;
     }
 
+    private String cnL = ""; //country localized (only used locally)
+    public String getCnL() {
+        return cnL;
+    }
+    public void setCnL(String cnL) {
+        this.cnL = cnL;
+    }
+
     private String se = ""; //state
     public String getSe() {
         return se;
     }
     public void setSe(String se) {
         this.se = se;
+    }
+
+    private String seL = ""; //state localized (only used locally)
+    public String getSeL() {
+        return seL;
+    }
+    public void setSeL(String seL) {
+        this.seL = seL;
     }
 
     private String ct = ""; //city
@@ -157,12 +189,28 @@ public class Family implements Parcelable{
         this.ct = ct;
     }
 
+    private String ctL = ""; //city localized (only used locally)
+    public String getCtL() {
+        return ctL;
+    }
+    public void setCtL(String ctL) {
+        this.ctL = ctL;
+    }
+
     private String st = ""; //street
     public String getSt() {
         return st;
     }
     public void setSt(String st) {
         this.st = st;
+    }
+
+    private String stL = ""; //street localized (only used locally)
+    public String getStL() {
+        return stL;
+    }
+    public void setStL(String stL) {
+        this.stL = stL;
     }
 
     private String xp = ""; //experience
@@ -429,20 +477,12 @@ public class Family implements Parcelable{
         this.dP = dP;
     }
 
-    private String srT = "Distance"; //sort type
+    private String srT = "Distance (Ascending)"; //sort order
     public String getSrT() {
         return srT;
     }
     public void setSrT(String srT) {
         this.srT = srT;
-    }
-
-    private boolean srA = true; //sort ascending
-    public boolean getSrA() {
-        return srA;
-    }
-    public void setSrA(boolean srA) {
-        this.srA = srA;
     }
 
     private List<String> fPI; //favorite pet ids
@@ -453,7 +493,6 @@ public class Family implements Parcelable{
         this.fPI = fPI;
     }
 
-
     @Override
     public int describeContents() {
         return 0;
@@ -463,13 +502,18 @@ public class Family implements Parcelable{
     public void writeToParcel(Parcel parcel, int i) {
         parcel.writeString(oI);
         parcel.writeString(pn);
+        parcel.writeString(pnL);
         parcel.writeString(uI);
         parcel.writeString(em);
         parcel.writeString(cp);
         parcel.writeString(cn);
-        parcel.writeString(se);
+        parcel.writeString(cnL);
         parcel.writeString(ct);
+        parcel.writeString(ctL);
+        parcel.writeString(se);
+        parcel.writeString(seL);
         parcel.writeString(st);
+        parcel.writeString(stL);
         parcel.writeString(xp);
         parcel.writeByte((byte) (fD ? 1 : 0));
         parcel.writeByte((byte) (aD ? 1 : 0));
@@ -503,7 +547,9 @@ public class Family implements Parcelable{
         parcel.writeByte((byte) (snP ? 1 : 0));
         parcel.writeInt(dP);
         parcel.writeString(srT);
-        parcel.writeByte((byte) (srA ? 1 : 0));
         parcel.writeStringList(fPI);
+
+        parcel.writeDouble(geo.getLatitude());
+        parcel.writeDouble(geo.getLongitude());
     }
 }

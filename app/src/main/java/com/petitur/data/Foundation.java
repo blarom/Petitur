@@ -24,15 +24,22 @@ public class Foundation implements Parcelable {
         setUniqueIdentifierFromDetails();
     }
 
+    private String nm = "Default"; //name
+
     protected Foundation(Parcel in) {
         nm = in.readString();
+        nmL = in.readString();
         oI = in.readString();
         uI = in.readString();
         wb = in.readString();
         cn = in.readString();
-        se = in.readString();
+        cnL = in.readString();
         ct = in.readString();
+        ctL = in.readString();
+        se = in.readString();
+        seL = in.readString();
         st = in.readString();
+        stL = in.readString();
         stN = in.readString();
         cP = in.readString();
         cE = in.readString();
@@ -54,7 +61,10 @@ public class Foundation implements Parcelable {
         snP = in.readByte() != 0;
         dP = in.readInt();
         srT = in.readString();
-        srA = in.readByte() != 0;
+
+        Double lat = in.readDouble();
+        Double lng = in.readDouble();
+        geo = new GeoPoint(lat, lng);
     }
 
     public static final Creator<Foundation> CREATOR = new Creator<Foundation>() {
@@ -69,12 +79,19 @@ public class Foundation implements Parcelable {
         }
     };
 
-    private String nm = "Default"; //name
     public String getNm() {
         return nm;
     }
     public void setNm(String nm) {
         this.nm = nm;
+    }
+
+    private String nmL = "Default"; //name in local language
+    public String getNmL() {
+        return nmL;
+    }
+    public void setNmL(String nmL) {
+        this.nmL = nmL;
     }
 
     private String oI; // ownerfirebaseUid
@@ -116,12 +133,28 @@ public class Foundation implements Parcelable {
         this.cn = cn;
     }
 
+    private String cnL = ""; //country localized (only used locally)
+    public String getCnL() {
+        return cnL;
+    }
+    public void setCnL(String cnL) {
+        this.cnL = cnL;
+    }
+
     private String se = ""; //state
     public String getSe() {
         return se;
     }
     public void setSe(String se) {
         this.se = se;
+    }
+
+    private String seL = ""; //state localized (only used locally)
+    public String getSeL() {
+        return seL;
+    }
+    public void setSeL(String seL) {
+        this.seL = seL;
     }
 
     private String ct = ""; //city
@@ -132,12 +165,28 @@ public class Foundation implements Parcelable {
         this.ct = ct;
     }
 
+    private String ctL = ""; //city localized (only used locally)
+    public String getCtL() {
+        return ctL;
+    }
+    public void setCtL(String ctL) {
+        this.ctL = ctL;
+    }
+
     private String st = ""; //street
     public String getSt() {
         return st;
     }
     public void setSt(String st) {
         this.st = st;
+    }
+
+    private String stL = ""; //street localized (only used locally)
+    public String getStL() {
+        return stL;
+    }
+    public void setStL(String stL) {
+        this.stL = stL;
     }
 
     private String stN = ""; //Street number
@@ -308,20 +357,12 @@ public class Foundation implements Parcelable {
         this.dP = dP;
     }
 
-    private String srT = "Distance"; //sort type
+    private String srT = "Distance (Ascending)"; //sort order
     public String getSrT() {
         return srT;
     }
     public void setSrT(String srT) {
         this.srT = srT;
-    }
-
-    private boolean srA = true; //sort ascending
-    public boolean getSrA() {
-        return srA;
-    }
-    public void setSrA(boolean srA) {
-        this.srA = srA;
     }
 
     @Override
@@ -332,13 +373,18 @@ public class Foundation implements Parcelable {
     @Override
     public void writeToParcel(Parcel parcel, int i) {
         parcel.writeString(nm);
+        parcel.writeString(nmL);
         parcel.writeString(oI);
         parcel.writeString(uI);
         parcel.writeString(wb);
         parcel.writeString(cn);
-        parcel.writeString(se);
+        parcel.writeString(cnL);
         parcel.writeString(ct);
+        parcel.writeString(ctL);
+        parcel.writeString(se);
+        parcel.writeString(seL);
         parcel.writeString(st);
+        parcel.writeString(stL);
         parcel.writeString(stN);
         parcel.writeString(cP);
         parcel.writeString(cE);
@@ -360,6 +406,8 @@ public class Foundation implements Parcelable {
         parcel.writeByte((byte) (snP ? 1 : 0));
         parcel.writeInt(dP);
         parcel.writeString(srT);
-        parcel.writeByte((byte) (srA ? 1 : 0));
+
+        parcel.writeDouble(geo.getLatitude());
+        parcel.writeDouble(geo.getLongitude());
     }
 }

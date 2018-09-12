@@ -1,6 +1,8 @@
 package com.petitur.adapters;
 
 import android.content.Context;
+import android.location.Address;
+import android.location.Geocoder;
 import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
 import android.support.v7.widget.RecyclerView;
@@ -17,6 +19,9 @@ import com.petitur.data.Pet;
 import com.petitur.resources.Utilities;
 import com.squareup.picasso.Picasso;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import butterknife.BindView;
@@ -49,33 +54,35 @@ public class PetListRecycleViewAdapter extends RecyclerView.Adapter<PetListRecyc
 
         Utilities.displayObjectImageInImageView(mContext, pet, "mainImage", holder.petImageView);
 
-        holder.nameTextView.setText(pet.getNm());
-        holder.cityTextView.setText(pet.getCt());
-        holder.raceTextView.setText(pet.getRc());
-
-        String displayedAge;
-        if (pet.getAg() > 12) {
-            double ageYears = Utilities.getYearsAgeFromYearsMonths(0, pet.getAg());
-            displayedAge = Utilities.convertAgeToDisplayableValue(ageYears) + " years";
-        }
-        else if (pet.getAg() == 12) {
-            displayedAge = "1 year";
-        }
-        else if (12 > pet.getAg() && pet.getAg() > 1){
-            displayedAge = Integer.toString(pet.getAg()) + " months";
-        }
+        //Getting the name
+        String language = Utilities.getAppPreferenceLanguage(mContext);
+        if (pet.getNm().equals("")) holder.nameTextView.setText(pet.getNmL());
+        else if (pet.getNmL().equals("")) holder.nameTextView.setText(pet.getNm());
         else {
-            displayedAge = "1 month";
+            if (language.equals("en")) holder.nameTextView.setText(pet.getNm());
+            else holder.nameTextView.setText(pet.getNmL());
         }
-        holder.ageTextView.setText(displayedAge);
 
-        String displayableDistance = Utilities.convertDistanceToDisplayableValue(pet.getDt()) + "km";
+        //Getting the city
+        holder.cityTextView.setText(pet.getCtL());
+
+        //Getting the breed
+        holder.raceTextView.setText(Utilities.getLocalizedPetBreed(mContext, pet));
+
+        //Getting the age
+        holder.ageTextView.setText(Utilities.getLocalizedPetAge(mContext, pet));
+
+        //Getting the distance
+        String displayableDistance = Utilities.convertDistanceToDisplayableValue(pet.getDt()) + mContext.getString(R.string.unit_km);
         holder.distanceTextView.setText(displayableDistance);
 
+        //Getting the gender image
         String gender = pet.getGn();
-        if (gender.equals("Male")) Picasso.with(mContext).load(R.drawable.ic_pet_gender_male_24dp).into(holder.genderImageView);
+        if (gender.equals(Utilities.getFlag(mContext).getString(R.string.male)))
+            Picasso.with(mContext).load(R.drawable.ic_pet_gender_male_24dp).into(holder.genderImageView);
         else Picasso.with(mContext).load(R.drawable.ic_pet_gender_female_24dp).into(holder.genderImageView);
 
+        //Setting the love icon visibility
         if (mUserIsFoundation) {
             holder.loveImageView.setVisibility(View.INVISIBLE);
         }

@@ -12,7 +12,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 
-public class TipsInfoActivity extends AppCompatActivity {
+public class TipsInfoActivity extends BaseActivity {
 
     private Unbinder mBinding;
 

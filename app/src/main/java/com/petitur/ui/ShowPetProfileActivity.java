@@ -38,6 +38,7 @@ import com.petitur.resources.Utilities;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import butterknife.BindView;
@@ -45,10 +46,10 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 
-public class ShowPetProfileActivity extends AppCompatActivity implements
+public class ShowPetProfileActivity extends BaseActivity implements
         ImagesRecycleViewAdapter.ImageClickHandler,
         ImageSyncAsyncTaskLoader.OnImageSyncOperationsHandler,
-        LoaderManager.LoaderCallbacks<String>,
+        LoaderManager.LoaderCallbacks<List<Pet>>,
         FirebaseDao.FirebaseOperationsHandler {
 
 
@@ -73,7 +74,6 @@ public class ShowPetProfileActivity extends AppCompatActivity implements
     private int mScrollPosition;
     private ImageSyncAsyncTaskLoader mImageSyncAsyncTaskLoader;
     private String mClickedImageUriString;
-    boolean mIsFavorite = false;
     private FirebaseDao mFirebaseDao;
     private Family mFamily;
     //endregion
@@ -119,9 +119,8 @@ public class ShowPetProfileActivity extends AppCompatActivity implements
         switch (itemThatWasClickedId) {
             case android.R.id.home:
                 Intent data = new Intent();
-                data.putExtra(getString(R.string.favorite_state), mIsFavorite);
-                data.putExtra(getString(R.string.selected_pet_id), mPet.getUI());
-                data.putExtra(getString(R.string.family_profile), mFamily);
+                data.putExtra(getString(R.string.pet_profile_parcelable), mPet);
+                data.putExtra(getString(R.string.family_profile_parcelable), mFamily);
                 setResult(RESULT_OK, data);
                 onBackPressed();
                 return true;
@@ -154,8 +153,6 @@ public class ShowPetProfileActivity extends AppCompatActivity implements
         mButtonFavorite.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isFavorited) {
-                mIsFavorite = isFavorited;
-
                 List<String> favoriteIds = mFamily.getFPI();
                 if (favoriteIds==null) favoriteIds = new ArrayList<>();
                 String currentPetUI = mPet.getUI();
@@ -199,11 +196,12 @@ public class ShowPetProfileActivity extends AppCompatActivity implements
         else Picasso.with(this).load(R.drawable.ic_pet_gender_female_24dp).into(mTextViewPetGender);
 
         mTextViewPetName.setText(mPet.getNm());
-        mTextViewCity.setText(mPet.getCt());
-        mTextViewPetRace.setText(mPet.getRc());
-        mTextViewPetAge.setText(Integer.toString(mPet.getAg()));
+        mTextViewCity.setText(mPet.getCtL());
 
-        String displayableDistance = Utilities.convertDistanceToDisplayableValue(mPet.getDt()) + "km";
+        mTextViewPetRace.setText(Utilities.getLocalizedPetBreed(getApplicationContext(), mPet));
+        mTextViewPetAge.setText(Utilities.getLocalizedPetAge(getApplicationContext(), mPet));
+
+        String displayableDistance = Utilities.convertDistanceToDisplayableValue(mPet.getDt()) + getString(R.string.unit_km);
         mTextViewDistance.setText(displayableDistance);
 
         String foundation = mPet.getFN();
@@ -317,7 +315,7 @@ public class ShowPetProfileActivity extends AppCompatActivity implements
     }
 
     //Communication with Loader
-    @NonNull @Override public Loader<String> onCreateLoader(int id, @Nullable Bundle args) {
+    @NonNull @Override public Loader<List<Pet>> onCreateLoader(int id, @Nullable Bundle args) {
 
         if (id== SINGLE_OBJECT_IMAGES_SYNC_LOADER) {
             List<Pet> pets = new ArrayList<>();
@@ -328,12 +326,12 @@ public class ShowPetProfileActivity extends AppCompatActivity implements
         }
         return new ImageSyncAsyncTaskLoader(this, "", null, null, null, null, this);
     }
-    @Override public void onLoadFinished(@NonNull Loader<String> loader, String data) {
+    @Override public void onLoadFinished(@NonNull Loader<List<Pet>> loader, List<Pet> data) {
         if (loader.getId() == SINGLE_OBJECT_IMAGES_SYNC_LOADER) {
             displayImages();
         }
     }
-    @Override public void onLoaderReset(@NonNull Loader<String> loader) {
+    @Override public void onLoaderReset(@NonNull Loader<List<Pet>> loader) {
 
     }
 

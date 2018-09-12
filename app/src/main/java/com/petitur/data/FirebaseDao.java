@@ -663,15 +663,15 @@ public class FirebaseDao {
                     }
                 });
     }
-    public void getAllObjectImages(Object object) {
-        getImage(object, "mainImage");
-        getImage(object, "image1");
-        getImage(object, "image2");
-        getImage(object, "image3");
-        getImage(object, "image4");
-        getImage(object, "image5");
+    public void syncAllObjectImages(Object object) {
+        syncImage(object, "mainImage");
+        syncImage(object, "image1");
+        syncImage(object, "image2");
+        syncImage(object, "image3");
+        syncImage(object, "image4");
+        syncImage(object, "image5");
     }
-    public void getImage(Object object, final String imageName) {
+    public void syncImage(Object object, final String imageName) {
 
         if (Utilities.imageNameIsInvalid(imageName)) return;
 

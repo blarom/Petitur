@@ -2,19 +2,19 @@ package com.petitur.ui;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.DatePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.Address;
 import android.net.Uri;
-import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TextInputEditText;
 import android.support.v4.widget.NestedScrollView;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.text.InputType;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -26,18 +26,20 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import com.firebase.ui.auth.IdpResponse;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.GeoPoint;
 import com.petitur.R;
+import com.petitur.adapters.FosteringFamiliesRecycleViewAdapter;
 import com.petitur.adapters.ImagesRecycleViewAdapter;
 import com.petitur.adapters.SimpleTextRecycleViewAdapter;
+import com.petitur.adapters.VetEventRecycleViewAdapter;
 import com.petitur.data.Family;
 import com.petitur.data.FirebaseDao;
 import com.petitur.data.Foundation;
@@ -50,18 +52,20 @@ import com.theartofdev.edmodo.cropper.CropImageView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 
-public class UpdatePetActivity extends AppCompatActivity implements
+public class UpdatePetActivity extends BaseActivity implements
         FirebaseDao.FirebaseOperationsHandler,
         AdapterView.OnItemSelectedListener,
         SimpleTextRecycleViewAdapter.TextClickHandler,
-        ImagesRecycleViewAdapter.ImageClickHandler {
+        ImagesRecycleViewAdapter.ImageClickHandler, VetEventRecycleViewAdapter.VetEventClickHandler, FosteringFamiliesRecycleViewAdapter.FosteringFamilyClickHandler {
 
 
     //region Parameters
@@ -70,6 +74,7 @@ public class UpdatePetActivity extends AppCompatActivity implements
     @BindView(R.id.update_pet_button_upload_pics) Button mButtonUploadPics;
     @BindView(R.id.update_pet_button_add_video_link) Button mButtonAddVideoLink;
     @BindView(R.id.update_pet_value_name) TextInputEditText mEditTextName;
+    @BindView(R.id.update_pet_value_name_local) TextInputEditText mEditTextNameLocal;
     @BindView(R.id.update_pet_value_foundation) TextInputEditText mEditTextFoundation;
     @BindView(R.id.update_pet_value_country) TextInputEditText mEditTextCountry;
     @BindView(R.id.update_pet_value_state) TextInputEditText mEditTextState;
@@ -79,6 +84,8 @@ public class UpdatePetActivity extends AppCompatActivity implements
     @BindView(R.id.update_pet_value_history) TextInputEditText mEditTextHistory;
     @BindView(R.id.update_pet_image_main) ImageView mImageViewMain;
     @BindView(R.id.update_pet_recyclerview_video_links) RecyclerView mRecyclerViewVideoLinks;
+    @BindView(R.id.update_pet_recyclerview_vet_events) RecyclerView mRecyclerViewVetEvents;
+    @BindView(R.id.update_pet_recyclerview_fostering_families) RecyclerView mRecyclerViewFosteringFamilies;
     @BindView(R.id.update_pet_recyclerview_images) RecyclerView mRecyclerViewDogImages;
     @BindView(R.id.update_pet_age_years_edittext) EditText mAgeYearsEditText;
     @BindView(R.id.update_pet_age_months_edittext) EditText mAgeMonthsEditText;
@@ -86,7 +93,7 @@ public class UpdatePetActivity extends AppCompatActivity implements
     @BindView(R.id.update_pet_size_spinner) Spinner mSpinnerSize;
     @BindView(R.id.update_pet_gender_spinner) Spinner mSpinnerGender;
     @BindView(R.id.update_pet_race_autocompletetextview) AutoCompleteTextView mAutoCompleteTextViewBreed;
-    @BindView(R.id.update_pet_coat_length_spinner) Spinner mSpinnerCoatLength;
+    @BindView(R.id.update_pet_coat_length_spinner) Spinner mSpinnerCoatLengths;
     @BindView(R.id.update_pet_checkbox_good_with_kids) CheckBox mCheckBoxGoodWithKids;
     @BindView(R.id.update_pet_checkbox_good_with_cats) CheckBox mCheckBoxGoodWithCats;
     @BindView(R.id.update_pet_checkbox_good_with_dogs) CheckBox mCheckBoxGoodWithDogs;
@@ -95,9 +102,11 @@ public class UpdatePetActivity extends AppCompatActivity implements
     @BindView(R.id.update_pet_checkbox_special_needs) CheckBox mCheckBoxSpecialNeeds;
     @BindView(R.id.update_pet_scroll_container) NestedScrollView mScrollViewContainer;
     @BindView(R.id.update_pet_arrow_breed) ImageView mImageViewArrowBreed;
-    private ArrayAdapter<CharSequence> mSpinnerAdapterType;
-    private ArrayAdapter<CharSequence> mSpinnerAdapterSize;
-    private ArrayAdapter<CharSequence> mSpinnerAdapterGender;
+    private ArrayAdapter<String> mSpinnerAdapterType;
+    private ArrayAdapter<String> mSpinnerAdapterSize;
+    private ArrayAdapter<String> mSpinnerAdapterGender;
+    private ArrayAdapter<String> mSpinnerAdapterBreed;
+    private ArrayAdapter<String> mSpinnerAdapterCoatLengths;
     private int mTypeSpinnerPosition;
     private int mSizeSpinnerPosition;
     private int mGenderSpinnerPosition;
@@ -115,22 +124,40 @@ public class UpdatePetActivity extends AppCompatActivity implements
     private String mFirebaseUid;
     private FirebaseAuth.AuthStateListener mAuthStateListener;
     private boolean mPetCriticalParametersSet;
-    private boolean mPetAlreadyExistsInFirebaseDb;
     private Unbinder mBinding;
     private SimpleTextRecycleViewAdapter mVideoLinksRecycleViewAdapter;
+    private VetEventRecycleViewAdapter mVetEventsRecycleViewAdapter;
+    private FosteringFamiliesRecycleViewAdapter mFosteringFamiliesRecycleViewAdapter;
     private List<String> mVideoLinks;
     private boolean[] mImagesReady;
     private Bundle mSavedInstanceState;
-    private String mFoundationName;
-    private String mFoundationCity;
-    private String mFoundationCountry;
-    private String mFoundationStreet;
-    private String mFoundationStreetNumber;
     private int mScrollPosition;
-    private String mFoundationUI;
     private Uri[] mTempImageUris;
     private boolean mCurrentlySyncingImages;
     private boolean mRequireOnlineSync;
+    private String mVetEventDate;
+    private String mVetEventDescription;
+    private String mFosteringFamilyStartDate;
+    private String mFosteringFamilyEndDate;
+    private String mDateRangeFromButtons;
+    private String mFosteringFamilyDescription;
+    private Foundation mFoundation;
+    private List<String> mPetTypesList;
+    private List<String> mPetGendersList;
+    private List<String> mPetSizesList;
+    private List<String> mAvailableDogBreeds;
+    private List<String> mAvailableCatBreeds;
+    private List<String> mAvailableParrotBreeds;
+    private List<String> mPetCoatLengths;
+    private List<String> mPetAgesList;
+    private List<String> mDisplayedPetTypesList;
+    private List<String> mDisplayedPetGendersList;
+    private List<String> mDisplayedPetSizesList;
+    private List<String> mDisplayedAvailableDogBreeds;
+    private List<String> mDisplayedAvailableCatBreeds;
+    private List<String> mDisplayedAvailableParrotBreeds;
+    private List<String> mDisplayedPetCoatLengths;
+    private List<String> mDisplayedPetAgesList;
     //endregion
 
 
@@ -142,10 +169,11 @@ public class UpdatePetActivity extends AppCompatActivity implements
         mSavedInstanceState = savedInstanceState;
         getExtras();
         initializeParameters();
-        if (savedInstanceState==null) getFoundationAndPetProfilesFromFirebase();
+        setupVetEventsRecyclerView();
+        setupFosteringFamiliesRecyclerView();
         setupVideoLinksRecyclerView();
-        setupDogImagesRecyclerView();
-        Utilities.displayObjectImageInImageView(getApplicationContext(), mPet, "mainImage", mImageViewMain);
+        setupPetImagesRecyclerView();
+        if (savedInstanceState==null) updateLayoutWithFoundationAndPetProfiles();
     }
     @Override public void onStart() {
         super.onStart();
@@ -180,21 +208,6 @@ public class UpdatePetActivity extends AppCompatActivity implements
                 Exception error = result.getError();
             }
         }
-        if (requestCode == Utilities.FIREBASE_SIGN_IN_KEY) {
-            IdpResponse response = IdpResponse.fromResultIntent(data);
-
-            if (resultCode == RESULT_OK) {
-                // Successfully signed in
-                mCurrentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-                if (!mPetAlreadyExistsInFirebaseDb) getFoundationAndPetProfilesFromFirebase();
-                // ...
-            } else {
-                // Sign in failed. If response is null the user canceled the
-                // sign-in flow using the back button. Otherwise check
-                // response.getError().getErrorCode() and handle the error.
-                // ...
-            }
-        }
     }
     @Override public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.update_pet_menu, menu);
@@ -216,9 +229,8 @@ public class UpdatePetActivity extends AppCompatActivity implements
                 if (mRequireOnlineSync) mCurrentlySyncingImages = Utilities.startSyncingImagesIfNotAlreadySyncing(getApplicationContext(), mCurrentlySyncingImages, mPet, mFirebaseDao);
 
                 if (mPetCriticalParametersSet) {
-                    if (!mPetAlreadyExistsInFirebaseDb) {
+                    if (TextUtils.isEmpty(mPet.getUI())) {
                         mPet = (Pet) mFirebaseDao.createObjectWithUIAndReturnIt(mPet);
-                        mPetAlreadyExistsInFirebaseDb = true;
                     }
                     else mFirebaseDao.updateObject(mPet);
                 }
@@ -237,12 +249,15 @@ public class UpdatePetActivity extends AppCompatActivity implements
                 }
 
                 if (mPetCriticalParametersSet) {
-                    if (!mPetAlreadyExistsInFirebaseDb) {
+                    if (TextUtils.isEmpty(mPet.getUI())) {
                         mPet = (Pet) mFirebaseDao.createObjectWithUIAndReturnIt(mPet);
                     }
                     else mFirebaseDao.updateObject(mPet);
-                    setResult(Activity.RESULT_OK, new Intent());
-                    finish();
+
+                    Intent data = new Intent();
+                    data.putExtra(getString(R.string.pet_profile_parcelable), mPet);
+                    setResult(RESULT_OK, data);
+                    onBackPressed();
                 }
                 else Toast.makeText(getApplicationContext(), R.string.pet_not_saved, Toast.LENGTH_SHORT).show();
                 return true;
@@ -255,15 +270,10 @@ public class UpdatePetActivity extends AppCompatActivity implements
         outState.putInt(getString(R.string.saved_scroll_position),mScrollPosition);
         outState.putInt(getString(R.string.profile_update_pet_images_rv_position), mStoredDogImagesRecyclerViewPosition);
         outState.putString(getString(R.string.profile_update_image_name), mImageName);
-        outState.putString(getString(R.string.saved_foundation_name), mFoundationName);
-        outState.putString(getString(R.string.saved_foundation_city), mFoundationCity);
-        outState.putString(getString(R.string.saved_foundation_id), mFoundationUI);
-        outState.putString(getString(R.string.saved_foundation_country), mFoundationCountry);
-        outState.putString(getString(R.string.saved_foundation_street), mFoundationStreet);
-        outState.putString(getString(R.string.saved_foundation_street_number), mFoundationStreetNumber);
+        outState.putParcelable(getString(R.string.foundation_profile_parcelable), mFoundation);
         outState.putBoolean(getString(R.string.critical_parameters_set), mPetCriticalParametersSet);
         updatePetWithUserInput();
-        outState.putParcelable(getString(R.string.saved_profile), mPet);
+        outState.putParcelable(getString(R.string.pet_profile_parcelable), mPet);
         super.onSaveInstanceState(outState);
 
     }
@@ -273,20 +283,15 @@ public class UpdatePetActivity extends AppCompatActivity implements
             mStoredDogImagesRecyclerViewPosition = savedInstanceState.getInt(getString(R.string.profile_update_pet_images_rv_position));
             mRecyclerViewDogImages.scrollToPosition(mStoredDogImagesRecyclerViewPosition);
             mImageName = savedInstanceState.getString(getString(R.string.profile_update_image_name));
-            mFoundationName = savedInstanceState.getString(getString(R.string.saved_foundation_name));
-            mFoundationCity = savedInstanceState.getString(getString(R.string.saved_foundation_city));
-            mFoundationUI = savedInstanceState.getString(getString(R.string.saved_foundation_id));
-            mFoundationCountry = savedInstanceState.getString(getString(R.string.saved_foundation_country));
-            mFoundationStreet = savedInstanceState.getString(getString(R.string.saved_foundation_street));
-            mFoundationStreetNumber = savedInstanceState.getString(getString(R.string.saved_foundation_street_number));
-            mPet = savedInstanceState.getParcelable(getString(R.string.saved_profile));
+            mPet = savedInstanceState.getParcelable(getString(R.string.pet_profile_parcelable));
+            mFoundation = savedInstanceState.getParcelable(getString(R.string.foundation_profile_parcelable));
             mScrollPosition = savedInstanceState.getInt(getString(R.string.saved_scroll_position));
             mPetCriticalParametersSet = savedInstanceState.getBoolean(getString(R.string.critical_parameters_set));
 
             mScrollViewContainer.setScrollY(mScrollPosition);
             updateLayoutWithFoundationData();
             updateLayoutWithPetData();
-            setupDogImagesRecyclerView();
+            setupPetImagesRecyclerView();
             Utilities.displayObjectImageInImageView(getApplicationContext(), mPet, "mainImage", mImageViewMain);
         }
     }
@@ -295,8 +300,11 @@ public class UpdatePetActivity extends AppCompatActivity implements
     //Functional methods
     private void getExtras() {
         Intent intent = getIntent();
-        if (getIntent().hasExtra(getString(R.string.selected_pet_id))) {
-            mChosenPetId = intent.getStringExtra(getString(R.string.selected_pet_id));
+        if (intent.hasExtra(getString(R.string.pet_profile_parcelable))) {
+            mPet = intent.getParcelableExtra(getString(R.string.pet_profile_parcelable));
+        }
+        if (intent.hasExtra(getString(R.string.foundation_profile_parcelable))) {
+            mFoundation = intent.getParcelableExtra(getString(R.string.foundation_profile_parcelable));
         }
     }
     private void initializeParameters() {
@@ -306,12 +314,10 @@ public class UpdatePetActivity extends AppCompatActivity implements
         }
 
         mBinding =  ButterKnife.bind(this);
-        mPetAlreadyExistsInFirebaseDb = false;
         mPetCriticalParametersSet = false;
         mImagesReady = new boolean[]{false, false, false, false, false, false};
         mTempImageUris = new Uri[]{null, null, null, null, null, null, null};
         mEditTextFoundation.setEnabled(false);
-        mPet = new Pet();
         mVideoLinks = new ArrayList<>();
         mCurrentlySyncingImages = false;
 
@@ -319,26 +325,40 @@ public class UpdatePetActivity extends AppCompatActivity implements
         mCurrentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         mFirebaseAuth = FirebaseAuth.getInstance();
 
-        mSpinnerAdapterType = ArrayAdapter.createFromResource(this, R.array.pet_types, android.R.layout.simple_spinner_item);
+
+        mDisplayedPetAgesList = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.pet_ages)));
+        mPetAgesList = new ArrayList<>(Arrays.asList(Utilities.getFlag(getApplicationContext()).getStringArray(R.array.pet_ages)));
+
+        mDisplayedPetTypesList = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.pet_types)));
+        mPetTypesList = new ArrayList<>(Arrays.asList(Utilities.getFlag(getApplicationContext()).getStringArray(R.array.pet_types)));
+        mSpinnerAdapterType = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, mDisplayedPetTypesList);
         mSpinnerAdapterType.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mSpinnerType.setAdapter(mSpinnerAdapterType);
         mSpinnerType.setOnItemSelectedListener(this);
 
-        mSpinnerAdapterSize = ArrayAdapter.createFromResource(this, R.array.pet_sizes, android.R.layout.simple_spinner_item);
+        mDisplayedPetSizesList = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.pet_sizes)));
+        mPetSizesList = new ArrayList<>(Arrays.asList(Utilities.getFlag(getApplicationContext()).getStringArray(R.array.pet_sizes)));
+        mSpinnerAdapterSize = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, mDisplayedPetSizesList);
         mSpinnerAdapterSize.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mSpinnerSize.setAdapter(mSpinnerAdapterSize);
         mSpinnerSize.setOnItemSelectedListener(this);
 
-        mSpinnerAdapterGender = ArrayAdapter.createFromResource(this, R.array.pet_genders, android.R.layout.simple_spinner_item);
+        mDisplayedPetGendersList = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.pet_genders)));
+        mPetGendersList = new ArrayList<>(Arrays.asList(Utilities.getFlag(getApplicationContext()).getStringArray(R.array.pet_genders)));
+        mSpinnerAdapterGender = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, mDisplayedPetGendersList);
         mSpinnerAdapterGender.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mSpinnerGender.setAdapter(mSpinnerAdapterGender);
         mSpinnerGender.setOnItemSelectedListener(this);
 
-        List<String> dogBreeds = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.dog_breeds)));
-        dogBreeds.add(0,getString(R.string.mixed));
-        ArrayAdapter<String> mAdapterBreed = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, dogBreeds);
-        mAutoCompleteTextViewBreed.setAdapter(mAdapterBreed);
-        mAutoCompleteTextViewBreed.setText(dogBreeds.get(0));
+        mDisplayedAvailableDogBreeds = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.dog_breeds)));
+        mAvailableDogBreeds = new ArrayList<>(Arrays.asList(Utilities.getFlag(getApplicationContext()).getStringArray(R.array.dog_breeds)));
+        mDisplayedAvailableCatBreeds = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.cat_breeds)));
+        mAvailableCatBreeds = new ArrayList<>(Arrays.asList(Utilities.getFlag(getApplicationContext()).getStringArray(R.array.cat_breeds)));
+        mDisplayedAvailableParrotBreeds = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.parrot_breeds)));
+        mAvailableParrotBreeds = new ArrayList<>(Arrays.asList(Utilities.getFlag(getApplicationContext()).getStringArray(R.array.parrot_breeds)));
+        mSpinnerAdapterBreed = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, mDisplayedAvailableDogBreeds);
+        mAutoCompleteTextViewBreed.setAdapter(mSpinnerAdapterBreed);
+        mAutoCompleteTextViewBreed.setText(mDisplayedAvailableDogBreeds.get(0));
         mAutoCompleteTextViewBreed.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View arg0) {
@@ -352,9 +372,16 @@ public class UpdatePetActivity extends AppCompatActivity implements
             }
         });
 
+        mDisplayedPetCoatLengths = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.coat_lengths)));
+        mPetCoatLengths = new ArrayList<>(Arrays.asList(Utilities.getFlag(getApplicationContext()).getStringArray(R.array.coat_lengths)));
+        mSpinnerAdapterCoatLengths = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, mDisplayedPetCoatLengths);
+        mSpinnerAdapterCoatLengths.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        mSpinnerCoatLengths.setAdapter(mSpinnerAdapterCoatLengths);
+        mSpinnerCoatLengths.setOnItemSelectedListener(this);
+
     }
-    private void getFoundationAndPetProfilesFromFirebase() {
-        if (mCurrentFirebaseUser != null && !mPetAlreadyExistsInFirebaseDb) {
+    private void updateLayoutWithFoundationAndPetProfiles() {
+        if (mCurrentFirebaseUser != null) {
             // Name, email address, and profile photo Url
             mNameFromFirebase = mCurrentFirebaseUser.getDisplayName();
             mEmailFromFirebase = mCurrentFirebaseUser.getEmail();
@@ -365,19 +392,33 @@ public class UpdatePetActivity extends AppCompatActivity implements
             mImageName = "mainImage";
 
             //Getting the foundation details
-            Foundation foundation = new Foundation(mFirebaseUid);
-            mFirebaseDao.requestObjectsWithConditions(foundation, Utilities.getQueryConditionsForSingleObjectSearchByOwnerId(this, foundation));
+            if (mFoundation==null || TextUtils.isEmpty(mFoundation.getUI())) {
+                mFoundation = new Foundation(mFirebaseUid);
+                mFirebaseDao.requestObjectsWithConditions(mFoundation, Utilities.getQueryConditionsForSingleObjectSearchByOwnerId(this, mFoundation));
+            }
+            else {
+                updateLayoutWithFoundationData();
+            }
 
             //Getting the pet details
-            if (!TextUtils.isEmpty(mChosenPetId)) {
-                mPet.setUI(mChosenPetId);
+            if (mPet==null || TextUtils.isEmpty(mPet.getUI())) {
+                mPet = new Pet(mChosenPetId);
                 mFirebaseDao.requestObjectWithId(mPet);
+            }
+            else {
+                updateLayoutWithPetData();
+                updatePetWithUserInput();
+                mFirebaseDao.syncAllObjectImages(mPet);
+                displayPetImages();
             }
         }
     }
     private void updateLayoutWithPetData() {
+
+        if (mEditTextName==null) return;
         //mEditTextFoundation.setText(mDog.getFN());
         mEditTextName.setText(mPet.getNm());
+        mEditTextNameLocal.setText(mPet.getNmL());
         mEditTextCountry.setText(mPet.getCn());
         mEditTextState.setText(mPet.getSe());
         mEditTextCity.setText(mPet.getCt());
@@ -385,18 +426,29 @@ public class UpdatePetActivity extends AppCompatActivity implements
         mEditTextStreetNumber.setText(mPet.getStN());
         mEditTextHistory.setText(mPet.getHs());
 
-        mAgeYearsEditText.setText(Utilities.getYearsFromAge(mPet.getAg()));
-        mAgeMonthsEditText.setText(Utilities.getMonthsFromAge(mPet.getAg()));
+        mAgeYearsEditText.setText(Integer.toString(Utilities.getYearsFromAge(mPet.getAg())));
+        mAgeMonthsEditText.setText(Integer.toString(Utilities.getMonthsFromAge(mPet.getAg())));
 
-        mTypeSpinnerPosition = Utilities.getSpinnerPositionFromText(mSpinnerType, mPet.getTp());
-        mSizeSpinnerPosition = Utilities.getSpinnerPositionFromText(mSpinnerSize, mPet.getSz());
-        mGenderSpinnerPosition = Utilities.getSpinnerPositionFromText(mSpinnerGender, mPet.getGn());
+        mTypeSpinnerPosition = Utilities.getSpinnerPositionFromText(mSpinnerType,
+                Utilities.getDisplayedTextFromFlagText(mDisplayedPetTypesList, mPetTypesList, mPet.getTp()));
+        mSizeSpinnerPosition = Utilities.getSpinnerPositionFromText(mSpinnerSize,
+                Utilities.getDisplayedTextFromFlagText(mDisplayedPetSizesList, mPetSizesList, mPet.getSz()));
+        mGenderSpinnerPosition = Utilities.getSpinnerPositionFromText(mSpinnerGender,
+                Utilities.getDisplayedTextFromFlagText(mDisplayedPetGendersList, mPetGendersList, mPet.getGn()));
 
         mSpinnerType.setSelection(mTypeSpinnerPosition);
         mSpinnerSize.setSelection(mSizeSpinnerPosition);
         mSpinnerGender.setSelection(mGenderSpinnerPosition);
 
-        mAutoCompleteTextViewBreed.setText(mPet.getRc());
+        if (mPet.getTp().equals(getString(R.string.dog))) {
+            mAutoCompleteTextViewBreed.setText(Utilities.getDisplayedTextFromFlagText(mDisplayedAvailableDogBreeds, mAvailableDogBreeds, mPet.getRc()));
+        }
+        else if (mPet.getTp().equals(getString(R.string.cat))) {
+            mAutoCompleteTextViewBreed.setText(Utilities.getDisplayedTextFromFlagText(mDisplayedAvailableCatBreeds, mAvailableCatBreeds, mPet.getRc()));
+        }
+        else if (mPet.getTp().equals(getString(R.string.parrot))) {
+            mAutoCompleteTextViewBreed.setText(Utilities.getDisplayedTextFromFlagText(mDisplayedAvailableParrotBreeds, mAvailableParrotBreeds, mPet.getRc()));
+        }
 
         mCheckBoxGoodWithKids.setChecked(mPet.getGK());
         mCheckBoxGoodWithCats.setChecked(mPet.getGC());
@@ -404,6 +456,9 @@ public class UpdatePetActivity extends AppCompatActivity implements
         mCheckBoxCastrated.setChecked(mPet.getCs());
         mCheckBoxHouseTrained.setChecked(mPet.getHT());
         mCheckBoxSpecialNeeds.setChecked(mPet.getSN());
+
+        mVetEventsRecycleViewAdapter.setContents(mPet.getVet());
+        mFosteringFamiliesRecycleViewAdapter.setContents(mPet.getFam());
 
         mVideoLinksRecycleViewAdapter.setContents(mPet.getVU());
 
@@ -434,12 +489,52 @@ public class UpdatePetActivity extends AppCompatActivity implements
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(itemTouchHelperCallback);
         itemTouchHelper.attachToRecyclerView(mRecyclerViewVideoLinks);
     }
-    private void setupDogImagesRecyclerView() {
+    private void setupVetEventsRecyclerView() {
+        mRecyclerViewVetEvents.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, true));
+        mRecyclerViewVetEvents.setNestedScrollingEnabled(false);
+        mVetEventsRecycleViewAdapter = new VetEventRecycleViewAdapter(this, this, null);
+        mRecyclerViewVetEvents.setAdapter(mVetEventsRecycleViewAdapter);
+
+        ItemTouchHelper.SimpleCallback itemTouchHelperCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+
+                Map<String, String> vetEvents = mPet.getVet();
+                vetEvents.remove(mVetEventDate);
+                mPet.setVet(vetEvents);
+
+                mVetEventsRecycleViewAdapter.setContents(vetEvents);
+                //mVideoLinksRecycleViewAdapter.notifyItemRemoved(viewHolder.getLayoutPosition());
+                mPet.setVU(mVideoLinks);
+            }
+
+        };
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(itemTouchHelperCallback);
+        itemTouchHelper.attachToRecyclerView(mRecyclerViewVetEvents);
+    }
+    private void setupFosteringFamiliesRecyclerView() {
+        mRecyclerViewFosteringFamilies.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, true));
+        mRecyclerViewFosteringFamilies.setNestedScrollingEnabled(false);
+        mFosteringFamiliesRecycleViewAdapter = new FosteringFamiliesRecycleViewAdapter(this, this, null);
+        mRecyclerViewFosteringFamilies.setAdapter(mFosteringFamiliesRecycleViewAdapter);
+
+    }
+    private void setupPetImagesRecyclerView() {
         mRecyclerViewDogImages.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         mRecyclerViewDogImages.setNestedScrollingEnabled(true);
-        List<Uri> uris = Utilities.getExistingImageUriListForObject(getApplicationContext(), mPet, true);
-        mPetImagesRecycleViewAdapter = new ImagesRecycleViewAdapter(this, this, uris);
+        mPetImagesRecycleViewAdapter = new ImagesRecycleViewAdapter(this, this, null);
         mRecyclerViewDogImages.setAdapter(mPetImagesRecycleViewAdapter);
+    }
+    private void displayPetImages() {
+        List<Uri> uris = Utilities.getExistingImageUriListForObject(getApplicationContext(), mPet, true);
+        mPetImagesRecycleViewAdapter.setContents(uris);
+
+        Utilities.displayObjectImageInImageView(getApplicationContext(), mPet, "mainImage", mImageViewMain);
     }
     private void showVideoLinkDialog() {
 
@@ -470,8 +565,10 @@ public class UpdatePetActivity extends AppCompatActivity implements
             }
         });
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) builder.setView(dialogView);
-        else builder.setMessage(R.string.device_version_too_low);
+        //if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) builder.setView(dialogView);
+        //else builder.setMessage(R.string.device_version_too_low);
+
+        builder.setView(dialogView);
 
         AlertDialog dialog = builder.create();
         dialog.show();
@@ -508,6 +605,7 @@ public class UpdatePetActivity extends AppCompatActivity implements
     private void updatePetWithUserInput() {
 
         String name = mEditTextName.getText().toString();
+        String nameLocal = mEditTextNameLocal.getText().toString();
         String country = mEditTextCountry.getText().toString();
         String state = mEditTextState.getText().toString();
         String city = mEditTextCity.getText().toString();
@@ -515,6 +613,8 @@ public class UpdatePetActivity extends AppCompatActivity implements
         String streeNumber = mEditTextStreetNumber.getText().toString();
 
         mPet.setNm(name);
+        mPet.setNmL(nameLocal);
+
         mPet.setCn(country);
         mPet.setSe(state);
         mPet.setCt(city);
@@ -525,8 +625,8 @@ public class UpdatePetActivity extends AppCompatActivity implements
         Address address = Utilities.getAddressObjectFromAddressString(this, addressString);
         if (address!=null) {
             String geoAddressCountry = address.getCountryCode();
-            double geoAddressLatitude = address.getLatitude();
-            double geoAddressLongitude = address.getLongitude();
+            double geoAddressLatitude = address.getLatitude() + Utilities.getCoordinateRandomJitter();
+            double geoAddressLongitude = address.getLongitude() + Utilities.getCoordinateRandomJitter();
 
             mPet.setGaC(geoAddressCountry);
             mPet.setGeo(new GeoPoint(geoAddressLatitude, geoAddressLongitude));
@@ -534,17 +634,27 @@ public class UpdatePetActivity extends AppCompatActivity implements
 
         mPet.setHs(mEditTextHistory.getText().toString());
 
-        mPet.setTp(mSpinnerType.getSelectedItem().toString());
-        mPet.setGn(mSpinnerGender.getSelectedItem().toString());
+        mPet.setTp(Utilities.getFlagTextFromDisplayedText(mDisplayedPetTypesList, mPetTypesList, mSpinnerType.getSelectedItem().toString()));
+        mPet.setGn(Utilities.getFlagTextFromDisplayedText(mDisplayedPetGendersList, mPetGendersList, mSpinnerGender.getSelectedItem().toString()));
 
         String yearsString = mAgeYearsEditText.getText().toString();
         String monthsString = mAgeMonthsEditText.getText().toString();
         int years = (yearsString.equals("") || yearsString.length()>2) ? 0 : Integer.parseInt(yearsString);
         int months = (monthsString.equals("") || monthsString.length()>2) ? 0 : Integer.parseInt(monthsString);
         mPet.setAg(Utilities.getMonthsAgeFromYearsMonths(years, months));
-        mPet.setAgR(Utilities.getAgeRange(this, mPet.getTp(), years, months));
-        mPet.setSz(mSpinnerSize.getSelectedItem().toString());
-        mPet.setRc(mAutoCompleteTextViewBreed.getText().toString());
+        mPet.setAgR(Utilities.getFlagTextFromDisplayedText(mDisplayedPetAgesList, mPetAgesList, Utilities.getAgeRange(this, mPet.getTp(), years, months)));
+        mPet.setSz(Utilities.getFlagTextFromDisplayedText(mDisplayedPetSizesList, mPetSizesList, mSpinnerSize.getSelectedItem().toString()));
+        mPet.setCL(Utilities.getFlagTextFromDisplayedText(mDisplayedPetCoatLengths, mPetCoatLengths, mSpinnerCoatLengths.getSelectedItem().toString()));
+
+        if (mPet.getTp().equals(getString(R.string.dog))) {
+            mPet.setRc(Utilities.getFlagTextFromDisplayedText(mDisplayedAvailableDogBreeds, mAvailableDogBreeds, mAutoCompleteTextViewBreed.getText().toString()));
+        }
+        else if (mPet.getTp().equals(getString(R.string.cat))) {
+            mPet.setRc(Utilities.getFlagTextFromDisplayedText(mDisplayedAvailableCatBreeds, mAvailableCatBreeds, mAutoCompleteTextViewBreed.getText().toString()));
+        }
+        else if (mPet.getTp().equals(getString(R.string.parrot))) {
+            mPet.setRc(Utilities.getFlagTextFromDisplayedText(mDisplayedAvailableParrotBreeds, mAvailableParrotBreeds, mAutoCompleteTextViewBreed.getText().toString()));
+        }
 
         mPet.setGK(mCheckBoxGoodWithKids.isChecked());
         mPet.setGC(mCheckBoxGoodWithCats.isChecked());
@@ -553,7 +663,9 @@ public class UpdatePetActivity extends AppCompatActivity implements
         mPet.setHT(mCheckBoxHouseTrained.isChecked());
         mPet.setSN(mCheckBoxSpecialNeeds.isChecked());
 
-        if ((years==0 && months==0) || name.length() < 2 || country.length() < 2 || city.length() < 1 || street.length() < 2 || streeNumber.length() < 1) {
+        if ((years==0 && months==0)
+                || (nameLocal.length() < 2 && name.length() < 2)
+                || country.length() < 2 || city.length() < 1 || street.length() < 2 || streeNumber.length() < 1) {
             mPetCriticalParametersSet = false;
         }
         else {
@@ -562,24 +674,288 @@ public class UpdatePetActivity extends AppCompatActivity implements
 
     }
     private void updatePetWithFoundationData() {
-        mPet.setFN(mFoundationName);
-        mPet.setOI(mFoundationUI);
+        mPet.setFN(mFoundation.getNm());
+        mPet.setOI(mFoundation.getUI());
     }
     private void updateLayoutWithFoundationData() {
-        if (!TextUtils.isEmpty(mFoundationName)) mEditTextFoundation.setText(mFoundationName);
-        if (!TextUtils.isEmpty(mFoundationCity) && mEditTextCity.getText().toString().equals("")) mEditTextCity.setText(mFoundationCity);
-        if (!TextUtils.isEmpty(mFoundationCountry) && mEditTextCountry.getText().toString().equals("")) mEditTextCountry.setText(mFoundationCountry);
-        if (!TextUtils.isEmpty(mFoundationStreet) && mEditTextStreet.getText().toString().equals("")) mEditTextStreet.setText(mFoundationStreet);
-        if (!TextUtils.isEmpty(mFoundationStreetNumber) && mEditTextStreetNumber.getText().toString().equals("")) mEditTextStreetNumber.setText(mFoundationStreetNumber);
+        mEditTextFoundation.setText(mFoundation.getNm());
+        if (mEditTextCity.getText().toString().equals("")) mEditTextCity.setText(mFoundation.getCt());
+        if (mEditTextCountry.getText().toString().equals("")) mEditTextCountry.setText(mFoundation.getCn());
+        if (mEditTextStreet.getText().toString().equals("")) mEditTextStreet.setText(mFoundation.getSt());
+        if (mEditTextStreetNumber.getText().toString().equals("")) mEditTextStreetNumber.setText(mFoundation.getStN());
     }
     private void removeListeners() {
         mFirebaseDao.removeListeners();
         if (mSpinnerSize!=null) mSpinnerSize.setOnItemSelectedListener(null);
         if (mSpinnerGender!=null) mSpinnerGender.setOnItemSelectedListener(null);
         if (mAutoCompleteTextViewBreed !=null) mAutoCompleteTextViewBreed.setOnItemSelectedListener(null);
-        if (mSpinnerCoatLength !=null) mSpinnerCoatLength.setOnItemSelectedListener(null);
+        if (mSpinnerCoatLengths !=null) mSpinnerCoatLengths.setOnItemSelectedListener(null);
         if (mButtonChooseMainPic!=null) mButtonChooseMainPic.setOnClickListener(null);
         if (mButtonUploadPics!=null) mButtonUploadPics.setOnClickListener(null);
+    }
+    private void showUpdateVetEventDialog(final String eventDate) {
+
+        //region Get the dialog view
+        LayoutInflater inflater = LayoutInflater.from(this);
+        View dialogView = inflater.inflate(R.layout.dialog_set_vet_event, null);
+        final Button vetEventDateButton = dialogView.findViewById(R.id.dialog_vet_event_date_button);
+        final EditText vetEventDescriptionEditText = dialogView.findViewById(R.id.dialog_vet_event_description_text);
+        vetEventDescriptionEditText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+        //endregion
+
+        //region Setting the layout element behaviors
+        final Map<String, String> vetEvents = mPet.getVet();
+        final Calendar calendar = Calendar.getInstance();
+        if (!TextUtils.isEmpty(eventDate) && vetEvents.containsKey(eventDate)) {
+            vetEventDateButton.setText(eventDate);
+            vetEventDescriptionEditText.setText(vetEvents.get(eventDate));
+        }
+        else {
+            String buttonText = calendar.get(Calendar.DATE) + "-" + (calendar.get(Calendar.MONTH)+1) + "-" + calendar.get(Calendar.YEAR);
+            vetEventDateButton.setText(buttonText);
+        }
+
+        vetEventDateButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                //inspired by: https://stackoverflow.com/questions/30987181/date-picker-inside-custom-dialog-in-android
+
+                DatePickerDialog.OnDateSetListener listener = new DatePickerDialog.OnDateSetListener() {
+                    @Override
+                    public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+                        String buttonText = dayOfMonth + "-" + (monthOfYear + 1) + "-" + year;
+                        vetEventDateButton.setText(buttonText);
+                    }
+                };
+
+                DatePickerDialog datePickerDialog = new DatePickerDialog(
+                        UpdatePetActivity.this,
+                        listener,
+                        calendar.get(Calendar.YEAR),
+                        calendar.get(Calendar.MONTH),
+                        calendar.get(Calendar.DATE)
+                );
+
+                datePickerDialog.show();
+
+            }
+        });
+        //endregion
+
+        //region Building the dialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.vet_event);
+
+        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+
+                //Getting the user entries
+                mVetEventDate = vetEventDateButton.getText().toString();
+                mVetEventDescription = vetEventDescriptionEditText.getText().toString();
+
+                //Updating the pet object - If there already was an event at that date, add the event to the list
+                String oldEventDescription;
+                if (vetEvents.containsKey(mVetEventDate)) {
+                    oldEventDescription = vetEvents.get(mVetEventDate);
+                    if (!oldEventDescription.equals(mVetEventDescription)) {
+                        if (oldEventDescription.length() > 2 && oldEventDescription.substring(0, 1).equals("-")) {
+                            vetEvents.put(mVetEventDate, oldEventDescription + "\n- " + mVetEventDescription);
+                        } else {
+                            vetEvents.put(mVetEventDate, "- " + oldEventDescription + "\n- " + mVetEventDescription);
+                        }
+                    }
+                }
+                else {
+                    vetEvents.put(mVetEventDate, mVetEventDescription); //create a new event at the requested date
+                }
+                mPet.setVet(vetEvents);
+
+                //Removing the old event if the date was changed
+                //if (!eventDate.equals(mVetEventDate) && vetEvents.containsKey(eventDate)) vetEvents.remove(eventDate);
+
+                //Updating the events list shown to the user
+                mVetEventsRecycleViewAdapter.setContents(vetEvents);
+
+                dialog.dismiss();
+            }
+        });
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                dialog.dismiss();
+            }
+        });
+        builder.setNeutralButton(getString(R.string.delete), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+
+                if (vetEvents.containsKey(eventDate)) vetEvents.remove(eventDate);
+                mPet.setVet(vetEvents);
+                mVetEventsRecycleViewAdapter.setContents(vetEvents);
+            }
+        });
+        //endregion
+
+        builder.setView(dialogView);
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+    private void showUpdateFosteringFamilyDialog(final String dateRangeFromList) {
+
+        //region Getting the date limits
+        String[] dateLimits = dateRangeFromList.split("~");
+        final String startDate = dateLimits[0];
+        String endDate = (dateLimits.length>1)? dateLimits[1].trim() : "";
+        if (endDate.equals("")) endDate = getString(R.string.today);
+        //endregion
+
+        //region Get the dialog view
+        LayoutInflater inflater = LayoutInflater.from(this);
+        View dialogView = inflater.inflate(R.layout.dialog_set_fostering_family, null);
+        final Button fosteringFamilyStartDateButton = dialogView.findViewById(R.id.dialog_fostering_family_start_date_button);
+        final Button fosteringFamilyEndDateButton = dialogView.findViewById(R.id.dialog_fostering_family_end_date_button);
+        final EditText fosteringFamilyDescriptionEditText = dialogView.findViewById(R.id.dialog_fostering_family_description_text);
+        fosteringFamilyDescriptionEditText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+        //endregion
+
+        //region Setting the layout element behaviors
+        final Map<String, String> fosterFamilies = mPet.getFam();
+        Calendar calendar = Calendar.getInstance();
+        if (!TextUtils.isEmpty(dateRangeFromList) && fosterFamilies.containsKey(dateRangeFromList)) {
+            fosteringFamilyStartDateButton.setText(startDate);
+            fosteringFamilyEndDateButton.setText(endDate);
+            fosteringFamilyDescriptionEditText.setText(fosterFamilies.get(dateRangeFromList));
+        }
+        else {
+            String buttonText = calendar.get(Calendar.DATE) + "-" + (calendar.get(Calendar.MONTH)+1) + "-" + calendar.get(Calendar.YEAR);
+            fosteringFamilyStartDateButton.setText(buttonText);
+            buttonText = (calendar.get(Calendar.DATE)+1) + "-" + (calendar.get(Calendar.MONTH)+1) + "-" + calendar.get(Calendar.YEAR);
+            fosteringFamilyEndDateButton.setText(buttonText);
+        }
+
+        fosteringFamilyStartDateButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                //inspired by: https://stackoverflow.com/questions/30987181/date-picker-inside-custom-dialog-in-android
+
+                DatePickerDialog.OnDateSetListener listener = new DatePickerDialog.OnDateSetListener() {
+                    @Override
+                    public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+                        String buttonText = dayOfMonth + "-" + (monthOfYear + 1) + "-" + year;
+                        fosteringFamilyStartDateButton.setText(buttonText);
+                        buttonText = (dayOfMonth + 1) + "-" + (monthOfYear + 1) + "-" + year;
+                        fosteringFamilyEndDateButton.setText(buttonText);
+                }
+                };
+
+                Calendar calendar = Calendar.getInstance();
+                DatePickerDialog datePickerDialog = new DatePickerDialog(
+                        UpdatePetActivity.this,
+                        listener,
+                        calendar.get(Calendar.YEAR),
+                        calendar.get(Calendar.MONTH),
+                        calendar.get(Calendar.DATE)
+                );
+
+                datePickerDialog.show();
+
+            }
+        });
+        fosteringFamilyEndDateButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                //inspired by: https://stackoverflow.com/questions/30987181/date-picker-inside-custom-dialog-in-android
+
+                DatePickerDialog.OnDateSetListener listener = new DatePickerDialog.OnDateSetListener() {
+                    @Override
+                    public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+                        String buttonText = dayOfMonth + "-" + (monthOfYear + 1) + "-" + year;
+                        fosteringFamilyEndDateButton.setText(buttonText);
+                    }
+                };
+
+                Calendar calendar = Calendar.getInstance();
+                DatePickerDialog datePickerDialog = new DatePickerDialog(
+                        UpdatePetActivity.this,
+                        listener,
+                        calendar.get(Calendar.YEAR),
+                        calendar.get(Calendar.MONTH),
+                        calendar.get(Calendar.DATE)
+                );
+
+                String[] startDateElements = fosteringFamilyStartDateButton.getText().toString().split("-");
+                calendar.set(
+                        Integer.parseInt(startDateElements[2].trim()),
+                        Integer.parseInt(startDateElements[1].trim())-1,
+                        Integer.parseInt(startDateElements[0].trim()));
+                datePickerDialog.getDatePicker().setMinDate(calendar.getTimeInMillis()- 1000);
+                //datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis()- 1000);
+
+                datePickerDialog.show();
+
+            }
+        });
+        //endregion
+
+        //region Building the dialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.vet_event);
+
+        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+
+                //Getting the user entries
+                mFosteringFamilyStartDate = fosteringFamilyStartDateButton.getText().toString().trim();
+                mFosteringFamilyEndDate = fosteringFamilyEndDateButton.getText().toString().trim();
+                mDateRangeFromButtons = mFosteringFamilyStartDate + " ~ " + mFosteringFamilyEndDate;
+                mFosteringFamilyDescription = fosteringFamilyDescriptionEditText.getText().toString();
+
+                //Updating the pet object - If there already was an foster family at that date range, add the event to the list
+                String oldRangeDescription;
+                if (fosterFamilies.containsKey(mDateRangeFromButtons)) {
+                    oldRangeDescription = fosterFamilies.get(mDateRangeFromButtons);
+                    if (!oldRangeDescription.equals(mFosteringFamilyDescription)) {
+                        if (oldRangeDescription.length() > 2 && oldRangeDescription.substring(0, 1).equals("-")) {
+                            fosterFamilies.put(mDateRangeFromButtons, oldRangeDescription + "\n- " + mFosteringFamilyDescription);
+                        } else {
+                            fosterFamilies.put(mDateRangeFromButtons, "- " + oldRangeDescription + "\n- " + mFosteringFamilyDescription);
+                        }
+                    }
+                }
+                else {
+                    fosterFamilies.put(mDateRangeFromButtons, mFosteringFamilyDescription); //create a new family at the requested date range
+                }
+                mPet.setFam(fosterFamilies);
+
+                //Updating the events list shown to the user
+                mFosteringFamiliesRecycleViewAdapter.setContents(fosterFamilies);
+
+                dialog.dismiss();
+            }
+        });
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                dialog.dismiss();
+            }
+        });
+        builder.setNeutralButton(getString(R.string.delete), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+
+                if (fosterFamilies.containsKey(dateRangeFromList)) fosterFamilies.remove(dateRangeFromList);
+                mPet.setFam(fosterFamilies);
+                mFosteringFamiliesRecycleViewAdapter.setContents(fosterFamilies);
+            }
+        });
+        //endregion
+
+        builder.setView(dialogView);
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 
 
@@ -614,6 +990,12 @@ public class UpdatePetActivity extends AppCompatActivity implements
     @OnClick(R.id.update_pet_button_add_video_link) public void onAddVideosButtonClick() {
         showVideoLinkDialog();
     }
+    @OnClick(R.id.update_pet_button_add_vet_event) public void onAddVetEventButtonClick() {
+        showUpdateVetEventDialog("");
+    }
+    @OnClick(R.id.update_pet_button_add_fostering_family) public void onAddFosteringFamilyButtonClick() {
+        showUpdateFosteringFamilyDialog("");
+    }
 
 
     //Communication with other classes:
@@ -623,19 +1005,17 @@ public class UpdatePetActivity extends AppCompatActivity implements
 
         if (pets == null) return;
 
-        //If pet is not in database then create it, otherwise update mPet
         if (pets.size() == 0 || pets.get(0)==null) {
-            mPetAlreadyExistsInFirebaseDb = false;
             Toast.makeText(getBaseContext(), R.string.no_pet_found_press_done_to_create, Toast.LENGTH_SHORT).show();
         }
         else {
-            mPetAlreadyExistsInFirebaseDb = true;
             mPet = pets.get(0);
             if (mSavedInstanceState==null) {
                 updateLayoutWithPetData();
                 updatePetWithUserInput();
+                mFirebaseDao.syncAllObjectImages(mPet);
+                displayPetImages();
             }
-            mFirebaseDao.getAllObjectImages(mPet);
         }
 
     }
@@ -649,12 +1029,6 @@ public class UpdatePetActivity extends AppCompatActivity implements
         }
         else {
             if (foundations.get(0) != null) {
-                mFoundationUI = foundations.get(0).getUI();
-                mFoundationName = foundations.get(0).getNm();
-                mFoundationCity = foundations.get(0).getCt();
-                mFoundationCountry = foundations.get(0).getCn();
-                mFoundationStreet = foundations.get(0).getSt();
-                mFoundationStreetNumber = foundations.get(0).getStN();
                 updateLayoutWithFoundationData();
             }
             if (foundations.size()>1) Log.i(DEBUG_TAG, "Warning! Multiple foundations found with the same id.");
@@ -707,6 +1081,16 @@ public class UpdatePetActivity extends AppCompatActivity implements
         Utilities.goToWebLink(this, url);
     }
 
+    //Communication with VetEventsRecyclerView adapter
+    @Override public void onVetEventClick(String date) {
+        showUpdateVetEventDialog(date);
+    }
+
+    //Communication with FosteringFamiliesRecyclerView adapter
+    @Override public void onFosteringFamilyClick(String dateRange) {
+        showUpdateFosteringFamilyDialog(dateRange);
+    }
+
     //Communication with spinner adapters
     @Override public void onItemSelected(AdapterView<?> adapterView, View view, int pos, long id) {
         switch (adapterView.getId()) {
@@ -727,4 +1111,5 @@ public class UpdatePetActivity extends AppCompatActivity implements
     @Override public void onNothingSelected(AdapterView<?> adapterView) {
 
     }
+
 }

@@ -5,7 +5,7 @@ import android.os.Bundle;
 
 import com.petitur.R;
 
-public class ShowFamilyProfileActivity extends AppCompatActivity {
+public class ShowFamilyProfileActivity extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

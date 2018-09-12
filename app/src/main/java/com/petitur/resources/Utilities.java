@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Address;
@@ -61,6 +63,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Random;
 
 public class Utilities {
 
@@ -133,7 +136,7 @@ public class Utilities {
                 //Toast.makeText(context, R.string.please_wait_syncing_images, Toast.LENGTH_SHORT).show();
             }
             else {
-                mFirebaseDao.getAllObjectImages(object);
+                mFirebaseDao.syncAllObjectImages(object);
                 mCurrentlySyncingImages = true;
             }
         }
@@ -143,6 +146,22 @@ public class Utilities {
         }
 
         return mCurrentlySyncingImages;
+    }
+    @NonNull public static Resources getFlag(Context context) {
+        //taken from: https://stackoverflow.com/questions/9475589/how-to-get-string-from-different-locales-in-android
+        Configuration conf = context.getResources().getConfiguration();
+        conf = new Configuration(conf);
+        conf.setLocale(Locale.ENGLISH);
+        Context localizedContext = context.createConfigurationContext(conf);
+        return localizedContext.getResources();
+    }
+    @NonNull public static Resources getLocalizedResources(Context context, Locale desiredLocale) {
+        //taken from: https://stackoverflow.com/questions/9475589/how-to-get-string-from-different-locales-in-android
+        Configuration conf = context.getResources().getConfiguration();
+        conf = new Configuration(conf);
+        conf.setLocale(desiredLocale);
+        Context localizedContext = context.createConfigurationContext(conf);
+        return localizedContext.getResources();
     }
 
 
@@ -263,6 +282,43 @@ public class Utilities {
         }
         return index;
     }
+    public static int getListPositionFromText(List<String> list, String userSelection) {
+
+        int index = 0;
+        for (int i=0;i<list.size();i++){
+            if (list.get(i).equals(userSelection)){
+                index = i;
+                break;
+            }
+        }
+        return index;
+    }
+    public static String getDisplayedTextFromFlagText(List<String> localizedList, List<String> nonLocalizedlist, String nonLocalizedText) {
+
+        //Warning: the two lists must have the same number of elements, since they are the same list in different languages!
+
+        int index = 0;
+        for (int i=0;i<nonLocalizedlist.size();i++){
+            if (nonLocalizedlist.get(i).equals(nonLocalizedText)){
+                index = i;
+                break;
+            }
+        }
+        return localizedList.get(index);
+    }
+    public static String getFlagTextFromDisplayedText(List<String> displayedList, List<String> flagList, String localizedText) {
+
+        //Warning: the two lists must have the same number of elements, since they are the same list in different languages!
+
+        int index = 0;
+        for (int i = 0; i< displayedList.size(); i++){
+            if (displayedList.get(i).equals(localizedText)){
+                index = i;
+                break;
+            }
+        }
+        return flagList.get(index);
+    }
     public static void showSignInScreen(Activity activity) {
 
         Utilities.setAppPreferenceUserHasNotRefusedSignIn(activity, false);
@@ -304,6 +360,136 @@ public class Utilities {
         DecimalFormat df = new DecimalFormat("#.#");
         df.setRoundingMode(RoundingMode.CEILING);
         return df.format(age);
+    }
+    public static String getLocalizedPetBreed(Context context, Pet pet) {
+
+        List<String> displayedBreeds = new ArrayList<>(Arrays.asList(context.getResources().getStringArray(R.array.dog_breeds)));
+        List<String> flagBreeds = new ArrayList<>(Arrays.asList(Utilities.getFlag(context).getStringArray(R.array.dog_breeds)));
+        if (pet.getTp().equals(Utilities.getFlag(context).getString(R.string.dog))) {
+            displayedBreeds = new ArrayList<>(Arrays.asList(context.getResources().getStringArray(R.array.dog_breeds)));
+            flagBreeds = new ArrayList<>(Arrays.asList(Utilities.getFlag(context).getStringArray(R.array.dog_breeds)));
+        }
+        else if (pet.getTp().equals(Utilities.getFlag(context).getString(R.string.cat))) {
+            displayedBreeds = new ArrayList<>(Arrays.asList(context.getResources().getStringArray(R.array.cat_breeds)));
+            flagBreeds = new ArrayList<>(Arrays.asList(Utilities.getFlag(context).getStringArray(R.array.cat_breeds)));
+        }
+        else if (pet.getTp().equals(Utilities.getFlag(context).getString(R.string.cat))) {
+            displayedBreeds = new ArrayList<>(Arrays.asList(context.getResources().getStringArray(R.array.parrot_breeds)));
+            flagBreeds = new ArrayList<>(Arrays.asList(Utilities.getFlag(context).getStringArray(R.array.parrot_breeds)));
+        }
+        return getDisplayedTextFromFlagText(displayedBreeds, flagBreeds, pet.getRc());
+    }
+    public static String getLocalizedPetAge(Context context, Pet pet) {
+
+        String displayedAge;
+        if (pet.getAg() > 12) {
+            double ageYears = Utilities.getYearsAgeFromYearsMonths(0, pet.getAg());
+            displayedAge = Utilities.convertAgeToDisplayableValue(ageYears) + " " + context.getString(R.string.list_item_years);
+        }
+        else if (pet.getAg() == 12) {
+            displayedAge = context.getString(R.string.list_item_one_year);
+        }
+        else if (12 > pet.getAg() && pet.getAg() > 1){
+            displayedAge = Integer.toString(pet.getAg()) + " " + context.getString(R.string.list_item_months);
+        }
+        else {
+            displayedAge = context.getString(R.string.list_item_one_month);
+        }
+
+        return displayedAge;
+    }
+
+
+    //List utilities
+    public static List<String> sortListAccordingToDates(List<String> dates, boolean descending) {
+
+        if (dates.size() <= 1) return dates;
+
+        List<String> convertedDates = new ArrayList<>();
+        String year;
+        String month;
+        String day;
+        String convertedDate;
+        for (String date : dates) {
+            String[] elements = date.split("-");
+            if (elements.length == 3) {
+                year = elements[2];
+                month = elements[1];
+                if (month.length()==1) month = "0" + month;
+                day = elements[0];
+                if (day.length()==1) day = "0" + day;
+                convertedDate = year + "-" + month + "-" + day;
+                convertedDates.add(convertedDate);
+            }
+        }
+
+        java.util.Collections.sort(convertedDates);
+        if (!descending) Collections.reverse(convertedDates);
+
+        List<String> finalDates = new ArrayList<>();
+        for (String date : convertedDates) {
+            String[] elements = date.split("-");
+            if (elements.length == 3) {
+                year = elements[0];
+                month = elements[1];
+                if (month.length()==2 && month.substring(0,1).equals("0")) month = month.substring(1,2);
+                day = elements[2];
+                if (day.length()==2 && day.substring(0,1).equals("0")) day = day.substring(1,2);
+                convertedDate = day + "-" + month + "-" + year;
+                finalDates.add(convertedDate);
+            }
+        }
+
+        return finalDates;
+    }
+    public static List<String> sortListAccordingToDateRanges(List<String> dates, boolean descending) {
+
+        if (dates.size() <= 1) return dates;
+
+        List<String> convertedDates = new ArrayList<>();
+        String year;
+        String month;
+        String day;
+        String convertedDate;
+        for (String date : dates) {
+            String[] dateLimits = date.split("~");
+            String startDate = dateLimits[0].trim();
+            String endDate = (dateLimits.length>1)? dateLimits[1].trim() : "";
+
+            String[] elements = startDate.split("-");
+            if (elements.length == 3) {
+                year = elements[2];
+                month = elements[1];
+                if (month.length()==1) month = "0" + month;
+                day = elements[0];
+                if (day.length()==1) day = "0" + day;
+                convertedDate = year + "-" + month + "-" + day + " ~ " + endDate;
+                convertedDates.add(convertedDate);
+            }
+        }
+
+        java.util.Collections.sort(convertedDates);
+        if (!descending) Collections.reverse(convertedDates);
+
+        List<String> finalDates = new ArrayList<>();
+        for (String date : convertedDates) {
+            String[] dateLimits = date.split("~");
+            String startDate = dateLimits[0].trim();
+            String endDate = (dateLimits.length>1)? dateLimits[1].trim() : "";
+
+            String[] elements = startDate.split("-");
+            if (elements.length == 3) {
+                year = elements[0];
+                month = elements[1];
+                if (month.length()==2 && month.substring(0,1).equals("0")) month = month.substring(1,2);
+                day = elements[2];
+                if (day.length()==2 && day.substring(0,1).equals("0")) day = day.substring(1,2);
+                convertedDate = day + "-" + month + "-" + year + " ~ " + endDate;
+                finalDates.add(convertedDate);
+            }
+        }
+
+        return finalDates;
     }
 
 
@@ -661,12 +847,12 @@ public class Utilities {
         try {
             addresses = gcd.getFromLocation(latitude, longitude, 1);
             if (addresses.size() > 0) {
-                String address = addresses.get(0).getAddressLine(0);
-                String street = (Arrays.asList(address.split(","))).get(0).trim();
-                String city = addresses.get(0).getLocality();
-                String state = addresses.get(0).getAdminArea();
-                String country = addresses.get(0).getCountryName();
-                String[] fullAddress = new String[] { street , city , state, country };
+                Address address = addresses.get(0);
+                String[] fullAddress = new String[] {
+                        getStreetNameFromAddress(address),
+                        getCityFromAddress(address),
+                        getStateFromAddress(address),
+                        getCountryNameFromAddress(address)};
                 return fullAddress;
             }
         }
@@ -674,6 +860,51 @@ public class Utilities {
             e.printStackTrace();
         }
         return null;
+    }
+    public static String getStreetNumberFromAddress(Address address) {
+        String addressLine = address.getAddressLine(0);
+        String[] addressLineElements = addressLine.split(",");
+        String[] addressLineStreetElements = addressLineElements[0].trim().split(" ");
+
+        if (addressLineStreetElements.length > 1) {
+            for (String addressLineStreetElement : addressLineStreetElements) {
+                if (addressLineStreetElement.matches("\\d+")) return addressLineStreetElement.trim();
+            }
+
+        }
+        return "";
+    }
+    public static String getStreetNameFromAddress(Address address) {
+        String addressLine = address.getAddressLine(0);
+        String[] addressLineElements = addressLine.split(",");
+        String[] addressLineStreetElements = addressLineElements[0].trim().split(" ");
+        boolean elementIsNonNumeric;
+        if (addressLineStreetElements.length > 1) {
+            for (String addressLineStreetElement : addressLineStreetElements) {
+                elementIsNonNumeric = false;
+                for (int i = 0; i < addressLineStreetElement.length(); i++) {
+                    if (!addressLineStreetElement.substring(i, i+1).matches("\\d+")) {
+                        elementIsNonNumeric = true;
+                        break;
+                    }
+                }
+                if (elementIsNonNumeric) return addressLineStreetElement.trim();
+            }
+        }
+        return addressLineStreetElements[0].trim();
+    }
+    public static String getStreetNumberAndNameFromAddress(Address address) {
+        String line = address.getAddressLine(0);
+        return (Arrays.asList(line.split(","))).get(0).trim();
+    }
+    public static String getStateFromAddress(Address address) {
+        return address.getAdminArea();
+    }
+    public static String getCityFromAddress(Address address) {
+        return address.getLocality();
+    }
+    public static String getCountryNameFromAddress(Address address) {
+        return address.getCountryName();
     }
     public static String getAddressStringFromComponents(String stN, String st, String ct, String se, String cn) {
         StringBuilder builder = new StringBuilder("");
@@ -704,8 +935,8 @@ public class Utilities {
         try {
             addresses = geocoder.getFromLocationName(address, 1);
             if(addresses.size() > 0) {
-                double latitude= addresses.get(0).getLatitude();
-                double longitude= addresses.get(0).getLongitude();
+                double latitude= addresses.get(0).getLatitude() + getCoordinateRandomJitter();
+                double longitude= addresses.get(0).getLongitude() + getCoordinateRandomJitter();
                 return new double[]{latitude, longitude};
             }
         } catch (IOException e) {
@@ -713,6 +944,12 @@ public class Utilities {
             return null;
         }
         return null;
+    }
+    public static double getCoordinateRandomJitter() {
+        //Used to allow discrimination between objects on the map, by jittering by a random number of meters (<10) around the coordinate
+        Random rand = new Random();
+        int  n = rand.nextInt(10) + 1;
+        return (double) n / 11130000; //There are on average 111300 meters in a geo degree
     }
     public static boolean checkLocationPermission(Context context) {
         if (context!=null && ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -1318,6 +1555,18 @@ public class Utilities {
     public static int getAppPreferenceProfileImagesRvPosition(Context context) {
         SharedPreferences sharedPref = context.getSharedPreferences(context.getString(R.string.app_preferences), Context.MODE_PRIVATE);
         return sharedPref.getInt(context.getString(R.string.saved_profile_images_rv_position), 0);
+    }
+    public static void setAppPreferenceLanguage(Context context, String languageCode) {
+        if (context != null) {
+            SharedPreferences sharedPref = context.getSharedPreferences(context.getString(R.string.app_preferences), Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPref.edit();
+            editor.putString(context.getString(R.string.language_preference), languageCode);
+            editor.apply();
+        }
+    }
+    public static String getAppPreferenceLanguage(Context context) {
+        SharedPreferences sharedPref = context.getSharedPreferences(context.getString(R.string.app_preferences), Context.MODE_PRIVATE);
+        return sharedPref.getString(context.getString(R.string.language_preference), "en");
     }
 
 }

@@ -6,7 +6,6 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TextInputEditText;
 import android.support.v4.widget.NestedScrollView;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -40,7 +39,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 
-public class UpdateFamilyActivity extends AppCompatActivity implements
+public class UpdateFamilyActivity extends BaseActivity implements
         FirebaseDao.FirebaseOperationsHandler,
         ImagesRecycleViewAdapter.ImageClickHandler, AdapterView.OnItemSelectedListener {
 
@@ -296,10 +295,12 @@ public class UpdateFamilyActivity extends AppCompatActivity implements
         }
     }
     private void updateLayoutWithUserData() {
-        mEditTextUsername.setText(mNameFromFirebase);
-        mEditTextEmail.setText(mEmailFromFirebase);
+        if (mEditTextUsername!=null) mEditTextUsername.setText(mNameFromFirebase);
+        if (mEditTextEmail!=null) mEditTextEmail.setText(mEmailFromFirebase);
     }
     private void updateLayoutWithFamilyData() {
+
+        if (mEditTextPseudonym==null) return;
         mEditTextPseudonym.setText(mFamily.getPn());
         mEditTextCell.setText(mFamily.getCp());
         mEditTextCountry.setText(mFamily.getCn());
@@ -490,7 +491,7 @@ public class UpdateFamilyActivity extends AppCompatActivity implements
                 updateLayoutWithFamilyData();
                 updateFamilyWithUserInput();
             }
-            mFirebaseDao.getAllObjectImages(mFamily);
+            mFirebaseDao.syncAllObjectImages(mFamily);
         }
 
     }

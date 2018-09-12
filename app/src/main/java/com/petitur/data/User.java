@@ -20,6 +20,7 @@ public class User implements Parcelable {
         em = in.readString();
         lC = in.readByte() != 0;
         iF = in.readByte() != 0;
+        lg = in.readString();
     }
 
     public static final Creator<User> CREATOR = new Creator<User>() {
@@ -82,6 +83,15 @@ public class User implements Parcelable {
         this.iF = iF;
     }
 
+    private String lg = "en"; //app language
+    public String getLg() {
+        return lg;
+    }
+    public void setLg(String lg) {
+        this.lg = lg;
+    }
+
+
     @Override
     public int describeContents() {
         return 0;
@@ -95,5 +105,6 @@ public class User implements Parcelable {
         parcel.writeString(em);
         parcel.writeByte((byte) (lC ? 1 : 0));
         parcel.writeByte((byte) (iF ? 1 : 0));
+        parcel.writeString(lg);
     }
 }

@@ -38,7 +38,7 @@ import butterknife.Unbinder;
 
 import static butterknife.internal.Utils.arrayOf;
 
-public class TaskSelectionActivity extends AppCompatActivity implements
+public class TaskSelectionActivity extends BaseActivity implements
         FirebaseDao.FirebaseOperationsHandler {
 
 

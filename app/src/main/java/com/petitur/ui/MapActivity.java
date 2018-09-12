@@ -12,6 +12,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -44,7 +46,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 
-public class MapActivity extends AppCompatActivity implements
+public class MapActivity extends BaseActivity implements
         OnMapReadyCallback,
         GoogleMap.OnMapLoadedCallback,
         GoogleMap.OnInfoWindowClickListener,
@@ -63,9 +65,9 @@ public class MapActivity extends AppCompatActivity implements
     public static final String DEBUG_TAG = "Petitur Map";
     private GoogleMap mMap;
     private double[] mUserCoordinates;
-    private ArrayList<Pet> mPetsArrayList;
-    private ArrayList<Family> mFamiliesArrayList;
-    private ArrayList<Foundation> mFoundationsArrayList;
+    private List<Pet> mPetsArrayList;
+    private List<Family> mFamiliesArrayList;
+    private List<Foundation> mFoundationsArrayList;
     private List<Marker> mMarkersForBoundsCalculation;
     private Unbinder mBinding;
     private LocationManager mLocationManager;
@@ -133,6 +135,23 @@ public class MapActivity extends AppCompatActivity implements
             mMapMarkerList = savedInstanceState.getParcelableArrayList(getString(R.string.map_activity_map_markers));
 
         }
+    }
+    @Override public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.show_pet_menu, menu);
+        return true;
+    }
+    @Override public boolean onOptionsItemSelected(MenuItem item) {
+        int itemThatWasClickedId = item.getItemId();
+
+        switch (itemThatWasClickedId) {
+            case android.R.id.home:
+                onBackPressed();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+    @Override public void onBackPressed() {
+        super.onBackPressed();
     }
 
 
@@ -207,8 +226,8 @@ public class MapActivity extends AppCompatActivity implements
     private void getExtras() {
 
         Intent intent = getIntent();
-        if (intent.hasExtra(getString(R.string.search_results_pets_at_distance_list))) {
-            mPetsArrayList = intent.getParcelableArrayListExtra(getString(R.string.search_results_pets_at_distance_list));
+        if (intent.hasExtra(getString(R.string.pets_at_distance_parcelable))) {
+            mPetsArrayList = intent.getParcelableArrayListExtra(getString(R.string.pets_at_distance_parcelable));
         }
         if (intent.hasExtra(getString(R.string.search_results_families_at_distance_list))) {
             mFamiliesArrayList = intent.getParcelableArrayListExtra(getString(R.string.search_results_families_at_distance_list));

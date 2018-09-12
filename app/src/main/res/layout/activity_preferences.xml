@@ -147,7 +147,21 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/preferences_change_password"/>
 
+            <Spinner
+                android:id="@+id/preferences_language_selection_spinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/double_margin"
+                android:layout_marginLeft="@dimen/double_margin"
+                android:layout_marginRight="@dimen/double_margin"
+                android:layout_marginStart="@dimen/double_margin"
+                android:layout_marginTop="@dimen/double_margin"
+                android:entries="@array/languages"
+                app:layout_constraintTop_toBottomOf="@id/preferences_search_country_only_checkbox"
+                />
+
         </android.support.constraint.ConstraintLayout>
 
     </ScrollView>
+
 </FrameLayout>

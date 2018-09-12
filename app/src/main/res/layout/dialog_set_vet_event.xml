@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LinearLayout
+    android:id="@+id/dialog_vet_event"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="?dialogPreferredPadding">
+
+    <Button
+        android:id="@+id/dialog_vet_event_date_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:padding="@dimen/list_item_texts_padding"
+        android:text="@string/default_date"/>
+
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/dialog_vet_event_description_text_parent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:hint="@string/description_of_the_vet_event">
+
+        <android.support.design.widget.TextInputEditText
+            android:id="@+id/dialog_vet_event_description_text"
+            style="@style/TextInputMultiLineEditTextParametersStyle"
+            android:maxLength="@integer/max_vet_event_length"
+            android:inputType="text"/>
+
+    </android.support.design.widget.TextInputLayout>
+
+
+</LinearLayout>

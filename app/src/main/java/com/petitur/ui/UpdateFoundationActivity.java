@@ -6,7 +6,6 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TextInputEditText;
 import android.support.v4.widget.NestedScrollView;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -35,7 +34,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 
-public class UpdateFoundationActivity extends AppCompatActivity  implements
+public class UpdateFoundationActivity extends BaseActivity  implements
         FirebaseDao.FirebaseOperationsHandler,
         ImagesRecycleViewAdapter.ImageClickHandler {
 
@@ -260,6 +259,7 @@ public class UpdateFoundationActivity extends AppCompatActivity  implements
         }
     }
     private void updateLayoutWithFoundationData() {
+        if (mEditTextName==null) return;
         mEditTextName.setText(mFoundation.getNm());
         mEditTextContactPhone.setText(mFoundation.getCP());
         mEditTextContactEmail.setText(mFoundation.getCE());
@@ -424,7 +424,7 @@ public class UpdateFoundationActivity extends AppCompatActivity  implements
                 updateLayoutWithFoundationData();
                 updateFoundationWithUserInput();
             }
-            mFirebaseDao.getAllObjectImages(mFoundation);
+            mFirebaseDao.syncAllObjectImages(mFoundation);
         }
 
     }

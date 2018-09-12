@@ -9,9 +9,9 @@
     </style>
 
     <style name="TitleStyle">
-        <item name="android:layout_marginLeft">@dimen/standard_margin</item>
+        <item name="android:layout_marginStart">@dimen/standard_margin</item>
         <item name="android:layout_marginTop">@dimen/double_margin</item>
-        <item name="android:layout_marginRight">@dimen/standard_margin</item>
+        <item name="android:layout_marginEnd">@dimen/standard_margin</item>
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:textAppearance">?android:attr/textAppearanceMedium</item>
@@ -21,7 +21,7 @@
     <style name="ProfileSubtitleStyle">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginLeft">@dimen/standard_margin</item>
+        <item name="android:layout_marginStart">@dimen/standard_margin</item>
         <item name="android:layout_marginTop">16dp</item>
         <item name="android:textAppearance">?android:attr/textAppearanceMedium</item>
         <item name="android:textSize">@dimen/large_list_text_size</item>
@@ -30,7 +30,7 @@
     <style name="ProfileListSubtitleStyle">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginLeft">@dimen/standard_margin</item>
+        <item name="android:layout_marginStart">@dimen/standard_margin</item>
         <item name="android:layout_marginTop">@dimen/standard_margin</item>
         <item name="android:textAppearance">?android:attr/textAppearanceMedium</item>
         <item name="android:textSize">@dimen/large_list_text_size</item>
@@ -39,7 +39,7 @@
     <style name="ListCheckBoxCheckableStyle">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginLeft">@dimen/double_margin</item>
+        <item name="android:layout_marginStart">@dimen/double_margin</item>
         <item name="android:textAppearance">?android:attr/textAppearanceMedium</item>
         <item name="android:textSize">@dimen/list_text_size</item>
     </style>
@@ -62,8 +62,8 @@
     <style name="ProfileValueStyle">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginLeft">@dimen/standard_margin</item>
-        <item name="android:layout_marginRight">@dimen/standard_margin</item>
+        <item name="android:layout_marginStart">@dimen/standard_margin</item>
+        <item name="android:layout_marginEnd">@dimen/standard_margin</item>
         <item name="android:textAppearance">?android:attr/textAppearanceMedium</item>
         <item name="android:textSize">@dimen/large_list_text_size</item>
     </style>
@@ -89,7 +89,7 @@
     <style name="SpinnerTitleStyle">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginLeft">@dimen/standard_margin</item>
+        <item name="android:layout_marginStart">@dimen/standard_margin</item>
         <item name="android:textAppearance">?android:attr/textAppearanceMedium</item>
         <item name="android:textSize">@dimen/spinner_text_size</item>
     </style>
@@ -97,8 +97,8 @@
     <style name="SpinnerStyle">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginLeft">@dimen/standard_margin</item>
-        <item name="android:layout_marginRight">@dimen/standard_margin</item>
+        <item name="android:layout_marginStart">@dimen/standard_margin</item>
+        <item name="android:layout_marginEnd">@dimen/standard_margin</item>
         <item name="android:layout_marginTop">@dimen/standard_margin</item>
         <item name="android:textAppearance">?android:attr/textAppearanceMedium</item>
         <item name="android:textSize">@dimen/spinner_text_size</item>
@@ -107,8 +107,8 @@
     <style name="PreferencesValueStyle">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginLeft">@dimen/standard_margin</item>
-        <item name="android:layout_marginRight">@dimen/standard_margin</item>
+        <item name="android:layout_marginStart">@dimen/standard_margin</item>
+        <item name="android:layout_marginEnd">@dimen/standard_margin</item>
         <item name="android:textAppearance">?android:attr/textAppearanceMedium</item>
         <item name="android:textSize">@dimen/large_list_text_size</item>
         <item name="android:gravity">start</item>
@@ -117,6 +117,15 @@
     <style name="TextInputEditTextParametersStyle">
         <item name="android:maxLength">@integer/max_input_text_length</item>
         <item name="android:maxLines">1</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_width">match_parent</item>
+    </style>
+
+    <style name="TextInputMultiLineEditTextParametersStyle">
+        <item name="android:maxLength">@integer/max_input_text_length</item>
+        <item name="android:singleLine">false</item>
+        <item name="android:inputType">textImeMultiLine</item>
+        <item name="android:imeOptions">flagNoEnterAction</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_width">match_parent</item>
     </style>
@@ -156,7 +165,6 @@
         <item name="android:layout_width">@dimen/pet_list_item_love_image_size</item>
         <item name="android:layout_height">@dimen/pet_list_item_love_image_size</item>
         <item name="android:layout_marginEnd">@dimen/standard_margin</item>
-        <item name="android:layout_marginRight">@dimen/standard_margin</item>
         <item name="android:layout_marginTop">@dimen/standard_margin</item>
         <item name="android:contentDescription">@string/favorite_state</item>
     </style>
@@ -175,9 +183,7 @@
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">@dimen/tips_card_height</item>
         <item name="android:layout_marginStart">@dimen/double_margin</item>
-        <item name="android:layout_marginLeft">@dimen/double_margin</item>
         <item name="android:layout_marginEnd">@dimen/double_margin</item>
-        <item name="android:layout_marginRight">@dimen/double_margin</item>
         <item name="android:layout_marginTop">@dimen/standard_margin</item>
         <item name="android:gravity">center</item>
         <item name="android:layout_gravity">center</item>
@@ -190,9 +196,7 @@
         <item name="android:orientation">vertical</item>
         <item name="layout_constraintBottom_toBottomOf">parent</item>
         <item name="layout_constraintTop_toTopOf">parent</item>
-        <item name="layout_constraintLeft_toLeftOf">parent</item>
         <item name="layout_constraintStart_toStartOf">parent</item>
-        <item name="layout_constraintRight_toRightOf">parent</item>
         <item name="layout_constraintEnd_toEndOf">parent</item>
     </style>
 

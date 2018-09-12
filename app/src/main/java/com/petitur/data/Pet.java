@@ -9,7 +9,9 @@ import com.google.firebase.firestore.GeoPoint;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Pet implements Parcelable, Comparable<Pet> {
 
@@ -27,17 +29,25 @@ public class Pet implements Parcelable, Comparable<Pet> {
         this.uI = uI;
     }
 
+
+    private String nm = ""; //name
+
     protected Pet(Parcel in) {
         nm = in.readString();
+        nmL = in.readString();
         tp = in.readString();
         uI = in.readString();
         afCP = in.readString();
         oI = in.readString();
         fN = in.readString();
         cn = in.readString();
+        cnL = in.readString();
         ct = in.readString();
+        ctL = in.readString();
         se = in.readString();
+        seL = in.readString();
         st = in.readString();
+        stL = in.readString();
         stN = in.readString();
         gac = in.readString();
         vU = in.createStringArrayList();
@@ -46,6 +56,7 @@ public class Pet implements Parcelable, Comparable<Pet> {
         sz = in.readString();
         rc = in.readString();
         gn = in.readString();
+        cL = in.readString();
         gk = in.readByte() != 0;
         gc = in.readByte() != 0;
         gd = in.readByte() != 0;
@@ -56,6 +67,15 @@ public class Pet implements Parcelable, Comparable<Pet> {
         iUT = in.createStringArrayList();
         dt = in.readInt();
         fv = in.readByte() != 0;
+
+        Double lat = in.readDouble();
+        Double lng = in.readDouble();
+        geo = new GeoPoint(lat, lng);
+
+        vet = new HashMap<>();
+        in.readMap(vet,Object.class.getClassLoader());
+        fam = new HashMap<>();
+        in.readMap(fam,Object.class.getClassLoader());
     }
 
     public static final Creator<Pet> CREATOR = new Creator<Pet>() {
@@ -70,13 +90,19 @@ public class Pet implements Parcelable, Comparable<Pet> {
         }
     };
 
-
-    private String nm = ""; //name
     public String getNm() {
         return nm;
     }
     public void setNm(String nm) {
         this.nm = nm;
+    }
+
+    private String nmL = ""; //name in local language
+    public String getNmL() {
+        return nmL;
+    }
+    public void setNmL(String nmL) {
+        this.nmL = nmL;
     }
 
     private String tp = "dog"; //type
@@ -127,12 +153,28 @@ public class Pet implements Parcelable, Comparable<Pet> {
         this.cn = cn;
     }
 
+    private String cnL = ""; //country localized (only used locally)
+    public String getCnL() {
+        return cnL;
+    }
+    public void setCnL(String cnL) {
+        this.cnL = cnL;
+    }
+
     private String ct = ""; //city
     public String getCt() {
         return ct;
     }
     public void setCt(String ct) {
         this.ct = ct;
+    }
+
+    private String ctL = ""; //city localized (only used locally)
+    public String getCtL() {
+        return ctL;
+    }
+    public void setCtL(String ctL) {
+        this.ctL = ctL;
     }
 
     private String se = ""; //state
@@ -143,12 +185,28 @@ public class Pet implements Parcelable, Comparable<Pet> {
         this.se = se;
     }
 
+    private String seL = ""; //state localized (only used locally)
+    public String getSeL() {
+        return seL;
+    }
+    public void setSeL(String seL) {
+        this.seL = seL;
+    }
+
     private String st = ""; //street
     public String getSt() {
         return st;
     }
     public void setSt(String st) {
         this.st = st;
+    }
+
+    private String stL = ""; //street localized (only used locally)
+    public String getStL() {
+        return stL;
+    }
+    public void setStL(String stL) {
+        this.stL = stL;
     }
 
     private String stN = ""; //street number
@@ -221,6 +279,14 @@ public class Pet implements Parcelable, Comparable<Pet> {
     }
     public void setGn(String gn) {
         this.gn = gn;
+    }
+
+    private String cL = "No coat length available"; //coat length
+    public String getCL() {
+        return cL;
+    }
+    public void setCL(String cl) {
+        this.cL = cl;
     }
 
     private boolean gk = false; //good with kids
@@ -303,7 +369,23 @@ public class Pet implements Parcelable, Comparable<Pet> {
         this.fv = fv;
     }
 
-    //Comparator interface
+    private Map<String, String> vet = new HashMap<>(); //Veterinary events
+    public Map<String, String> getVet() {
+        return vet;
+    }
+    public void setVet(Map<String, String> vet) {
+        this.vet = vet;
+    }
+
+    private Map<String, String> fam = new HashMap<>(); //Fostering families
+    public Map<String, String> getFam() {
+        return fam;
+    }
+    public void setFam(Map<String, String> fam) {
+        this.fam = fam;
+    }
+
+    //region Comparator interface
     @Override public int compareTo(@NonNull Pet pet) {
         //see: https://www.mkyong.com/java/java-object-sorting-example-comparable-and-comparator/
 
@@ -390,6 +472,7 @@ public class Pet implements Parcelable, Comparable<Pet> {
         }
 
     };
+    //endregion
 
     //Parcelable interface
     @Override
@@ -400,15 +483,20 @@ public class Pet implements Parcelable, Comparable<Pet> {
     @Override
     public void writeToParcel(Parcel parcel, int i) {
         parcel.writeString(nm);
+        parcel.writeString(nmL);
         parcel.writeString(tp);
         parcel.writeString(uI);
         parcel.writeString(afCP);
         parcel.writeString(oI);
         parcel.writeString(fN);
         parcel.writeString(cn);
+        parcel.writeString(cnL);
         parcel.writeString(ct);
+        parcel.writeString(ctL);
         parcel.writeString(se);
+        parcel.writeString(seL);
         parcel.writeString(st);
+        parcel.writeString(stL);
         parcel.writeString(stN);
         parcel.writeString(gac);
         parcel.writeStringList(vU);
@@ -417,6 +505,7 @@ public class Pet implements Parcelable, Comparable<Pet> {
         parcel.writeString(sz);
         parcel.writeString(rc);
         parcel.writeString(gn);
+        parcel.writeString(cL);
         parcel.writeByte((byte) (gk ? 1 : 0));
         parcel.writeByte((byte) (gc ? 1 : 0));
         parcel.writeByte((byte) (gd ? 1 : 0));
@@ -427,7 +516,14 @@ public class Pet implements Parcelable, Comparable<Pet> {
         parcel.writeStringList(iUT);
         parcel.writeInt(dt);
         parcel.writeByte((byte) (fv ? 1 : 0));
+
+        parcel.writeDouble(geo.getLatitude());
+        parcel.writeDouble(geo.getLongitude());
+        parcel.writeMap(vet);
+        parcel.writeMap(fam);
     }
+
+
 
 
 }

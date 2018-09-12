@@ -9,7 +9,7 @@ import com.petitur.data.*;
 
 import java.util.List;
 
-public class ImageSyncAsyncTaskLoader extends AsyncTaskLoader<String> implements
+public class ImageSyncAsyncTaskLoader extends AsyncTaskLoader<List<Pet>> implements
         FirebaseDao.FirebaseOperationsHandler {
 
 
@@ -48,7 +48,7 @@ public class ImageSyncAsyncTaskLoader extends AsyncTaskLoader<String> implements
         mFirebaseDao = new FirebaseDao(getContext(), this);
         forceLoad();
     }
-    @Override public String loadInBackground() {
+    @Override public List<Pet> loadInBackground() {
         if (!isCancelled) startUpdatingImagesForObjects();
         return null;
     }
@@ -61,13 +61,13 @@ public class ImageSyncAsyncTaskLoader extends AsyncTaskLoader<String> implements
         mPositionInObjectsList = 0;
 
         if (mProfileType.equals(getContext().getString(R.string.pet_profile)) && mPetsList!= null && mPetsList.size()>0) {
-            mFirebaseDao.getImage(mPetsList.get(0), mCurrentImage);
+            mFirebaseDao.syncImage(mPetsList.get(0), mCurrentImage);
         }
         else if (mProfileType.equals(getContext().getString(R.string.family_profile)) && mFamiliesList!= null && mFamiliesList.size()>0) {
-            mFirebaseDao.getImage(mFamiliesList.get(0), mCurrentImage);
+            mFirebaseDao.syncImage(mFamiliesList.get(0), mCurrentImage);
         }
         else if (mProfileType.equals(getContext().getString(R.string.foundation_profile)) && mFoundationsList!= null && mFoundationsList.size()>0) {
-            mFirebaseDao.getImage(mFoundationsList.get(0), mCurrentImage);
+            mFirebaseDao.syncImage(mFoundationsList.get(0), mCurrentImage);
         }
 
     }
@@ -161,13 +161,13 @@ public class ImageSyncAsyncTaskLoader extends AsyncTaskLoader<String> implements
         if (mPositionInObjectsList == objectsListSize()) return;
 
         if (mProfileType.equals(getContext().getString(R.string.pet_profile))) {
-            mFirebaseDao.getImage(mPetsList.get(mPositionInObjectsList), mCurrentImage);
+            mFirebaseDao.syncImage(mPetsList.get(mPositionInObjectsList), mCurrentImage);
         }
         else if (mProfileType.equals(getContext().getString(R.string.family_profile))) {
-            mFirebaseDao.getImage(mFamiliesList.get(mPositionInObjectsList), mCurrentImage);
+            mFirebaseDao.syncImage(mFamiliesList.get(mPositionInObjectsList), mCurrentImage);
         }
         else if (mProfileType.equals(getContext().getString(R.string.foundation_profile))) {
-            mFirebaseDao.getImage(mFoundationsList.get(mPositionInObjectsList), mCurrentImage);
+            mFirebaseDao.syncImage(mFoundationsList.get(mPositionInObjectsList), mCurrentImage);
         }
     }
 
