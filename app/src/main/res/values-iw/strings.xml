@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">פט-איתור</string>
+    <string name="app_name">פטיטור</string>
     <string name="title_activity_map">מפה</string>
     <string name="find_a_pet">חפש חיית מחמד</string>
     <string name="favorites">מועדפים</string>
@@ -104,17 +104,16 @@
     <string name="family_not_saved">המשפחה לא נשמרה! נא מלא ערכים תקניים בשדות המסומנים ב-*.</string>
     <string name="foundation_not_saved">העמותה לא נשמרה! נא מלא ערכים תקניים בשדות המסומנים ב-*.</string>
     <string name="my_name">שמי המלא (לא מוצג לאחרים)</string>
-    <string name="my_family_s_pseudonym">שם בדוי למשפחה (*נדרש, מוצג לאחרים)</string>
     <string name="my_cell_number_not_shown_to_others">טלפון (לא מוצג לאחרים)</string>
     <string name="my_email_not_shown_to_others">כתובת מייל (לא מוצג לאחרים)</string>
     <string name="my_experience_with_fostering_adoption">הניסיון שלי באימוץ/אומנה.</string>
     <string name="upload_pics_of_my_current_pets">העלה תמונות של חיות המחמד שלי!</string>
     <string name="choose_family_page_picture">בחר את התמונה הראשית של משפחתי!</string>
-    <string name="how_we_want_to_help">כציד אני רוצה לעזור:</string>
+    <string name="how_i_want_to_help">כציד אני רוצה לעזור:</string>
     <string name="providing_a_home">לתת בית חם</string>
-    <string name="foster_a_dog">אומנה</string>
-    <string name="adopt_a_dog">אימוץ</string>
-    <string name="foster_and_possibly_adopt_a_dog">אומנה וייתכן אימוץ</string>
+    <string name="foster">אומנה</string>
+    <string name="adopt">אימוץ</string>
+    <string name="foster_and_possibly_adopt">אומנה וייתכן אימוץ</string>
     <string name="how_we_can_help">כיצד אנו יכולים לעזור:</string>
     <string name="moving_equipment_around">העברת ציוד</string>
     <string name="moving_dogs_around">העברת חיות מחמד</string>
@@ -132,7 +131,7 @@
     <string name="helping_in_other_ways">עזור בדרכים אחרות</string>
     <string name="family_main_image">דף ראשי של המשפחה</string>
     <string name="please_fill_user_profile">נא מלא את פרופיל המשתמש שלך לפי שתוכל/י להמשיך.</string>
-    <string name="family_s_pseudonym">שם המשפחה</string>
+    <string name="family_s_pseudonym_required">שם המשפחה (*נדרש, מוצג לאחרים)</string>
     <string name="please_wait_syncing_images">נא המתן עד שכלל התמונות יסוכרנו באינטרנט.</string>
     <string name="no_internet_sync_later">אין חיבור לאינטרנט! נא כנס לפרופיל שוב מאוחר יותר כדי לסנכרן את התמונות החדשות.</string>
     <string name="images_cannot_be_saved_no_internet_press_done_again">מצערים, לא ניתן לשמור את התמונות שלך מכיוון שלא קיים חיבור לאינטרנט. לחץ \"בצע\" כדי להמשיך בכל זאת.</string>
@@ -192,7 +191,7 @@
     <string name="ascending">סדר עולה</string>
     <string name="descending">סדר יורד</string>
     <string name="default_text">ברירת מחדל</string>
-    <string name="share_this_dog_profile">שתף את פרופיל חיית המחמד</string>
+    <string name="share_this_pet_profile">שתף את פרופיל חיית המחמד</string>
     <string name="foundation">עמותה</string>
     <string name="no_associated_foundation">לא משויך לעמותה</string>
     <string name="no_history_available">אין היסטוריה</string>
@@ -248,4 +247,25 @@
     <string name="coat_length_long">ארוך</string>
     <string name="coat_length_very_long">ארוך מאוד</string>
     <string name="pet_s_local_name_required">שם מקומי של חיית המחמד (*נדרש אם אין שם באנגלית)</string>
+    <string name="user_id_or_email">מזהה או מייל</string>
+    <string name="default_address">רחוב, עיר, מדינה</string>
+    <string name="family_s_pseudonym">שם המשפחה הבדוי</string>
+    <string name="no_contact_phone_available">אין מספר טלפון להתקשרות</string>
+    <string name="i_want_to_help_fostering_adoption_organizations">רוצה לעזור לעמותות</string>
+    <string name="our_experience_with_pets">הניסיון שלנו עם חיות מחמד</string>
+    <string name="no_experience">ללא ניסיון</string>
+    <string name="no_foundation_found_for_your_search">לא נמצאה עמותה בחיפוש.</string>
+    <string name="no_family_found_for_your_search">לא נמצאה משפחה בחיפוש.</string>
+    <string name="search">חפש</string>
+    <string name="find_a_profile">חפש פרופיל</string>
+    <string name="invalid_search_parameters">מצטערים, נראה שהקלדתם ערך חיפוש לא תקין.</string>
+    <string name="share_this_profile">שתף את הפרופיל</string>
+    <string name="no_website_available">אין אתר אינטרנט</string>
+    <string name="up_to_one_week">עד שבוע אחד</string>
+    <string name="up_to_a_few_week">עד מספר שבועות</string>
+    <string name="up_to_one_month">עד חודש אחד</string>
+    <string name="up_to_a_month_and_half">עד חודש וחצי</string>
+    <string name="up_to_two_months">ע חודשיים</string>
+    <string name="up_to_three_months">עד 3 חודשים</string>
+    <string name="my_family_s_pseudonym_required">שם בדוי למשפחה (*נדרש, מוצג לאחרים)</string>
 </resources>

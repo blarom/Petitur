@@ -169,7 +169,7 @@
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/show_pet_profile_share_fab"
         style="@style/DefaultFabStyle"
-        android:contentDescription="@string/share_this_dog_profile"
+        android:contentDescription="@string/share_this_pet_profile"
         android:elevation="@dimen/fab_button_default_elevation"
         app:fabSize="normal"
         app:layout_constraintBottom_toBottomOf="parent"

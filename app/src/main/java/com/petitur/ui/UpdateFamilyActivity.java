@@ -41,7 +41,7 @@ import butterknife.Unbinder;
 
 public class UpdateFamilyActivity extends BaseActivity implements
         FirebaseDao.FirebaseOperationsHandler,
-        ImagesRecycleViewAdapter.ImageClickHandler, AdapterView.OnItemSelectedListener {
+        ImagesRecycleViewAdapter.ImageClickHandler {
 
 
     //region Parameters
@@ -58,23 +58,10 @@ public class UpdateFamilyActivity extends BaseActivity implements
     @BindView(R.id.update_family_checkbox_foster) CheckBox mCheckBoxFoster;
     @BindView(R.id.update_family_checkbox_adopt) CheckBox mCheckBoxAdopt;
     @BindView(R.id.update_family_checkbox_foster_and_adopt) CheckBox mCheckBoxFosterAndAdopt;
-    @BindView(R.id.update_family_spinner_foster_period) Spinner mSpinnerFosterPeriod;
-    @BindView(R.id.update_family_checkbox_help_organize_move_equipment) CheckBox mCheckBoxHelpOrganizeMovingEquipment;
-    @BindView(R.id.update_family_checkbox_help_organize_move_dogs) CheckBox mCheckBoxHelpOrganizeMovingDogs;
-    @BindView(R.id.update_family_checkbox_help_organize_coordinating) CheckBox mCheckBoxHelpOrganizeCoordinating;
-    @BindView(R.id.update_family_checkbox_help_organize_lending_hand) CheckBox mCheckBoxHelpOrganizeLendingHand;
-    @BindView(R.id.update_family_checkbox_dogwalking) CheckBox mCheckBoxDogWalking;
-    @BindView(R.id.update_family_spinner_where_dogwalking) Spinner mSpinnerDogWalkingWhere;
-    @BindView(R.id.update_family_checkbox_dogwalking_afternoon) CheckBox mCheckBoxDogWalkingAfternoon;
-    @BindView(R.id.update_family_checkbox_dogwalking_evening) CheckBox mCheckBoxDogWalkingEvening;
-    @BindView(R.id.update_family_checkbox_dogwalking_morning) CheckBox mCheckBoxDogWalkingMorning;
-    @BindView(R.id.update_family_checkbox_dogwalking_noon) CheckBox mCheckBoxDogWalkingNoon;
-    @BindView(R.id.update_family_image_main)
-    ImageView mImageViewMain;
-    @BindView(R.id.update_family_recyclerview_pet_images)
-    RecyclerView mRecyclerViewPetImages;
-    @BindView(R.id.update_family_scroll_container)
-    NestedScrollView mScrollViewContainer;
+    @BindView(R.id.update_family_checkbox_want_to_help) CheckBox mCheckBoxWantToHelp;
+    @BindView(R.id.update_family_image_main) ImageView mImageViewMain;
+    @BindView(R.id.update_family_recyclerview_pet_images) RecyclerView mRecyclerViewPetImages;
+    @BindView(R.id.update_family_scroll_container) NestedScrollView mScrollViewContainer;
     private Unbinder mBinding;
     private Family mFamily;
     private FirebaseDao mFirebaseDao;
@@ -89,8 +76,6 @@ public class UpdateFamilyActivity extends BaseActivity implements
     private String mFirebaseUid;
     private FirebaseAuth.AuthStateListener mAuthStateListener;
     private boolean mFamilyFound;
-    private ArrayAdapter<CharSequence> mSpinnerAdapterDogwalkingWhere;
-    private ArrayAdapter<CharSequence> mSpinnerAdapterFosterPeriod;
     private boolean[] mImagesReady;
     private int mScrollPosition;
     private Bundle mSavedInstanceState;
@@ -263,15 +248,6 @@ public class UpdateFamilyActivity extends BaseActivity implements
         mFamilyFound = false;
         mCurrentlySyncingImages = false;
 
-        mSpinnerAdapterDogwalkingWhere = ArrayAdapter.createFromResource(this, R.array.dogwalking_location, android.R.layout.simple_spinner_item);
-        mSpinnerAdapterDogwalkingWhere.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mSpinnerDogWalkingWhere.setAdapter(mSpinnerAdapterDogwalkingWhere);
-        mSpinnerDogWalkingWhere.setOnItemSelectedListener(this);
-
-        mSpinnerAdapterFosterPeriod = ArrayAdapter.createFromResource(this, R.array.foster_period, android.R.layout.simple_spinner_item);
-        mSpinnerAdapterFosterPeriod.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mSpinnerFosterPeriod.setAdapter(mSpinnerAdapterFosterPeriod);
-        mSpinnerFosterPeriod.setOnItemSelectedListener(this);
     }
     private void getFamilyProfileFromFirebase() {
         if (mCurrentFirebaseUser != null) {
@@ -311,17 +287,7 @@ public class UpdateFamilyActivity extends BaseActivity implements
         mCheckBoxFoster.setChecked(mFamily.getFD());
         mCheckBoxAdopt.setChecked(mFamily.getAD());
         mCheckBoxFosterAndAdopt.setChecked(mFamily.getFAD());
-        mSpinnerFosterPeriod.setSelection(Utilities.getSpinnerPositionFromText(mSpinnerFosterPeriod, mFamily.getFP()));
-        mCheckBoxHelpOrganizeMovingEquipment.setChecked(mFamily.getHOE());
-        mCheckBoxHelpOrganizeMovingDogs.setChecked(mFamily.getHOD());
-        mCheckBoxHelpOrganizeCoordinating.setChecked(mFamily.getHOC());
-        mCheckBoxHelpOrganizeLendingHand.setChecked(mFamily.getHOL());
-        mCheckBoxDogWalking.setChecked(mFamily.getHD());
-        mSpinnerDogWalkingWhere.setSelection(Utilities.getSpinnerPositionFromText(mSpinnerDogWalkingWhere, mFamily.getHDW()));
-        mCheckBoxDogWalkingMorning.setChecked(mFamily.getHDM());
-        mCheckBoxDogWalkingNoon.setChecked(mFamily.getHDN());
-        mCheckBoxDogWalkingAfternoon.setChecked(mFamily.setHDA());
-        mCheckBoxDogWalkingEvening.setChecked(mFamily.getHDE());
+        mCheckBoxWantToHelp.setChecked(mFamily.getWTH());
 
         Utilities.hideSoftKeyboard(this);
     }
@@ -400,17 +366,7 @@ public class UpdateFamilyActivity extends BaseActivity implements
         mFamily.setFD(mCheckBoxFoster.isChecked());
         mFamily.setAD(mCheckBoxAdopt.isChecked());
         mFamily.setFAD(mCheckBoxFosterAndAdopt.isChecked());
-        mFamily.setFP(mSpinnerFosterPeriod.getSelectedItem().toString());
-        mFamily.setHOE(mCheckBoxHelpOrganizeMovingEquipment.isChecked());
-        mFamily.setHOD(mCheckBoxHelpOrganizeMovingDogs.isChecked());
-        mFamily.setHOC(mCheckBoxHelpOrganizeCoordinating.isChecked());
-        mFamily.setHOL(mCheckBoxHelpOrganizeLendingHand.isChecked());
-        mFamily.setHD(mCheckBoxDogWalking.isChecked());
-        mFamily.setHDW(mSpinnerDogWalkingWhere.getSelectedItem().toString());
-        mFamily.setHDM(mCheckBoxDogWalkingMorning.isChecked());
-        mFamily.setHDN(mCheckBoxDogWalkingNoon.isChecked());
-        mFamily.getHDA(mCheckBoxDogWalkingAfternoon.isChecked());
-        mFamily.setHDE(mCheckBoxDogWalkingEvening.isChecked());
+        mFamily.setWTH(mCheckBoxWantToHelp.isChecked());
 
         if (pseudonym.length() < 2 || country.length() < 2 || city.length() < 1) {
             mFamilyCriticalParametersSet = false;
@@ -525,18 +481,4 @@ public class UpdateFamilyActivity extends BaseActivity implements
         mFamily.setIUT(uploadTimes);
     }
 
-    //Communication with spinner adapters
-    @Override public void onItemSelected(AdapterView<?> adapterView, View view, int pos, long l) {
-        switch (adapterView.getId()) {
-            case R.id.update_family_spinner_where_dogwalking:
-                mFamily.setHDW((String) adapterView.getItemAtPosition(pos));
-                break;
-            case R.id.update_family_spinner_foster_period:
-                mFamily.setFP((String) adapterView.getItemAtPosition(pos));
-                break;
-        }
-    }
-    @Override public void onNothingSelected(AdapterView<?> adapterView) {
-
-    }
 }

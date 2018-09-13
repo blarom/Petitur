@@ -3,6 +3,7 @@ package com.petitur.ui;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Build;
 import android.support.annotation.NonNull;
@@ -28,6 +29,7 @@ import com.petitur.resources.Utilities;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import javax.annotation.Nonnull;
 
@@ -143,6 +145,7 @@ public class TaskSelectionActivity extends BaseActivity implements
                 else Utilities.startUpdateFamilyProfileActivity(TaskSelectionActivity.this);
                 return true;
             case R.id.action_signin:
+                //TODO: add "Are you sure?" dialog when signing out
                 Utilities.handleUserSignIn(TaskSelectionActivity.this, mCurrentFirebaseUser, mFirebaseAuth, mMenu);
                 if (mCurrentFirebaseUser!=null) showBlankTaskSelectionMenu(); //ie. show the blank screen when requesting sign-out for a logged-in user
                 return true;
@@ -182,10 +185,15 @@ public class TaskSelectionActivity extends BaseActivity implements
         mCurrentFirebaseUser = mFirebaseAuth.getCurrentUser();
         mBinding =  ButterKnife.bind(this);
 
+        if (getSupportActionBar()!=null) {
+            getSupportActionBar().setTitle(R.string.app_name);
+        }
+
         mFoundationNotCreatedYet = true;
         mFamilyNotCreatedYet = true;
 
         showBlankTaskSelectionMenu();
+
     }
     private void setupFirebaseAuthentication() {
         // Check if user is signed in (non-null) and update UI accordingly.
@@ -350,7 +358,7 @@ public class TaskSelectionActivity extends BaseActivity implements
             welcomeMessage = getString(R.string.welcome_evening) + name + "!";
         }
 
-        mWelcomeTextView.setText(welcomeMessage);
+        if (mWelcomeTextView!=null) mWelcomeTextView.setText(welcomeMessage);
     }
     private void openTipsInfoActivity() {
 
@@ -377,6 +385,9 @@ public class TaskSelectionActivity extends BaseActivity implements
         openPetList(false);
     }
     @OnClick(R.id.task_selection_search_users) public void onSearchUsersButtonClick() {
+        Intent intent = new Intent(this, SearchProfileActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        startActivity(intent);
     }
 
 

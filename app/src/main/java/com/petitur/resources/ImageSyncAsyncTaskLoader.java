@@ -9,7 +9,7 @@ import com.petitur.data.*;
 
 import java.util.List;
 
-public class ImageSyncAsyncTaskLoader extends AsyncTaskLoader<List<Pet>> implements
+public class ImageSyncAsyncTaskLoader extends AsyncTaskLoader<List<Object>> implements
         FirebaseDao.FirebaseOperationsHandler {
 
 
@@ -48,7 +48,7 @@ public class ImageSyncAsyncTaskLoader extends AsyncTaskLoader<List<Pet>> impleme
         mFirebaseDao = new FirebaseDao(getContext(), this);
         forceLoad();
     }
-    @Override public List<Pet> loadInBackground() {
+    @Override public List<Object> loadInBackground() {
         if (!isCancelled) startUpdatingImagesForObjects();
         return null;
     }
@@ -90,7 +90,7 @@ public class ImageSyncAsyncTaskLoader extends AsyncTaskLoader<List<Pet>> impleme
             listElement = mFoundationsList.get(mPositionInObjectsList);
         }
 
-        Utilities.updateImageOnLocalDevice(getContext(), listElement, mFirebaseDao, imageName, imageUri);
+        Utilities.updateImageOnLocalDevice(getContext(), listElement, imageName, imageUri);
     }
     private int objectsListSize() {
         if (mProfileType.equals(getContext().getString(R.string.pet_profile))) {

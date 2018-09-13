@@ -7,7 +7,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.NestedScrollView;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -22,7 +21,6 @@ import android.webkit.URLUtil;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.petitur.R;
@@ -38,7 +36,6 @@ import com.petitur.resources.Utilities;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import butterknife.BindView;
@@ -49,7 +46,7 @@ import butterknife.Unbinder;
 public class ShowPetProfileActivity extends BaseActivity implements
         ImagesRecycleViewAdapter.ImageClickHandler,
         ImageSyncAsyncTaskLoader.OnImageSyncOperationsHandler,
-        LoaderManager.LoaderCallbacks<List<Pet>>,
+        LoaderManager.LoaderCallbacks<List<Object>>,
         FirebaseDao.FirebaseOperationsHandler {
 
 
@@ -246,7 +243,7 @@ public class ShowPetProfileActivity extends BaseActivity implements
         mClickedImageUriString = mDisplayedImageList.get(0).toString();
     }
     private void openFoundationProfile() {
-        Intent intent = new Intent(this, ShowFoundationProfileActivity.class);
+        Intent intent = new Intent(this, SearchProfileActivity.class);
         intent.putExtra(getString(R.string.foundation_profile_id), mPet.getOI());
         startActivity(intent);
     }
@@ -315,7 +312,7 @@ public class ShowPetProfileActivity extends BaseActivity implements
     }
 
     //Communication with Loader
-    @NonNull @Override public Loader<List<Pet>> onCreateLoader(int id, @Nullable Bundle args) {
+    @NonNull @Override public Loader<List<Object>> onCreateLoader(int id, @Nullable Bundle args) {
 
         if (id== SINGLE_OBJECT_IMAGES_SYNC_LOADER) {
             List<Pet> pets = new ArrayList<>();
@@ -326,12 +323,12 @@ public class ShowPetProfileActivity extends BaseActivity implements
         }
         return new ImageSyncAsyncTaskLoader(this, "", null, null, null, null, this);
     }
-    @Override public void onLoadFinished(@NonNull Loader<List<Pet>> loader, List<Pet> data) {
+    @Override public void onLoadFinished(@NonNull Loader<List<Object>> loader, List<Object> data) {
         if (loader.getId() == SINGLE_OBJECT_IMAGES_SYNC_LOADER) {
             displayImages();
         }
     }
-    @Override public void onLoaderReset(@NonNull Loader<List<Pet>> loader) {
+    @Override public void onLoaderReset(@NonNull Loader<List<Object>> loader) {
 
     }
 

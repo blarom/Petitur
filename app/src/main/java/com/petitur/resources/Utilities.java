@@ -44,6 +44,7 @@ import com.petitur.R;
 import com.petitur.adapters.ImagesRecycleViewAdapter;
 import com.petitur.data.*;
 import com.petitur.ui.PreferencesActivity;
+import com.petitur.ui.SearchProfileActivity;
 import com.petitur.ui.UpdateFamilyActivity;
 import com.petitur.ui.UpdateFoundationActivity;
 import com.squareup.picasso.MemoryPolicy;
@@ -122,7 +123,7 @@ public class Utilities {
                     case 5: imageName = "image5"; break;
                 }
                 if (!imageName.equals("")) {
-                    Uri copiedImageUri = Utilities.updateLocalImageFromUri(context, tempImageUri, object, imageName);
+                    Utilities.updateLocalImageFromUri(context, tempImageUri, object, imageName);
                     requireOnlineSync = true;
                 }
             }
@@ -155,7 +156,7 @@ public class Utilities {
         Context localizedContext = context.createConfigurationContext(conf);
         return localizedContext.getResources();
     }
-    @NonNull public static Resources getLocalizedResources(Context context, Locale desiredLocale) {
+    @SuppressWarnings("unused") @NonNull public static Resources getLocalizedResources(Context context, Locale desiredLocale) {
         //taken from: https://stackoverflow.com/questions/9475589/how-to-get-string-from-different-locales-in-android
         Configuration conf = context.getResources().getConfiguration();
         conf = new Configuration(conf);
@@ -241,7 +242,7 @@ public class Utilities {
         else return null;
         return imageDirectory;
     }
-    public static String getTempImagesDirectory(Context context) {
+    private static String getTempImagesDirectory(Context context) {
         return context.getFilesDir().getAbsolutePath()+"/temp/images/";
     }
     private static File getFileWithTrials(String directory, String fileName) {
@@ -354,7 +355,7 @@ public class Utilities {
         Double distanceKmRounded = distanceKm.doubleValue();
         return df.format(distanceKmRounded);
     }
-    public static String convertAgeToDisplayableValue(double age) {
+    private static String convertAgeToDisplayableValue(double age) {
 
         //see: https://stackoverflow.com/questions/153724/how-to-round-a-number-to-n-decimal-places-in-java
         DecimalFormat df = new DecimalFormat("#.#");
@@ -397,6 +398,21 @@ public class Utilities {
         }
 
         return displayedAge;
+    }
+    public static boolean isCandidateForEmail(String query) {
+        return (query.contains("@") && query.contains("."));
+    }
+    public static boolean isCandidateForFirebaseId(String query) {
+        return (query.length()>4
+                && !query.contains("$")
+                && !query.contains("[")
+                && !query.contains("]")
+                && !query.contains("#")
+                && !query.contains("/"));
+    }
+    public static int getSmallestWidth(Context context) {
+        Configuration config = context.getResources().getConfiguration();
+        return config.smallestScreenWidthDp;
     }
 
 
@@ -494,7 +510,7 @@ public class Utilities {
 
 
     //Image utilities
-    public static void loadGenericImageIntoImageView(Context context, Object object, ImageView image) {
+    private static void loadGenericImageIntoImageView(Context context, Object object, ImageView image) {
         Uri imageUri = getGenericImageUri(object);
         displayUriInImageView(context, imageUri, image);
     }
@@ -600,7 +616,7 @@ public class Utilities {
 
         return uris;
     }
-    public static List<Uri> getLocalImageUriList(Context context, Object object) {
+    private static List<Uri> getLocalImageUriList(Context context, Object object) {
 
         String directory = getImagesDirectoryForObject(context, object);
         List<Uri> uris = new ArrayList<>();
@@ -691,7 +707,7 @@ public class Utilities {
         }
         return null;
     }
-    public static Uri getImageUriForObjectWithFileProvider(Context context, Object object, String imageName) {
+    @SuppressWarnings("ResultOfMethodCallIgnored") public static Uri getImageUriForObjectWithFileProvider(Context context, Object object, String imageName) {
 
         //Inspired by: https://inthecheesefactory.com/blog/how-to-share-access-to-file-with-fileprovider-on-android-nougat/en
         //Note that in contrast to the above tutorial, I use the internal app files directory and changed provider_paths.xml accordingly
@@ -702,7 +718,7 @@ public class Utilities {
 
         return FileProvider.getUriForFile(context, BuildConfig.APPLICATION_ID + ".provider", imageFile);
     }
-    public static void deleteAllLocalObjectImages(Context context, Object object) {
+    @SuppressWarnings("unused") public static void deleteAllLocalObjectImages(Context context, Object object) {
         deleteFileAtUri(getLocalImageUriForObject(context, object, "mainImage"));
         deleteFileAtUri(getLocalImageUriForObject(context, object, "image1"));
         deleteFileAtUri(getLocalImageUriForObject(context, object, "image2"));
@@ -724,7 +740,7 @@ public class Utilities {
         }
         return false;
     }
-    public static void displayTempImageInImageView(Context context, String imageName, ImageView imageView) {
+    private static void displayTempImageInImageView(Context context, String imageName, ImageView imageView) {
 
         String localDirectory = getTempImagesDirectory(context);
         if (directoryIsInvalid(localDirectory)) {
@@ -861,7 +877,7 @@ public class Utilities {
         }
         return null;
     }
-    public static String getStreetNumberFromAddress(Address address) {
+    @SuppressWarnings("unused") public static String getStreetNumberFromAddress(Address address) {
         String addressLine = address.getAddressLine(0);
         String[] addressLineElements = addressLine.split(",");
         String[] addressLineStreetElements = addressLineElements[0].trim().split(" ");
@@ -893,7 +909,7 @@ public class Utilities {
         }
         return addressLineStreetElements[0].trim();
     }
-    public static String getStreetNumberAndNameFromAddress(Address address) {
+    @SuppressWarnings("unused") public static String getStreetNumberAndNameFromAddress(Address address) {
         String line = address.getAddressLine(0);
         return (Arrays.asList(line.split(","))).get(0).trim();
     }
@@ -957,7 +973,7 @@ public class Utilities {
         }
         else return false;
     }
-    public static Object getObjectsWithinDistance(Context context, Object object, double userLatitude, double userLongitude, int distanceMeters) {
+    @SuppressWarnings("all") public static Object getObjectsWithinDistance(Context context, Object object, double userLatitude, double userLongitude, int distanceMeters) {
 
         if (!(object instanceof List)) return object;
         List<Object> objectsList = (List<Object>) object;
@@ -1014,7 +1030,7 @@ public class Utilities {
         }
         return objectsList;
     }
-    public static boolean checkIfObjectIsNearby(Context context, String addressString,
+    @SuppressWarnings("SimplifiableIfStatement") private static boolean checkIfObjectIsNearby(Context context, String addressString,
                                                 double objectLatitude, double objectLongitude,
                                                 double userLatitude, double userLongitude, int distanceMeters) {
 
@@ -1036,7 +1052,7 @@ public class Utilities {
         }
         return false;
     }
-    public static boolean isWithinDistance(double userLatitude, double userLongitude, double objectLatitude, double objectLongitude, int distanceMeters) {
+    @SuppressWarnings("UnnecessaryLocalVariable") private static boolean isWithinDistance(double userLatitude, double userLongitude, double objectLatitude, double objectLongitude, int distanceMeters) {
         if (!(objectLatitude == 0.0 && objectLongitude == 0.0)) {
             float[] objectDistance = new float[1];
             Location.distanceBetween(userLatitude, userLongitude, objectLatitude, objectLongitude, objectDistance);
@@ -1055,7 +1071,7 @@ public class Utilities {
                 getLatLongAtDistanceFromLatLong(latitude, longitude, distanceM, 270.0)[1]
         };
     }
-    public static double[] getLatLongAtDistanceFromLatLong(double lat1Deg, double lon1Deg, int distanceM, double radialDeg) {
+    private static double[] getLatLongAtDistanceFromLatLong(double lat1Deg, double lon1Deg, int distanceM, double radialDeg) {
 
         //Adapted from: https://gis.stackexchange.com/questions/5821/calculating-latitude-longitude-x-miles-from-point
         //Original source: http://www.edwilliams.org/avform.htm#LL
@@ -1080,7 +1096,7 @@ public class Utilities {
 
         return new double[]{latitude2, longitude2};
     }
-    public static int getDistanceFromLatLong(double lat1Deg, double lon1Deg, double lat2Deg, double lon2Deg) {
+    @SuppressWarnings("UnnecessaryLocalVariable") public static int getDistanceFromLatLong(double lat1Deg, double lon1Deg, double lat2Deg, double lon2Deg) {
 
         //Adapted from: https://gis.stackexchange.com/questions/5821/calculating-latitude-longitude-x-miles-from-point
         //Original source: http://www.edwilliams.org/avform.htm#LL
@@ -1306,7 +1322,7 @@ public class Utilities {
 
         return queryConditions;
     }
-    public static List<QueryCondition> getQueryConditionsForSingleObjectSearchByUniqueId(Context context, Object object) {
+    @SuppressWarnings("unused") public static List<QueryCondition> getQueryConditionsForSingleObjectSearchByUniqueId(Context context, Object object) {
 
         List<QueryCondition> queryConditions = new ArrayList<>();
         QueryCondition queryCondition;
@@ -1356,7 +1372,7 @@ public class Utilities {
             firebaseDao.putImageInFirebaseStorage(object, localImageUri, imageName);
         }
     }
-    public static void updateImageOnLocalDevice(Context context, Object object, FirebaseDao firebaseDao, String imageName, Uri downloadedImageUri) {
+    public static void updateImageOnLocalDevice(Context context, Object object, String imageName, Uri downloadedImageUri) {
 
         String localDirectory = getImagesDirectoryForObject(context, object);
         if(directoryIsInvalid(localDirectory)) return;
@@ -1381,7 +1397,7 @@ public class Utilities {
             }
         }
     }
-    public static Uri updateLocalImageFromUri(Context context, Uri originalImageUri, Object object, String imageName) {
+    @SuppressWarnings("UnnecessaryLocalVariable") private static Uri updateLocalImageFromUri(Context context, Uri originalImageUri, Object object, String imageName) {
 
         String directory = getImagesDirectoryForObject(context, object);
         if(directoryIsInvalid(directory)) return null;
@@ -1389,7 +1405,7 @@ public class Utilities {
         Uri copiedImageUri = moveFile(originalImageUri, directory, imageName);
         return copiedImageUri;
     }
-    public static Uri updateTempObjectImage(Context context, Uri originalImageUri, String imageName) {
+    @SuppressWarnings("UnnecessaryLocalVariable") public static Uri updateTempObjectImage(Context context, Uri originalImageUri, String imageName) {
 
         String directory = getTempImagesDirectory(context);
         if(directoryIsInvalid(directory)) return null;
@@ -1417,7 +1433,7 @@ public class Utilities {
         List<Uri> uris = Utilities.getExistingImageUriListForObject(context, object, true);
         mFamilyImagesRecycleViewAdapter.setContents(uris);
     }
-    public static boolean allUrisNull(Uri[] uris) {
+    @SuppressWarnings("unused") public static boolean allUrisNull(Uri[] uris) {
         boolean noMoreTempImages = true;
         for (Uri uri : uris) {
             if (uri!=null) noMoreTempImages = false;
@@ -1428,12 +1444,12 @@ public class Utilities {
         return age/12;
     }
     public static int getMonthsFromAge(int age) {
-        return age - ((int) age/12)*12;
+        return age - (age/12)*12;
     }
     public static int getMonthsAgeFromYearsMonths(int years, int months) {
         return 12*years+months;
     }
-    public static double getYearsAgeFromYearsMonths(int years, int months) {
+    private static double getYearsAgeFromYearsMonths(int years, int months) {
         return years + (double) months / 12.0;
     }
     public static String getAgeRange(Context context, String type, int years, int months) {
@@ -1462,7 +1478,7 @@ public class Utilities {
 
         return activeNetworkInfo != null;
     }
-    public static void goToWebLink(Context context, String url) {
+    @SuppressWarnings("StatementWithEmptyBody") public static void goToWebLink(Context context, String url) {
 
         if (context==null) return;
 
@@ -1569,4 +1585,18 @@ public class Utilities {
         return sharedPref.getString(context.getString(R.string.language_preference), "en");
     }
 
+    public static void setLocale(Activity activity) {
+
+        String language = getAppPreferenceLanguage(activity.getBaseContext());
+        if (language==null) return;
+
+//        if(!Locale.getDefault().equals( myLocale ) ) {
+//            Configuration config = getBaseContext().getResources().getConfiguration();
+//            config.locale = Globals.locale;
+//            getBaseContext().getResources().updateConfiguration( config, null );
+//            Intent restart = getIntent();
+//            finish();
+//            startActivity( restart );
+//        }
+    }
 }

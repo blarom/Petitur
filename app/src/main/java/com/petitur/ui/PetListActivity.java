@@ -63,7 +63,7 @@ import butterknife.Unbinder;
 public class PetListActivity extends BaseActivity implements
         PetListRecycleViewAdapter.PetListItemClickHandler,
         CustomLocationListener.LocationListenerHandler,
-        LoaderManager.LoaderCallbacks<List<Pet>>,
+        LoaderManager.LoaderCallbacks<List<Object>>,
         ImageSyncAsyncTaskLoader.OnImageSyncOperationsHandler,
         FirebaseDao.FirebaseOperationsHandler {
 
@@ -1230,8 +1230,7 @@ public class PetListActivity extends BaseActivity implements
 
         //Requesting the list depending on the type of list
         showLoadingIndicator();
-        if (!TextUtils.isEmpty(mTempListChoice) &&
-                mTempListChoice.equals(Utilities.getFlag(getApplicationContext()).getString(R.string.dialog_filter_my_pets))) {
+        if (!TextUtils.isEmpty(mTempListChoice) && mTempListChoice.equals(Utilities.getFlag(getApplicationContext()).getString(R.string.dialog_filter_my_pets))) {
             if (mFoundation==null) {
                 //If the Foundation is mull, then try waiting for Firebase to fetch the Foundation data before searching for the pets
                 new Handler().postDelayed(new Runnable() {
@@ -1250,8 +1249,7 @@ public class PetListActivity extends BaseActivity implements
                 mFirebaseDao.requestObjectsWithConditions(new Pet(), queryConditions);
             }
         }
-        else if (!TextUtils.isEmpty(mTempListChoice) &&
-                mTempListChoice.equals(Utilities.getFlag(getApplicationContext()).getString(R.string.dialog_filter_my_favorites))) {
+        else if (!TextUtils.isEmpty(mTempListChoice) && mTempListChoice.equals(Utilities.getFlag(getApplicationContext()).getString(R.string.dialog_filter_my_favorites))) {
 
             mFavoritePetIds = mFamily.getFPI();
             mDocumentCounter = 0;
@@ -1454,7 +1452,7 @@ public class PetListActivity extends BaseActivity implements
     }
 
     //Communication with Loader
-    @NonNull @Override public Loader<List<Pet>> onCreateLoader(int id, @Nullable Bundle args) {
+    @NonNull @Override public Loader<List<Object>> onCreateLoader(int id, @Nullable Bundle args) {
 
         if (id == LIST_MAIN_IMAGES_SYNC_LOADER && mImageSyncAsyncTaskLoader==null) {
             mImageSyncAsyncTaskLoader =  new ImageSyncAsyncTaskLoader(this, getString(R.string.task_sync_list_main_images),
@@ -1467,21 +1465,21 @@ public class PetListActivity extends BaseActivity implements
         }
         return new ImageSyncAsyncTaskLoader(this, "", null, null, null, null, this);
     }
-    @Override public void onLoadFinished(@NonNull Loader<List<Pet>> loader, List<Pet> data) {
+    @Override @SuppressWarnings("unchecked") public void onLoadFinished(@NonNull Loader<List<Object>> loader, List<Object> data) {
         if (loader.getId() == LIST_MAIN_IMAGES_SYNC_LOADER) {
             mPetsRecyclerViewAdapter.notifyDataSetChanged();
             stopImageSyncThread();
         }
         else if (loader.getId() == LIST_ADDRESS_LANGUAGE_SYNC_LOADER) {
-            mPetsAtDistance = data;
+            mPetsAtDistance = (List<Pet>)(Object) data;
             mPetsRecyclerViewAdapter.setContents(mPetsAtDistance);
             if (getLoaderManager()!=null) getLoaderManager().destroyLoader(LIST_ADDRESS_LANGUAGE_SYNC_LOADER);
         }
     }
-    @Override public void onLoaderReset(@NonNull Loader<List<Pet>> loader) {
+    @Override public void onLoaderReset(@NonNull Loader<List<Object>> loader) {
 
     }
-    private static class AddressLanguageAsyncTaskLoader extends AsyncTaskLoader<List<Pet>> {
+    @SuppressWarnings("unchecked") private static class AddressLanguageAsyncTaskLoader extends AsyncTaskLoader<List<Object>> {
 
         private final List<Pet> mPets;
 
@@ -1495,12 +1493,12 @@ public class PetListActivity extends BaseActivity implements
             forceLoad();
         }
 
-        @Nullable @Override public List<Pet> loadInBackground() {
+        @Nullable @Override public List<Object> loadInBackground() {
 
             for (Pet pet : mPets) {
                 updatePetAddressWithLocalizedText(pet);
             }
-            return mPets;
+            return (List<Object>) (Object) mPets;
         }
 
         private void updatePetAddressWithLocalizedText(Pet pet) {

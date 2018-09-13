@@ -131,11 +131,11 @@
     <string name="my_experience_with_fostering_adoption">My experience with fostering/adoption</string>
     <string name="upload_pics_of_my_current_pets">Upload pics of my current pets!</string>
     <string name="choose_family_page_picture">Choose my family page picture!</string>
-    <string name="how_we_want_to_help">How we want to help:</string>
+    <string name="how_i_want_to_help">How I want to help:</string>
     <string name="providing_a_home">Providing a home</string>
-    <string name="foster_a_dog">Foster a dog</string>
-    <string name="adopt_a_dog">Adopt a dog</string>
-    <string name="foster_and_possibly_adopt_a_dog">Foster and possibly adopt a dog</string>
+    <string name="foster">Foster</string>
+    <string name="adopt">Adopt</string>
+    <string name="foster_and_possibly_adopt">Foster and possibly adopt</string>
     <string name="moving_equipment_around">Moving equipment around</string>
     <string name="moving_dogs_around">Moving dogs around</string>
     <string name="coordinating_and_scheduling">Coordinating and scheduling</string>
@@ -152,7 +152,7 @@
     <string name="helping_in_other_ways">Helping in other ways</string>
     <string name="family_main_image">Family main image</string>
     <string name="please_fill_user_profile">Please fill in your user profile before continuing.</string>
-    <string name="family_s_pseudonym">Family\'s name</string>
+    <string name="family_s_pseudonym_required">Family\'s name (*required)</string>
     <string name="please_wait_syncing_images">Please wait while your new images are being synced online.</string>
     <string name="no_internet_sync_later">No internet connection! Please enter this profile at a later date to sync the newer images.</string>
     <string name="started_syncing_images">Started syncing your new images, please wait…</string>
@@ -244,7 +244,7 @@
     <string name="default_text">default</string>
     <string name="pet_profile_parcelable" translatable="false">pet_profile_parcelable</string>
     <string name="family_profile_parcelable" translatable="false">family_profile_parcelable</string>
-    <string name="share_this_dog_profile">Share this pet profile</string>
+    <string name="share_this_pet_profile">Share this pet profile</string>
     <string name="foundation">Foundation:</string>
     <string name="no_associated_foundation">No associated foundation</string>
     <string name="no_history_available">No history available</string>
@@ -292,20 +292,66 @@
     <string name="save_and_go">Save \u0026 Go</string>
     <string name="sort_and_filter">Sort \u0026 Filter</string>
 
+    <string name="up_to_one_week">Up to 1 week</string>
+    <string name="up_to_a_few_week">Up to a few weeks</string>
+    <string name="up_to_one_month">Up to 1 month</string>
+    <string name="up_to_a_month_and_half">Up to 1.5 months</string>
+    <string name="up_to_two_months">Up to 2 months</string>
+    <string name="up_to_three_months">Up to 3 months</string>
+
+    <string name="coat_length_hairless">Hairless</string>
+    <string name="coat_length_very_short">Very short</string>
+    <string name="coat_length_short">Short</string>
+    <string name="coat_length_medium">Medium</string>
+    <string name="coat_length_long">Long</string>
+    <string name="coat_length_very_long">Very long</string>
+    <string name="pet_interactions">interactions</string>
+    <string name="pet_behavior">behavior</string>
+    <string name="pet_age">age</string>
+    <string name="no_exp_shared">No experience shared</string>
+    <string name="profile_type">Profile Type</string>
+    <string name="foundation_name">Foundation Name</string>
+    <string name="my_family_s_pseudonym_required">My family\'s pseudonym (*required, shown to others)</string>
+    <string name="how_we_can_help">How we can help:</string>
+    <string name="images_cannot_be_saved_no_internet_press_done_again">Sorry, your images cannot be saved because there is no Internet connection. Press DONE to continue anyway.</string>
+    <string name="finished_uploading_images">Finished uploading images.</string>
+    <string name="any_gender">@string/any</string>
+    <string name="add_vet_event">Add a Vet Event</string>
+    <string name="default_date" translatable="false">01-01-2018</string>
+    <string name="description_of_the_vet_event">Description of the Vet Event</string>
+    <string name="vet_event">Vet Event</string>
+    <string name="delete">Delete</string>
+    <string name="foundation_profile_parcelable" translatable="false">foundation_profile_parcelable</string>
+    <string name="default_date_range" translatable="false">1-1-18 ~ 1-1-19</string>
+    <string name="today">Today</string>
+    <string name="add_a_fostering_family">Add a fostering family</string>
+    <string name="pet_s_local_name_required">Pet\'s local name (*required if no English name)</string>
+    <string name="pets_at_distance_parcelable" translatable="false">pets_at_distance_parcelable</string>
+    <string name="user_id_or_email">User ID or Email</string>
+    <string name="default_address">Street, City, Country</string>
+    <string name="family_s_pseudonym">Family\'s pseudonym</string>
+    <string name="no_contact_phone_available">No contact phone available</string>
+    <string name="i_want_to_help_fostering_adoption_organizations">Want to help fostering/adoption organizations</string>
+    <string name="our_experience_with_pets">Our experience with pets</string>
+    <string name="no_experience">No experience.</string>
+    <string name="saved_profile_scroll_position" translatable="false">saved_profile_scroll_position</string>
+    <string name="saved_profile_images_loaded_state" translatable="false">saved_profile_images_loaded_state</string>
+    <string name="no_foundation_found_for_your_search">No foundation found for your search.</string>
+    <string name="no_family_found_for_your_search">No family found for your search.</string>
+    <string name="search">Search</string>
+    <string name="find_a_profile">Find a Profile</string>
+    <string name="invalid_search_parameters">Sorry, it seems you have entered invalid search parameters.</string>
+    <string name="share_this_profile">Share this profile</string>
+    <string name="no_website_available">No website available</string>
+    <string name="request_from_pet_profile" translatable="false">request_from_pet_profile</string>
 
     <string-array name="foster_period">
-        <item>Up to 1 week</item>
-        <item>Up to a few weeks</item>
-        <item>Up to 1 month</item>
-        <item>Up to 1.5 months</item>
-        <item>Up to 2 months</item>
-        <item>Up to 3 months</item>
-    </string-array>
-    <string-array name="dogwalking_location">
-        <item>Near my home</item>
-        <item>Within my neighborhood</item>
-        <item>A short drive away</item>
-        <item>A long drive away</item>
+        <item>@string/up_to_one_week</item>
+        <item>@string/up_to_a_few_week</item>
+        <item>@string/male</item>
+        <item>@string/male</item>
+        <item>@string/male</item>
+        <item>@string/male</item>
     </string-array>
     <string-array name="pet_genders">
         <item>@string/male</item>
@@ -358,33 +404,5 @@
         <item>@string/language_selection_english</item>
         <item>@string/language_selection_hebrew</item>
     </string-array>
-    <string name="coat_length_hairless">Hairless</string>
-    <string name="coat_length_very_short">Very short</string>
-    <string name="coat_length_short">Short</string>
-    <string name="coat_length_medium">Medium</string>
-    <string name="coat_length_long">Long</string>
-    <string name="coat_length_very_long">Very long</string>
-    <string name="pet_interactions">interactions</string>
-    <string name="pet_behavior">behavior</string>
-    <string name="pet_age">age</string>
-    <string name="no_exp_shared">No experience shared</string>
-    <string name="profile_type">Profile Type</string>
-    <string name="foundation_name">Foundation Name</string>
-    <string name="my_family_s_pseudonym">My family\'s pseudonym (*required, shown to others)</string>
-    <string name="how_we_can_help">How we can help:</string>
-    <string name="images_cannot_be_saved_no_internet_press_done_again">Sorry, your images cannot be saved because there is no Internet connection. Press DONE to continue anyway.</string>
-    <string name="finished_uploading_images">Finished uploading images.</string>
-    <string name="any_gender">@string/any</string>
-    <string name="add_vet_event">Add a Vet Event</string>
-    <string name="default_date" translatable="false">01-01-2018</string>
-    <string name="description_of_the_vet_event">Description of the Vet Event</string>
-    <string name="vet_event">Vet Event</string>
-    <string name="delete">Delete</string>
-    <string name="foundation_profile_parcelable" translatable="false">foundation_profile_parcelable</string>
-    <string name="default_date_range" translatable="false">1-1-18 ~ 1-1-19</string>
-    <string name="today">Today</string>
-    <string name="add_a_fostering_family">Add a fostering family</string>
-    <string name="pet_s_local_name_required">Pet\'s local name (*required if no English name)</string>
-    <string name="pets_at_distance_parcelable">pets_at_distance_parcelable</string>
 
 </resources>

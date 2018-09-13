@@ -187,16 +187,16 @@ public class MapActivity extends BaseActivity implements
                 intent.putExtra(getString(R.string.requested_specific_profile), id);
                 startActivity(intent);
             }
-            else if (mFamiliesArrayList!=null) {
-                Intent intent = new Intent(MapActivity.this, ShowFamilyProfileActivity.class);
-                intent.putExtra(getString(R.string.requested_specific_profile), id);
-                startActivity(intent);
-            }
-            else if (mFoundationsArrayList!=null) {
-                Intent intent = new Intent(MapActivity.this, ShowFoundationProfileActivity.class);
-                intent.putExtra(getString(R.string.requested_specific_profile), id);
-                startActivity(intent);
-            }
+//            else if (mFamiliesArrayList!=null) {
+//                Intent intent = new Intent(MapActivity.this, ShowFamilyProfileActivity.class);
+//                intent.putExtra(getString(R.string.requested_specific_profile), id);
+//                startActivity(intent);
+//            }
+//            else if (mFoundationsArrayList!=null) {
+//                Intent intent = new Intent(MapActivity.this, ShowFoundationProfileActivity.class);
+//                intent.putExtra(getString(R.string.requested_specific_profile), id);
+//                startActivity(intent);
+//            }
         }
 
     }

@@ -204,7 +204,7 @@ public class PreferencesActivity extends BaseActivity implements FirebaseDao.Fir
                     mLanguageCode = "en";
                 }
                 else if (selectedItem.equals(mLanguageHebrew)) {
-                    mLanguageCode = "he";
+                    mLanguageCode = "iw";
                 }
 
                 //Creating an alert dialog to make sure the user wants to change the language

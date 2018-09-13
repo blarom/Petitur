@@ -47,17 +47,7 @@ public class Family implements Parcelable{
         fD = in.readByte() != 0;
         aD = in.readByte() != 0;
         FAD = in.readByte() != 0;
-        fP = in.readString();
-        hOE = in.readByte() != 0;
-        hOD = in.readByte() != 0;
-        hOC = in.readByte() != 0;
-        hOL = in.readByte() != 0;
-        hD = in.readByte() != 0;
-        hDW = in.readString();
-        hDM = in.readByte() != 0;
-        hDN = in.readByte() != 0;
-        hDa = in.readByte() != 0;
-        hDE = in.readByte() != 0;
+        wTH = in.readByte() != 0;
         gac = in.readString();
         iUT = in.createStringArrayList();
         tP = in.readString();
@@ -245,92 +235,12 @@ public class Family implements Parcelable{
         this.FAD = faD;
     }
 
-    private String fP = ""; //Foster period
-    public String getFP() {
-        return fP;
+    private boolean wTH = false; //Want To Help
+    public boolean getWTH() {
+        return wTH;
     }
-    public void setFP(String fT) {
-        this.fP = fT;
-    }
-
-    private boolean hOE = false; //Help organize adoption events - move equipment
-    public boolean getHOE() {
-        return hOE;
-    }
-    public void setHOE(boolean hOE) {
-        this.hOE = hOE;
-    }
-
-    private boolean hOD = false; //Help organize adoption events - move dogs
-    public boolean getHOD() {
-        return hOD;
-    }
-    public void setHOD(boolean hOD) {
-        this.hOD = hOD;
-    }
-
-    private boolean hOC = false; //Help organize adoption events - coordinating
-    public boolean getHOC() {
-        return hOC;
-    }
-    public void setHOC(boolean hOC) {
-        this.hOC = hOC;
-    }
-
-    private boolean hOL = false; //Help organize adoption events - Lending a hand at events
-    public boolean getHOL() {
-        return hOL;
-    }
-    public void setHOL(boolean hOL) {
-        this.hOL = hOL;
-    }
-
-    private boolean hD = false; //Help by dogwalking
-    public boolean getHD() {
-        return hD;
-    }
-    public void setHD(boolean hD) {
-        this.hD = hD;
-    }
-
-    private String hDW = ""; //Help by dogwalking - where
-    public String getHDW() {
-        return hDW;
-    }
-    public void setHDW(String hDw) {
-        this.hDW = hDw;
-    }
-
-    private boolean hDM = false; //Help by dogwalking - morning
-    public boolean getHDM() {
-        return hDM;
-    }
-    public void setHDM(boolean hDm) {
-        this.hDM = hDm;
-    }
-
-    private boolean hDN = false; //Help by dogwalking - noon
-    public boolean getHDN() {
-        return hDN;
-    }
-    public void setHDN(boolean hDn) {
-        this.hDN = hDn;
-    }
-
-    private boolean hDa = false; //Help by dogwalking - afternoon
-    public boolean setHDA() {
-        return hDa;
-    }
-    public void getHDA(boolean hDa) {
-        this.hDa = hDa;
-    }
-
-    private boolean hDE = false; //Help by dogwalking - evening
-    public boolean getHDE() {
-        return hDE;
-    }
-    public void setHDE(boolean hDe) {
-        this.hDE = hDe;
+    public void setWTH(boolean wTH) {
+        this.wTH = wTH;
     }
 
     private String gac; //Geocoder address Country (requires internet to update)
@@ -518,17 +428,7 @@ public class Family implements Parcelable{
         parcel.writeByte((byte) (fD ? 1 : 0));
         parcel.writeByte((byte) (aD ? 1 : 0));
         parcel.writeByte((byte) (FAD ? 1 : 0));
-        parcel.writeString(fP);
-        parcel.writeByte((byte) (hOE ? 1 : 0));
-        parcel.writeByte((byte) (hOD ? 1 : 0));
-        parcel.writeByte((byte) (hOC ? 1 : 0));
-        parcel.writeByte((byte) (hOL ? 1 : 0));
-        parcel.writeByte((byte) (hD ? 1 : 0));
-        parcel.writeString(hDW);
-        parcel.writeByte((byte) (hDM ? 1 : 0));
-        parcel.writeByte((byte) (hDN ? 1 : 0));
-        parcel.writeByte((byte) (hDa ? 1 : 0));
-        parcel.writeByte((byte) (hDE ? 1 : 0));
+        parcel.writeByte((byte) (wTH ? 1 : 0));
         parcel.writeString(gac);
         parcel.writeStringList(iUT);
         parcel.writeString(tP);

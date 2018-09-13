@@ -39,7 +39,7 @@
     <style name="ListCheckBoxCheckableStyle">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginStart">@dimen/double_margin</item>
+        <item name="android:layout_marginStart">@dimen/standard_margin</item>
         <item name="android:textAppearance">?android:attr/textAppearanceMedium</item>
         <item name="android:textSize">@dimen/list_text_size</item>
     </style>

@@ -14,6 +14,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".ui.BaseActivity">
+        </activity>
         <activity android:name=".ui.TaskSelectionActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -39,15 +41,13 @@
             android:theme="@style/Base.Theme.AppCompat"/> <!-- optional (needed if default theme has no action bar) -->
         <activity android:name=".ui.ShowPetProfileActivity">
         </activity>
-        <activity android:name=".ui.ShowFamilyProfileActivity">
-        </activity>
-        <activity android:name=".ui.ShowFoundationProfileActivity">
-        </activity>
         <activity android:name=".ui.UpdateFamilyActivity">
         </activity>
         <activity android:name=".ui.UpdateFoundationActivity">
         </activity>
         <activity android:name=".ui.TipsInfoActivity">
+        </activity>
+        <activity android:name=".ui.SearchProfileActivity">
         </activity>
 
         <provider
@@ -64,8 +64,6 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key"/>
 
-        <activity android:name=".ui.BaseActivity">
-        </activity>
     </application>
 
 </manifest>
