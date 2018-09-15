@@ -82,7 +82,6 @@ public class FoundationProfileFragment extends Fragment implements
         if (savedInstanceState!=null) restoreFragmentParameters(savedInstanceState);
         updateProfileFieldsOnScreen();
         displayImages();
-        restoreLayoutParameters();
         if (savedInstanceState==null) startImageSyncThread();
 
         return rootView;
@@ -102,7 +101,6 @@ public class FoundationProfileFragment extends Fragment implements
     }
     @Override public void onDestroyView() {
         super.onDestroyView();
-        saveLayoutParameters();
         mBinding.unbind();
         if (mImageSyncAsyncTaskLoader!=null) mImageSyncAsyncTaskLoader.stopUpdatingImagesForObjects();
     }
@@ -120,7 +118,7 @@ public class FoundationProfileFragment extends Fragment implements
     }
     private void initializeViews(View rootView) {
         mBinding = ButterKnife.bind(this, rootView);
-        mClickedImageUriString = Utilities.getImageUriForObjectWithFileProvider(getContext(), mFoundation, "mainImage").toString();
+        if (mFoundation!=null) mClickedImageUriString = Utilities.getImageUriForObjectWithFileProvider(getContext(), mFoundation, "mainImage").toString();
         setupImagesRecyclerView();
     }
     private void setupImagesRecyclerView() {
@@ -140,27 +138,6 @@ public class FoundationProfileFragment extends Fragment implements
         if (savedInstanceState != null) {
             mFoundation = savedInstanceState.getParcelable(getString(R.string.foundation_profile_parcelable));
             mAlreadyLoadedImages = savedInstanceState.getBoolean(getString(R.string.saved_profile_images_loaded_state));
-        }
-    }
-    private void restoreLayoutParameters() {
-        if (getContext()==null) return;
-
-        mImagesRecyclerViewPosition = Utilities.getAppPreferenceProfileImagesRvPosition(getContext());
-        if (mScrollContainer!=null) {
-            mScrollContainer.post(new Runnable() {
-                @Override
-                public void run() {
-                    if (mScrollContainer!=null) mScrollContainer.scrollTo(0, mScrollPosition);
-                }
-            });
-        }
-        if (mRecyclerViewImages!=null) {
-            mRecyclerViewImages.post(new Runnable() {
-                @Override
-                public void run() {
-                    if (mRecyclerViewImages!=null) mRecyclerViewImages.scrollToPosition(mImagesRecyclerViewPosition);
-                }
-            });
         }
     }
     private void updateProfileFieldsOnScreen() {
@@ -221,14 +198,6 @@ public class FoundationProfileFragment extends Fragment implements
 
         if (mRecyclerViewImages!=null) {
             mRecyclerViewImages.scrollToPosition(mImagesRecyclerViewPosition);
-        }
-    }
-    private void saveLayoutParameters() {
-        //SharedPreferences are used here instead of state restoration, because of the FragmentPager refresh that resets the parameters
-        mScrollPosition = mScrollContainer.getScrollY();
-        if (mRecyclerViewImages!=null)  mImagesRecyclerViewPosition = Utilities.getLinearRecyclerViewPosition(mRecyclerViewImages);
-        if (mImagesRecyclerViewPosition>0) {
-            Utilities.setAppPreferenceProfileImagesRvPosition(getContext(), mImagesRecyclerViewPosition);
         }
     }
     private void openPhoneDialer() {

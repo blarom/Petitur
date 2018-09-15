@@ -86,7 +86,7 @@
             android:layout_marginRight="8dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
-            android:text="@string/find_a_user"/>
+            android:text="@string/find_a_profile"/>
     </LinearLayout>
 
     <TextView

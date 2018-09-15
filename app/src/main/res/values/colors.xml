@@ -5,7 +5,7 @@
     <color name="colorAccent">#FF4081</color>
     <color name="white">#FFFFFF</color>
 
-    <color name="greenBackground">#FF4081</color>
+    <color name="greenBackground">#66bb6a</color>
     <color name="selected_item_background_color">#d3f8de</color>
     <color name="filter_button_activated">#FF4081</color>
     <color name="filter_button_deactivated">#3F51B5</color>

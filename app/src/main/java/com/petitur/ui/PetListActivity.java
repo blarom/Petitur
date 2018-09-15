@@ -72,7 +72,7 @@ public class PetListActivity extends BaseActivity implements
     private static final String DEBUG_TAG = "Petitur Pet List";
     private static final int LIST_MAIN_IMAGES_SYNC_LOADER = 3698;
     private static final int LIST_ADDRESS_LANGUAGE_SYNC_LOADER = 3675;
-    public static final int SHOW_PET_ACTIVITY_KEY = 1234;
+    public static final int SHOW_PET_PROFILE_KEY = 1234;
     @BindView(R.id.pet_list_loading_indicator) ProgressBar mProgressBarLoadingIndicator;
     @BindView(R.id.pet_list_pets_recyclerview) RecyclerView mPetsRecyclerView;
     private Unbinder mBinding;
@@ -224,7 +224,7 @@ public class PetListActivity extends BaseActivity implements
     @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == SHOW_PET_ACTIVITY_KEY) {
+        if (requestCode == SHOW_PET_PROFILE_KEY) {
             if (resultCode == RESULT_OK) {
 
                 //Update the family if it was modified
@@ -1370,18 +1370,20 @@ public class PetListActivity extends BaseActivity implements
             Bundle bundle = new Bundle();
             bundle.putParcelable(getString(R.string.pet_profile_parcelable), mPetsAtDistance.get(clickedItemIndex));
             bundle.putParcelable(getString(R.string.foundation_profile_parcelable), mFoundation);
+            bundle.putString(getString(R.string.user_name), mCurrentFirebaseUser.getDisplayName());
             intent.putExtras(bundle);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-            startActivityForResult(intent, SHOW_PET_ACTIVITY_KEY);
+            startActivityForResult(intent, SHOW_PET_PROFILE_KEY);
         }
         else {
-            Intent intent = new Intent(this, ShowPetProfileActivity.class);
+            Intent intent = new Intent(this, SearchProfileActivity.class);
             Bundle bundle = new Bundle();
             bundle.putParcelable(getString(R.string.pet_profile_parcelable), mPetsAtDistance.get(clickedItemIndex));
             bundle.putParcelable(getString(R.string.family_profile_parcelable), mFamily);
+            bundle.putString(getString(R.string.user_name), mCurrentFirebaseUser.getDisplayName());
             intent.putExtras(bundle);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-            startActivityForResult(intent, SHOW_PET_ACTIVITY_KEY);
+            startActivityForResult(intent, SHOW_PET_PROFILE_KEY);
         }
     }
     private void openMap() {

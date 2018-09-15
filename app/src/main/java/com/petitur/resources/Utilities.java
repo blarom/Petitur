@@ -22,6 +22,7 @@ import android.support.v4.content.FileProvider;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
 import android.view.inputmethod.InputMethodManager;
@@ -44,7 +45,6 @@ import com.petitur.R;
 import com.petitur.adapters.ImagesRecycleViewAdapter;
 import com.petitur.data.*;
 import com.petitur.ui.PreferencesActivity;
-import com.petitur.ui.SearchProfileActivity;
 import com.petitur.ui.UpdateFamilyActivity;
 import com.petitur.ui.UpdateFoundationActivity;
 import com.squareup.picasso.MemoryPolicy;
@@ -56,6 +56,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.RoundingMode;
 import java.nio.channels.FileChannel;
 import java.text.DecimalFormat;
@@ -414,7 +415,19 @@ public class Utilities {
         Configuration config = context.getResources().getConfiguration();
         return config.smallestScreenWidthDp;
     }
+    public static void setupLocale(Activity activity) {
 
+        String language = getAppPreferenceLanguage(activity.getBaseContext());
+        Locale locale = new Locale(language);
+        Resources res = activity.getResources();
+        DisplayMetrics dm = res.getDisplayMetrics();
+        Configuration conf = res.getConfiguration();
+        conf.locale = locale;
+        res.updateConfiguration(conf, dm);
+
+        Intent refresh = new Intent(activity, activity.getClass());
+        activity.startActivity(refresh);
+    }
 
     //List utilities
     public static List<String> sortListAccordingToDates(List<String> dates, boolean descending) {
@@ -531,6 +544,25 @@ public class Utilities {
         }
         return imageUri;
     }
+    private static Bitmap getResizedBitmap(Context context, Uri imageUri, int maxSize) throws FileNotFoundException {
+        //inspired by: https://stackoverflow.com/questions/32800212/resize-image-picked-from-gallery
+
+        InputStream imageStream = context.getContentResolver().openInputStream(imageUri);
+        Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
+
+        int width = selectedImage.getWidth();
+        int height = selectedImage.getHeight();
+
+        float bitmapRatio = (float) width / (float) height;
+        if (bitmapRatio > 1) {
+            width = maxSize;
+            height = (int) (width / bitmapRatio);
+        } else {
+            height = maxSize;
+            width = (int) (height * bitmapRatio);
+        }
+        return Bitmap.createScaledBitmap(selectedImage, width, height, true);
+    }
     public static boolean shrinkImageWithUri(Context context, Uri uri, int width, int height){
 
         if (uri==null) return false;
@@ -538,8 +570,14 @@ public class Utilities {
         //inspired by: from: https://stackoverflow.com/questions/16954109/reduce-the-size-of-a-bitmap-to-a-specified-size-in-android
 
         //If the image is already small, don't change it (file.length()==0 means the image wasn't found)
-        File file = new File(uri.getPath());
-        while (file.length()/1024 > (long) context.getResources().getInteger(R.integer.max_image_file_size)) {
+        //File file = new File(uri.getPath());
+        double factor = 1.0;
+        long lengthBmp = (long) context.getResources().getInteger(R.integer.max_image_file_size)+1;
+        while (true) {
+
+            //long fileLength = file.length()/1024; //inkB
+            if (lengthBmp <= (long) context.getResources().getInteger(R.integer.max_image_file_size)) break;
+
             BitmapFactory.Options bmpFactoryOptions = new BitmapFactory.Options();
             bmpFactoryOptions.inJustDecodeBounds = false;
             Bitmap bitmap;
@@ -559,27 +597,53 @@ public class Utilities {
             bitmap = BitmapFactory.decodeFile(uri.toString(), bmpFactoryOptions);
 
             if (bitmap==null) {
-                //TODO: fix decoding of large images
-                Toast.makeText(context, R.string.image_too_large, Toast.LENGTH_SHORT).show();
-                return false;
+                try {
+                    int maxSize = (int) ((double) 1000*factor);
+                    bitmap = getResizedBitmap(context, uri, maxSize);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+
+                if (bitmap==null) {
+                    Toast.makeText(context, R.string.image_too_large, Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+                byte[] imageInByte = stream.toByteArray();
+
+                //this gives the size of the compressed image in kb
+                lengthBmp = imageInByte.length / 1024;
+
+                try {
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, new FileOutputStream(uri.toString()));
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+
+                factor = factor*0.75;
+                //file = new File(uri.getPath());
+            }
+            else {
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+                byte[] imageInByte = stream.toByteArray();
+
+                //this gives the size of the compressed image in kb
+                lengthBmp = imageInByte.length / 1024;
+
+                try {
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, new FileOutputStream(uri.toString()));
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+
+                height = (int) Math.ceil(height * 0.75);
+                width = (int) Math.ceil(width * 0.75);
+                //file = new File(uri.getPath());
             }
 
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
-            byte[] imageInByte = stream.toByteArray();
-
-            //this gives the size of the compressed image in kb
-            long lengthbmp = imageInByte.length / 1024;
-
-            try {
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, new FileOutputStream(uri.toString()));
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-
-            height = (int) Math.ceil(height * 0.75);
-            height = (int) Math.ceil(height * 0.75);
-            file = new File(uri.getPath());
         }
         return true;
 
@@ -645,7 +709,7 @@ public class Utilities {
 
         return uris;
     }
-    public static String getNameOfFirstAvailableImageInImagesList(Context context, Object object) {
+    @SuppressWarnings("ResultOfMethodCallIgnored") public static String getNameOfFirstAvailableImageInImagesList(Context context, Object object) {
 
         String directory = getImagesDirectoryForObject(context, object);
         if(directoryIsInvalid(directory)) return "";
@@ -687,7 +751,7 @@ public class Utilities {
 
         return Utilities.getImageUriWithPath(imageDirectory,imageName);
     }
-    private static Uri getImageUriWithPath(String directory, String imageName) {
+    @SuppressWarnings("ResultOfMethodCallIgnored") private static Uri getImageUriWithPath(String directory, String imageName) {
 
         if (directoryIsInvalid(directory)) return null;
 
@@ -1584,19 +1648,17 @@ public class Utilities {
         SharedPreferences sharedPref = context.getSharedPreferences(context.getString(R.string.app_preferences), Context.MODE_PRIVATE);
         return sharedPref.getString(context.getString(R.string.language_preference), "en");
     }
-
-    public static void setLocale(Activity activity) {
-
-        String language = getAppPreferenceLanguage(activity.getBaseContext());
-        if (language==null) return;
-
-//        if(!Locale.getDefault().equals( myLocale ) ) {
-//            Configuration config = getBaseContext().getResources().getConfiguration();
-//            config.locale = Globals.locale;
-//            getBaseContext().getResources().updateConfiguration( config, null );
-//            Intent restart = getIntent();
-//            finish();
-//            startActivity( restart );
-//        }
+    public static void setAppPreferenceLanguageSetFlag(Context context, boolean flag) {
+        if (context != null) {
+            SharedPreferences sharedPref = context.getSharedPreferences(context.getString(R.string.app_preferences), Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPref.edit();
+            editor.putBoolean(context.getString(R.string.language_preference_set_flag), flag);
+            editor.apply();
+        }
     }
+    public static boolean getAppPreferenceLanguageSetFlag(Context context) {
+        SharedPreferences sharedPref = context.getSharedPreferences(context.getString(R.string.app_preferences), Context.MODE_PRIVATE);
+        return sharedPref.getBoolean(context.getString(R.string.language_preference_set_flag), false);
+    }
+
 }

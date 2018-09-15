@@ -32,7 +32,7 @@ public class ImagesRecycleViewAdapter extends RecyclerView.Adapter<ImagesRecycle
     }
 
     @NonNull @Override public ImageViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {LayoutInflater inflater = LayoutInflater.from(mContext);
-        View view = inflater.inflate(R.layout.list_item_images, parent, false);
+        View view = inflater.inflate(R.layout.list_item_small_images, parent, false);
         view.setFocusable(true);
         return new ImageViewHolder(view);
     }

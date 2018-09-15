@@ -25,8 +25,7 @@
             android:orientation="vertical">
 
             <android.support.design.widget.TextInputLayout
-                android:id="@+id/update_family_container_username"
-                android:hint="@string/my_name"
+                android:hint="@string/my_name_not_shown_to_others"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginTop="@dimen/standard_margin">
@@ -38,7 +37,6 @@
             </android.support.design.widget.TextInputLayout>
 
             <android.support.design.widget.TextInputLayout
-                android:id="@+id/update_family_container_pseudonym"
                 android:hint="@string/family_s_pseudonym_required"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -51,7 +49,6 @@
             </android.support.design.widget.TextInputLayout>
 
             <android.support.design.widget.TextInputLayout
-                android:id="@+id/update_family_container_cell"
                 android:hint="@string/my_cell_number_not_shown_to_others"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -63,7 +60,6 @@
             </android.support.design.widget.TextInputLayout>
 
             <android.support.design.widget.TextInputLayout
-                android:id="@+id/update_family_container_email"
                 android:hint="@string/my_email_not_shown_to_others"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
@@ -74,7 +70,6 @@
             </android.support.design.widget.TextInputLayout>
 
             <android.support.design.widget.TextInputLayout
-                android:id="@+id/update_family_container_country"
                 android:hint="@string/country_required"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
@@ -86,7 +81,6 @@
             </android.support.design.widget.TextInputLayout>
 
             <android.support.design.widget.TextInputLayout
-                android:id="@+id/update_family_container_state"
                 android:hint="@string/state_if_relevant"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
@@ -98,7 +92,6 @@
             </android.support.design.widget.TextInputLayout>
 
             <android.support.design.widget.TextInputLayout
-                android:id="@+id/update_family_container_city"
                 android:hint="@string/city_required"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
@@ -110,7 +103,6 @@
             </android.support.design.widget.TextInputLayout>
 
             <android.support.design.widget.TextInputLayout
-                android:id="@+id/update_family_container_street"
                 android:hint="@string/street_required"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
@@ -122,7 +114,6 @@
             </android.support.design.widget.TextInputLayout>
 
             <android.support.design.widget.TextInputLayout
-                android:id="@+id/update_family_container_history"
                 android:hint="@string/my_experience_with_fostering_adoption"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
@@ -135,7 +126,6 @@
             </android.support.design.widget.TextInputLayout>
 
             <TextView
-                android:id="@+id/family_profile_title_how_want_help"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textSize="@dimen/large_list_text_size"

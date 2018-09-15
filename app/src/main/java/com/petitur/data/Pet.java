@@ -37,9 +37,7 @@ public class Pet implements Parcelable, Comparable<Pet> {
         nmL = in.readString();
         tp = in.readString();
         uI = in.readString();
-        afCP = in.readString();
         oI = in.readString();
-        fN = in.readString();
         cn = in.readString();
         cnL = in.readString();
         ct = in.readString();
@@ -121,28 +119,12 @@ public class Pet implements Parcelable, Comparable<Pet> {
         this.uI = uI;
     }
 
-    private String afCP; //Associated Foundation contact phone
-    public String getAFCP() {
-        return afCP;
-    }
-    public void setAFCP(String FCP) {
-        this.afCP = FCP;
-    }
-
     private String oI = ""; //Owner identifier
     public String getOI() {
         return oI;
     }
     public void setOI(String oI) {
         this.oI = oI;
-    }
-
-    private String fN = ""; //Associated Foundation name
-    public String getFN() {
-        return fN;
-    }
-    public void setFN(String fN) {
-        this.fN = fN;
     }
 
     private String cn = ""; //country
@@ -486,9 +468,7 @@ public class Pet implements Parcelable, Comparable<Pet> {
         parcel.writeString(nmL);
         parcel.writeString(tp);
         parcel.writeString(uI);
-        parcel.writeString(afCP);
         parcel.writeString(oI);
-        parcel.writeString(fN);
         parcel.writeString(cn);
         parcel.writeString(cnL);
         parcel.writeString(ct);

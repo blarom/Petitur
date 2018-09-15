@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout
-    android:id="@+id/frameLayout"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -82,7 +81,6 @@
                 app:layout_constraintTop_toBottomOf="@+id/family_profile_value_experience">
 
                 <TextView
-                    android:id="@+id/family_profile_title_how_want_help"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/how_i_want_to_help"

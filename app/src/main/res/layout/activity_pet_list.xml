@@ -36,7 +36,6 @@
             app:layout_constraintGuide_percent="0.5"/>
 
         <TextView
-            android:id="@+id/pet_list_filter_button_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="@dimen/pet_list_filter_button_margin_to_guideline"
@@ -71,7 +70,6 @@
             app:layout_constraintGuide_percent="0.5"/>
 
         <TextView
-            android:id="@+id/pet_list_map_button_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="@dimen/pet_list_filter_button_margin_to_guideline"

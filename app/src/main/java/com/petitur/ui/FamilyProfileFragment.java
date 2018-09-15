@@ -80,7 +80,6 @@ public class FamilyProfileFragment extends Fragment implements
         if (savedInstanceState!=null) restoreFragmentParameters(savedInstanceState);
         updateProfileFieldsOnScreen();
         displayImages();
-        restoreLayoutParameters();
         if (savedInstanceState==null) startImageSyncThread();
 
         return rootView;
@@ -100,7 +99,6 @@ public class FamilyProfileFragment extends Fragment implements
     }
     @Override public void onDestroyView() {
         super.onDestroyView();
-        saveLayoutParameters();
         mBinding.unbind();
         if (mImageSyncAsyncTaskLoader!=null) mImageSyncAsyncTaskLoader.stopUpdatingImagesForObjects();
     }
@@ -140,27 +138,6 @@ public class FamilyProfileFragment extends Fragment implements
             mAlreadyLoadedImages = savedInstanceState.getBoolean(getString(R.string.saved_profile_images_loaded_state));
         }
     }
-    private void restoreLayoutParameters() {
-        if (getContext()==null) return;
-
-        mImagesRecyclerViewPosition = Utilities.getAppPreferenceProfileImagesRvPosition(getContext());
-        if (mScrollContainer!=null) {
-            mScrollContainer.post(new Runnable() {
-                @Override
-                public void run() {
-                    if (mScrollContainer!=null) mScrollContainer.scrollTo(0, mScrollPosition);
-                }
-            });
-        }
-        if (mRecyclerViewImages!=null) {
-            mRecyclerViewImages.post(new Runnable() {
-                @Override
-                public void run() {
-                    if (mRecyclerViewImages!=null) mRecyclerViewImages.scrollToPosition(mImagesRecyclerViewPosition);
-                }
-            });
-        }
-    }
     private void updateProfileFieldsOnScreen() {
 
         mTextViewFamilyPseudonym.setText(mFamily.getPn());
@@ -187,14 +164,6 @@ public class FamilyProfileFragment extends Fragment implements
 
         if (mRecyclerViewImages!=null) {
             mRecyclerViewImages.scrollToPosition(mImagesRecyclerViewPosition);
-        }
-    }
-    private void saveLayoutParameters() {
-        //SharedPreferences are used here instead of state restoration, because of the FragmentPager refresh that resets the parameters
-        mScrollPosition = mScrollContainer.getScrollY();
-        if (mRecyclerViewImages!=null)  mImagesRecyclerViewPosition = Utilities.getLinearRecyclerViewPosition(mRecyclerViewImages);
-        if (mImagesRecyclerViewPosition>0) {
-            Utilities.setAppPreferenceProfileImagesRvPosition(getContext(), mImagesRecyclerViewPosition);
         }
     }
     private void startImageSyncThread() {

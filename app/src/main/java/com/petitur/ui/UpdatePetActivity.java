@@ -205,7 +205,8 @@ public class UpdatePetActivity extends BaseActivity implements
                 }
             }
             else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
-                Exception error = result.getError();
+                Toast.makeText(this, R.string.error_during_image_cropping, Toast.LENGTH_SHORT).show();
+                //Exception error = result.getError();
             }
         }
     }
@@ -674,7 +675,6 @@ public class UpdatePetActivity extends BaseActivity implements
 
     }
     private void updatePetWithFoundationData() {
-        mPet.setFN(mFoundation.getNm());
         mPet.setOI(mFoundation.getUI());
     }
     private void updateLayoutWithFoundationData() {

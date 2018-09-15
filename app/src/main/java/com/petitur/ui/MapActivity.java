@@ -183,8 +183,8 @@ public class MapActivity extends BaseActivity implements
                 showMarkerInfoDialog(marker);
             }
             else if (mPetsArrayList !=null && tag.substring(0,7).equals(PET_TAG)) {
-                Intent intent = new Intent(MapActivity.this, ShowPetProfileActivity.class);
-                intent.putExtra(getString(R.string.requested_specific_profile), id);
+                Intent intent = new Intent(MapActivity.this, SearchProfileActivity.class);
+                intent.putExtra(getString(R.string.pet_profile_id), id);
                 startActivity(intent);
             }
 //            else if (mFamiliesArrayList!=null) {

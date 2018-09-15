@@ -26,7 +26,6 @@
             android:orientation="vertical">
 
             <android.support.design.widget.TextInputLayout
-                android:id="@+id/update_pet_container_foundation_name"
                 android:hint="@string/organization"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -39,7 +38,6 @@
             </android.support.design.widget.TextInputLayout>
 
             <android.support.design.widget.TextInputLayout
-                android:id="@+id/update_pet_container_name"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginTop="@dimen/standard_margin"
@@ -52,7 +50,6 @@
             </android.support.design.widget.TextInputLayout>
 
             <android.support.design.widget.TextInputLayout
-                android:id="@+id/update_pet_container_name_local"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginTop="@dimen/standard_margin"
@@ -65,7 +62,6 @@
             </android.support.design.widget.TextInputLayout>
 
             <android.support.design.widget.TextInputLayout
-                android:id="@+id/update_pet_container_country"
                 android:hint="@string/country_required"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
@@ -78,7 +74,6 @@
             </android.support.design.widget.TextInputLayout>
 
             <android.support.design.widget.TextInputLayout
-                android:id="@+id/update_pet_container_state"
                 android:hint="@string/state_if_relevant"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
@@ -91,7 +86,6 @@
             </android.support.design.widget.TextInputLayout>
 
             <android.support.design.widget.TextInputLayout
-                android:id="@+id/update_my_family_container_city"
                 android:hint="@string/city_required"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
@@ -103,7 +97,6 @@
             </android.support.design.widget.TextInputLayout>
 
             <android.support.design.widget.TextInputLayout
-                android:id="@+id/update_my_family_container_street"
                 android:hint="@string/street_required"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
@@ -115,7 +108,6 @@
             </android.support.design.widget.TextInputLayout>
 
             <android.support.design.widget.TextInputLayout
-                android:id="@+id/update_my_family_container_street_number"
                 android:hint="@string/street_number_required"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
@@ -139,7 +131,6 @@
                     app:layout_constraintTop_toTopOf="@id/update_pet_coat_length_spinner"/>
 
                 <TextView
-                    android:id="@+id/update_pet_race_title"
                     style="@style/SpinnerTitleStyle"
                     android:text="@string/pet_race"
                     app:layout_constraintBottom_toBottomOf="@id/update_pet_breed_container"
@@ -147,7 +138,6 @@
                     app:layout_constraintTop_toTopOf="@id/update_pet_breed_container"/>
 
                 <TextView
-                    android:id="@+id/update_pet_gender_title"
                     style="@style/SpinnerTitleStyle"
                     android:text="@string/pet_gender"
                     app:layout_constraintBottom_toBottomOf="@id/update_pet_gender_spinner"
@@ -155,7 +145,6 @@
                     app:layout_constraintTop_toTopOf="@id/update_pet_gender_spinner"/>
 
                 <TextView
-                    android:id="@+id/update_pet_size_title"
                     style="@style/SpinnerTitleStyle"
                     android:text="@string/pet_size"
                     app:layout_constraintBottom_toBottomOf="@id/update_pet_size_spinner"
@@ -163,7 +152,6 @@
                     app:layout_constraintTop_toTopOf="@id/update_pet_size_spinner"/>
 
                 <TextView
-                    android:id="@+id/update_pet_age_title"
                     style="@style/SpinnerTitleStyle"
                     android:text="@string/pet_age_required"
                     app:layout_constraintBottom_toBottomOf="@id/update_pet_age_years_edittext"
@@ -171,7 +159,6 @@
                     app:layout_constraintTop_toTopOf="@id/update_pet_age_years_edittext"/>
 
                 <TextView
-                    android:id="@+id/update_pet_type_title"
                     style="@style/SpinnerTitleStyle"
                     android:text="@string/type"
                     app:layout_constraintBottom_toBottomOf="@id/update_pet_type_spinner"
@@ -223,7 +210,6 @@
                     app:layout_constraintTop_toBottomOf="@id/update_pet_type_spinner"/>
 
                 <TextView
-                    android:id="@+id/update_pet_age_months_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/months"
@@ -331,7 +317,6 @@
             </GridLayout>
             
             <android.support.design.widget.TextInputLayout
-                android:id="@+id/update_my_family_container_history"
                 android:hint="@string/pet_s_history"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">

@@ -8,7 +8,6 @@
     android:padding="?dialogPreferredPadding">
 
     <android.support.design.widget.TextInputLayout
-        android:id="@+id/dialog_marker_info_input_text_title_parent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="@string/marker_title">
@@ -23,7 +22,6 @@
 
 
     <android.support.design.widget.TextInputLayout
-        android:id="@+id/dialog_marker_info_input_text_subtitle_parent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="@string/marker_description">
@@ -37,7 +35,6 @@
     </android.support.design.widget.TextInputLayout>
 
     <android.support.design.widget.TextInputLayout
-        android:id="@+id/dialog_marker_info_input_text_country_parent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="@string/country">
@@ -51,7 +48,6 @@
     </android.support.design.widget.TextInputLayout>
 
     <android.support.design.widget.TextInputLayout
-        android:id="@+id/dialog_marker_info_input_text_state_parent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="@string/state">
@@ -65,7 +61,6 @@
     </android.support.design.widget.TextInputLayout>
 
     <android.support.design.widget.TextInputLayout
-        android:id="@+id/dialog_marker_info_input_text_city_parent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="@string/city">
@@ -79,7 +74,6 @@
     </android.support.design.widget.TextInputLayout>
 
     <android.support.design.widget.TextInputLayout
-        android:id="@+id/dialog_marker_info_input_text_street_parent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="@string/street_incl_number">

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout
-    android:id="@+id/search_profile_container"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -31,7 +30,6 @@
             android:inputType="text"/>
 
         <Button
-            android:id="@+id/search_profile_button_clear_query"
             style="?android:attr/borderlessButtonStyle"
             android:layout_width="30dp"
             android:layout_height="30dp"

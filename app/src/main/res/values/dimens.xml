@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <dimen name="widget_margin">8dp</dimen>
     <dimen name="layout_width_for_large_screens">500dp</dimen>
     <dimen name="fab_button_size">56dp</dimen>
     <dimen name="fab_button_standard_margin">24dp</dimen>
     <dimen name="fab_button_extra_margin">56dp</dimen>
     <dimen name="fab_button_default_elevation">6dp</dimen>
     <dimen name="fab_button_default_translation">6dp</dimen>
-    <dimen name="main_image_landscape_width">400dp</dimen>
     <dimen name="standard_margin">8dp</dimen>
     <dimen name="double_margin">16dp</dimen>
     <dimen name="triple_margin">24dp</dimen>
@@ -17,17 +15,11 @@
     <dimen name="large_list_text_size">16sp</dimen>
     <dimen name="title_text_size">18sp</dimen>
     <dimen name="dialog_text_size">18sp</dimen>
-    <dimen name="standard_panel_elevation">4dp</dimen>
-    <dimen name="magnifying_glass_size">100dp</dimen>
     <dimen name="list_item_image_height">100dp</dimen>
     <dimen name="list_item_image_standard_margin">2dp</dimen>
     <dimen name="list_item_image_double_margin">4dp</dimen>
     <dimen name="distance_number_edittext_width">64dp</dimen>
-    <dimen name="list_item_profile_name_text_size">20sp</dimen>
-    <dimen name="list_item_profile_details_text_size">20sp</dimen>
     <dimen name="list_item_texts_padding">4dp</dimen>
-    <dimen name="widget_text_height">32dp</dimen>
-    <dimen name="widget_text_size">24sp</dimen>
     <dimen name="pet_list_top_buttons_margin_top">24dp</dimen>
     <dimen name="pet_list_items_margin_to_parent">16dp</dimen>
     <dimen name="pet_list_top_buttons_margin_to_guideline">8dp</dimen>
@@ -38,7 +30,6 @@
     <dimen name="pet_list_item_gender_image_size">24dp</dimen>
     <dimen name="pet_list_item_image_margins">24dp</dimen>
     <dimen name="pet_list_item_elevation">8dp</dimen>
-    <dimen name="dialog_filter_bottom_buttons_height">32dp</dimen>
     <dimen name="dialog_filter_bottom_buttons_corner_radius">16dp</dimen>
     <dimen name="show_pet_profile_horizontal_margin">24dp</dimen>
     <dimen name="tips_card_height">100dp</dimen>
