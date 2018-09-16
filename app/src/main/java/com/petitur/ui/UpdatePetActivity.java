@@ -30,6 +30,7 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -94,9 +95,11 @@ public class UpdatePetActivity extends BaseActivity implements
     @BindView(R.id.update_pet_gender_spinner) Spinner mSpinnerGender;
     @BindView(R.id.update_pet_race_autocompletetextview) AutoCompleteTextView mAutoCompleteTextViewBreed;
     @BindView(R.id.update_pet_coat_length_spinner) Spinner mSpinnerCoatLengths;
+    @BindView(R.id.update_pet_coat_length_title) TextView mSpinnerCoatLengthsTitle;
     @BindView(R.id.update_pet_checkbox_good_with_kids) CheckBox mCheckBoxGoodWithKids;
     @BindView(R.id.update_pet_checkbox_good_with_cats) CheckBox mCheckBoxGoodWithCats;
     @BindView(R.id.update_pet_checkbox_good_with_dogs) CheckBox mCheckBoxGoodWithDogs;
+    @BindView(R.id.update_pet_checkbox_good_with_birds) CheckBox mCheckBoxGoodWithBirds;
     @BindView(R.id.update_pet_checkbox_castrated) CheckBox mCheckBoxCastrated;
     @BindView(R.id.update_pet_checkbox_house_trained) CheckBox mCheckBoxHouseTrained;
     @BindView(R.id.update_pet_checkbox_special_needs) CheckBox mCheckBoxSpecialNeeds;
@@ -110,6 +113,7 @@ public class UpdatePetActivity extends BaseActivity implements
     private int mTypeSpinnerPosition;
     private int mSizeSpinnerPosition;
     private int mGenderSpinnerPosition;
+    private int mCoatLengthsSpinnerPosition;
     private Pet mPet;
     private FirebaseDao mFirebaseDao;
     private ImagesRecycleViewAdapter mPetImagesRecycleViewAdapter;
@@ -158,6 +162,7 @@ public class UpdatePetActivity extends BaseActivity implements
     private List<String> mDisplayedAvailableParrotBreeds;
     private List<String> mDisplayedPetCoatLengths;
     private List<String> mDisplayedPetAgesList;
+    private Family mFamily;
     //endregion
 
 
@@ -305,6 +310,9 @@ public class UpdatePetActivity extends BaseActivity implements
             mPet = intent.getParcelableExtra(getString(R.string.pet_profile_parcelable));
         }
         if (intent.hasExtra(getString(R.string.foundation_profile_parcelable))) {
+            mFamily = intent.getParcelableExtra(getString(R.string.family_profile_parcelable));
+        }
+        if (intent.hasExtra(getString(R.string.foundation_profile_parcelable))) {
             mFoundation = intent.getParcelableExtra(getString(R.string.foundation_profile_parcelable));
         }
     }
@@ -369,6 +377,8 @@ public class UpdatePetActivity extends BaseActivity implements
         mImageViewArrowBreed.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                //inspired by: https://stackoverflow.com/questions/11284368/autocompletetextview-force-to-show-all-items
+                if (!mAutoCompleteTextViewBreed.getText().toString().equals("")) mSpinnerAdapterBreed.getFilter().filter(null);
                 mAutoCompleteTextViewBreed.showDropDown();
             }
         });
@@ -436,24 +446,20 @@ public class UpdatePetActivity extends BaseActivity implements
                 Utilities.getDisplayedTextFromFlagText(mDisplayedPetSizesList, mPetSizesList, mPet.getSz()));
         mGenderSpinnerPosition = Utilities.getSpinnerPositionFromText(mSpinnerGender,
                 Utilities.getDisplayedTextFromFlagText(mDisplayedPetGendersList, mPetGendersList, mPet.getGn()));
+        mCoatLengthsSpinnerPosition = Utilities.getSpinnerPositionFromText(mSpinnerCoatLengths,
+                Utilities.getDisplayedTextFromFlagText(mDisplayedPetCoatLengths, mPetCoatLengths, mPet.getCL()));
 
         mSpinnerType.setSelection(mTypeSpinnerPosition);
         mSpinnerSize.setSelection(mSizeSpinnerPosition);
         mSpinnerGender.setSelection(mGenderSpinnerPosition);
+        mSpinnerCoatLengths.setSelection(mCoatLengthsSpinnerPosition);
 
-        if (mPet.getTp().equals(getString(R.string.dog))) {
-            mAutoCompleteTextViewBreed.setText(Utilities.getDisplayedTextFromFlagText(mDisplayedAvailableDogBreeds, mAvailableDogBreeds, mPet.getRc()));
-        }
-        else if (mPet.getTp().equals(getString(R.string.cat))) {
-            mAutoCompleteTextViewBreed.setText(Utilities.getDisplayedTextFromFlagText(mDisplayedAvailableCatBreeds, mAvailableCatBreeds, mPet.getRc()));
-        }
-        else if (mPet.getTp().equals(getString(R.string.parrot))) {
-            mAutoCompleteTextViewBreed.setText(Utilities.getDisplayedTextFromFlagText(mDisplayedAvailableParrotBreeds, mAvailableParrotBreeds, mPet.getRc()));
-        }
+        modifyBreedAndCoatLengthOptionsAccordingToPetType();
 
         mCheckBoxGoodWithKids.setChecked(mPet.getGK());
         mCheckBoxGoodWithCats.setChecked(mPet.getGC());
         mCheckBoxGoodWithDogs.setChecked(mPet.getGD());
+        mCheckBoxGoodWithBirds.setChecked(mPet.getGB());
         mCheckBoxCastrated.setChecked(mPet.getCs());
         mCheckBoxHouseTrained.setChecked(mPet.getHT());
         mCheckBoxSpecialNeeds.setChecked(mPet.getSN());
@@ -464,6 +470,30 @@ public class UpdatePetActivity extends BaseActivity implements
         mVideoLinksRecycleViewAdapter.setContents(mPet.getVU());
 
         Utilities.hideSoftKeyboard(this);
+    }
+    private void modifyBreedAndCoatLengthOptionsAccordingToPetType() {
+
+        if (mSpinnerType.getSelectedItem().toString().equals(getString(R.string.dog))) {
+            mSpinnerAdapterBreed = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, mDisplayedAvailableDogBreeds);
+            mAutoCompleteTextViewBreed.setAdapter(mSpinnerAdapterBreed);
+            mAutoCompleteTextViewBreed.setText(Utilities.getDisplayedTextFromFlagText(mDisplayedAvailableDogBreeds, mAvailableDogBreeds, mPet.getRc()));
+            mSpinnerCoatLengthsTitle.setVisibility(View.VISIBLE);
+            mSpinnerCoatLengths.setVisibility(View.VISIBLE);
+        }
+        else if (mSpinnerType.getSelectedItem().toString().equals(getString(R.string.cat))) {
+            mSpinnerAdapterBreed = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, mDisplayedAvailableCatBreeds);
+            mAutoCompleteTextViewBreed.setAdapter(mSpinnerAdapterBreed);
+            mAutoCompleteTextViewBreed.setText(Utilities.getDisplayedTextFromFlagText(mDisplayedAvailableCatBreeds, mAvailableCatBreeds, mPet.getRc()));
+            mSpinnerCoatLengthsTitle.setVisibility(View.VISIBLE);
+            mSpinnerCoatLengths.setVisibility(View.VISIBLE);
+        }
+        else if (mSpinnerType.getSelectedItem().toString().equals(getString(R.string.parrot))) {
+            mSpinnerAdapterBreed = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, mDisplayedAvailableParrotBreeds);
+            mAutoCompleteTextViewBreed.setAdapter(mSpinnerAdapterBreed);
+            mAutoCompleteTextViewBreed.setText(Utilities.getDisplayedTextFromFlagText(mDisplayedAvailableParrotBreeds, mAvailableParrotBreeds, mPet.getRc()));            mSpinnerCoatLengthsTitle.setVisibility(View.VISIBLE);
+            mSpinnerCoatLengthsTitle.setVisibility(View.INVISIBLE);
+            mSpinnerCoatLengths.setVisibility(View.INVISIBLE);
+        }
     }
     private void setupVideoLinksRecyclerView() {
         mRecyclerViewVideoLinks.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, true));
@@ -647,19 +677,20 @@ public class UpdatePetActivity extends BaseActivity implements
         mPet.setSz(Utilities.getFlagTextFromDisplayedText(mDisplayedPetSizesList, mPetSizesList, mSpinnerSize.getSelectedItem().toString()));
         mPet.setCL(Utilities.getFlagTextFromDisplayedText(mDisplayedPetCoatLengths, mPetCoatLengths, mSpinnerCoatLengths.getSelectedItem().toString()));
 
-        if (mPet.getTp().equals(getString(R.string.dog))) {
+        if (mSpinnerType.getSelectedItem().toString().equals(getString(R.string.dog))) {
             mPet.setRc(Utilities.getFlagTextFromDisplayedText(mDisplayedAvailableDogBreeds, mAvailableDogBreeds, mAutoCompleteTextViewBreed.getText().toString()));
         }
-        else if (mPet.getTp().equals(getString(R.string.cat))) {
+        else if (mSpinnerType.getSelectedItem().toString().equals(getString(R.string.cat))) {
             mPet.setRc(Utilities.getFlagTextFromDisplayedText(mDisplayedAvailableCatBreeds, mAvailableCatBreeds, mAutoCompleteTextViewBreed.getText().toString()));
         }
-        else if (mPet.getTp().equals(getString(R.string.parrot))) {
+        else if (mSpinnerType.getSelectedItem().toString().equals(getString(R.string.parrot))) {
             mPet.setRc(Utilities.getFlagTextFromDisplayedText(mDisplayedAvailableParrotBreeds, mAvailableParrotBreeds, mAutoCompleteTextViewBreed.getText().toString()));
         }
 
         mPet.setGK(mCheckBoxGoodWithKids.isChecked());
         mPet.setGC(mCheckBoxGoodWithCats.isChecked());
         mPet.setGD(mCheckBoxGoodWithDogs.isChecked());
+        mPet.setGB(mCheckBoxGoodWithBirds.isChecked());
         mPet.setCs(mCheckBoxCastrated.isChecked());
         mPet.setHT(mCheckBoxHouseTrained.isChecked());
         mPet.setSN(mCheckBoxSpecialNeeds.isChecked());
@@ -1095,16 +1126,29 @@ public class UpdatePetActivity extends BaseActivity implements
     @Override public void onItemSelected(AdapterView<?> adapterView, View view, int pos, long id) {
         switch (adapterView.getId()) {
             case R.id.update_pet_type_spinner:
-                mPet.setTp((String) adapterView.getItemAtPosition(pos));
+                mPet.setTp(Utilities.getFlagTextFromDisplayedText(mDisplayedPetTypesList, mPetTypesList, (String) adapterView.getItemAtPosition(pos)));
+                modifyBreedAndCoatLengthOptionsAccordingToPetType();
                 break;
             case R.id.update_pet_size_spinner:
-                mPet.setSz((String) adapterView.getItemAtPosition(pos));
+                mPet.setSz(Utilities.getFlagTextFromDisplayedText(mDisplayedPetSizesList, mPetSizesList, (String) adapterView.getItemAtPosition(pos)));
                 break;
             case R.id.update_pet_gender_spinner:
-                mPet.setGn((String) adapterView.getItemAtPosition(pos));
+                mPet.setGn(Utilities.getFlagTextFromDisplayedText(mDisplayedPetGendersList, mPetGendersList, (String) adapterView.getItemAtPosition(pos)));
+                break;
+            case R.id.update_pet_coat_length_spinner:
+                mPet.setCL(Utilities.getFlagTextFromDisplayedText(mDisplayedPetCoatLengths, mPetCoatLengths, (String) adapterView.getItemAtPosition(pos)));
                 break;
             case R.id.update_pet_race_autocompletetextview:
-                mPet.setRc((String) adapterView.getItemAtPosition(pos));
+
+                if (mSpinnerType.getSelectedItem().toString().equals(getString(R.string.dog))) {
+                    mPet.setRc(Utilities.getFlagTextFromDisplayedText(mDisplayedAvailableDogBreeds, mAvailableDogBreeds, (String) adapterView.getItemAtPosition(pos)));
+                }
+                else if (mSpinnerType.getSelectedItem().toString().equals(getString(R.string.cat))) {
+                    mPet.setRc(Utilities.getFlagTextFromDisplayedText(mDisplayedAvailableCatBreeds, mAvailableCatBreeds, (String) adapterView.getItemAtPosition(pos)));
+                }
+                else if (mSpinnerType.getSelectedItem().toString().equals(getString(R.string.parrot))) {
+                    mPet.setRc(Utilities.getFlagTextFromDisplayedText(mDisplayedAvailableParrotBreeds, mAvailableParrotBreeds, (String) adapterView.getItemAtPosition(pos)));
+                }
                 break;
         }
     }

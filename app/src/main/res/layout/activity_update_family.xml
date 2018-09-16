@@ -149,7 +149,7 @@
             <CheckBox
                 android:id="@+id/update_family_checkbox_want_to_help"
                 style="@style/ListCheckBoxCheckableStyle"
-                android:text="@string/i_want_to_help_fostering_adoption_organizations"/>
+                android:text="@string/i_want_to_help_pet_organizations"/>
 
             <Button
                 android:id="@+id/update_family_button_upload_pics"

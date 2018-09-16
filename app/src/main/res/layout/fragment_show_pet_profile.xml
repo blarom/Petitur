@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.FamilyProfileFragment">
+    tools:context=".ui.ShowFamilyProfileFragment">
 
     <android.support.v4.widget.NestedScrollView
         android:id="@+id/show_pet_profile_scroll_container"
@@ -49,10 +49,10 @@
                 android:layout_height="wrap_content"
                 android:background="@drawable/background_rounded_corners_full_color"
                 android:layout_marginTop="@dimen/double_margin"
-                android:layout_marginStart="@dimen/show_pet_profile_horizontal_margin"
-                android:layout_marginLeft="@dimen/show_pet_profile_horizontal_margin"
-                android:layout_marginEnd="@dimen/show_pet_profile_horizontal_margin"
-                android:layout_marginRight="@dimen/show_pet_profile_horizontal_margin"
+                android:layout_marginStart="@dimen/show_profile_horizontal_margin"
+                android:layout_marginLeft="@dimen/show_profile_horizontal_margin"
+                android:layout_marginEnd="@dimen/show_profile_horizontal_margin"
+                android:layout_marginRight="@dimen/show_profile_horizontal_margin"
                 android:orientation="vertical">
 
                 <TextView

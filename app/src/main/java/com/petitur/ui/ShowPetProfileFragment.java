@@ -29,10 +29,8 @@ import android.widget.TextView;
 import android.widget.ToggleButton;
 
 import com.petitur.R;
-import com.petitur.adapters.ImagesRecycleViewAdapter;
 import com.petitur.adapters.ImagesViewPagerAdapter;
 import com.petitur.data.Family;
-import com.petitur.data.FirebaseDao;
 import com.petitur.data.Foundation;
 import com.petitur.data.Pet;
 import com.petitur.resources.ImageSyncAsyncTaskLoader;
@@ -49,8 +47,7 @@ import butterknife.OnClick;
 import butterknife.Unbinder;
 
 
-public class PetProfileFragment extends Fragment implements
-        ImagesRecycleViewAdapter.ImageClickHandler,
+public class ShowPetProfileFragment extends Fragment implements
         ImageSyncAsyncTaskLoader.OnImageSyncOperationsHandler,
         LoaderManager.LoaderCallbacks<List<Object>>,
         ImagesViewPagerAdapter.ImageClickHandler {
@@ -95,7 +92,7 @@ public class PetProfileFragment extends Fragment implements
         this.mPetProfileFragmentOperationsHandler = (PetProfileFragmentOperationsHandler) context;
     }
     @Override public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_pet_profile, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_show_pet_profile, container, false);
 
         initializeViews(rootView);
         updateProfileFieldsOnScreen();
@@ -118,7 +115,8 @@ public class PetProfileFragment extends Fragment implements
         mScrollPosition = mScrollContainer.getScrollY();
         outState.putInt(getString(R.string.container_scroll_position), mScrollPosition);
         mSelectedImagePosition = mImageViewPager.getCurrentItem();
-        outState.putInt(getString(R.string.selected_pet_profile_image_position), mSelectedImagePosition);
+        outState.putInt(getString(R.string.selected_profile_image_position), mSelectedImagePosition);
+        outState.putBoolean(getString(R.string.saved_profile_images_loaded_state), mAlreadyLoadedImages);
     }
 
 
@@ -169,7 +167,7 @@ public class PetProfileFragment extends Fragment implements
             mFamily = savedInstanceState.getParcelable(getString(R.string.family_profile_parcelable));
             mAlreadyLoadedImages = savedInstanceState.getBoolean(getString(R.string.saved_profile_images_loaded_state));
             mScrollPosition = savedInstanceState.getInt(getString(R.string.container_scroll_position), 0);
-            mSelectedImagePosition =savedInstanceState.getInt(getString(R.string.selected_pet_profile_image_position), 0);
+            mSelectedImagePosition =savedInstanceState.getInt(getString(R.string.selected_profile_image_position), 0);
         }
     }
     private void setupImagesViewPager() {
@@ -241,9 +239,6 @@ public class PetProfileFragment extends Fragment implements
         if (mFoundation!=null) intent.putExtra(getString(R.string.foundation_profile_parcelable), mFoundation);
         else intent.putExtra(getString(R.string.foundation_profile_id), mPet.getOI());
         startActivity(intent);
-    }
-    private void playVideoInBrowser(int clickedItemIndex) {
-        Utilities.goToWebLink(getContext(), mDisplayedImageList.get(clickedItemIndex).toString());
     }
     private void startImageSyncThread() {
         if (getActivity()==null) return;
@@ -351,7 +346,10 @@ public class PetProfileFragment extends Fragment implements
                     builder.append(additionalDetailsString);
                 }
 
-                sharePetProfile(builder.toString());
+                mSelectedImagePosition = mImageViewPager.getCurrentItem();
+                mSelectedImageUriString = mDisplayedImageList.get(mSelectedImagePosition).toString();
+                Uri imageUri = Utilities.getImageUriForObjectWithFileProvider(getContext(), mPet, Utilities.getImageNameFromUri(mSelectedImageUriString));
+                if (getActivity()!=null) Utilities.shareProfile(getActivity(), builder.toString(), imageUri);
 
                 dialog.dismiss();
             }
@@ -380,23 +378,6 @@ public class PetProfileFragment extends Fragment implements
         AlertDialog dialog = builder.create();
         dialog.show();
     }
-    private void sharePetProfile(String shareText) {
-
-        Intent shareIntent = new Intent();
-        shareIntent.setAction(Intent.ACTION_SEND);
-
-        shareIntent.putExtra(Intent.EXTRA_TEXT, shareText);
-
-        mSelectedImagePosition = mImageViewPager.getCurrentItem();
-        mSelectedImageUriString = mDisplayedImageList.get(mSelectedImagePosition).toString();
-        Uri imageUri = Utilities.getImageUriForObjectWithFileProvider(getContext(), mPet, Utilities.getImageNameFromUri(mSelectedImageUriString));
-        shareIntent.putExtra(Intent.EXTRA_STREAM, imageUri);
-        shareIntent.setType("image/*");
-
-        shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        startActivity(Intent.createChooser(shareIntent, "Share images..."));
-
-    }
 
 
     //View click listeners
@@ -411,7 +392,7 @@ public class PetProfileFragment extends Fragment implements
     @Override public void onImageClick(int clickedItemIndex) {
         String clickedImageUriString = mDisplayedImageList.get(clickedItemIndex).toString();
         if (URLUtil.isNetworkUrl(clickedImageUriString)) {
-            playVideoInBrowser(clickedItemIndex);
+            Utilities.goToWebLink(getContext(), mDisplayedImageList.get(clickedItemIndex).toString());
         }
         else {
             mSelectedImageUriString = clickedImageUriString;

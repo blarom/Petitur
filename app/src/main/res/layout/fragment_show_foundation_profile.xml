@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.ShowFoundationProfileFragment">
+
+    <android.support.v4.widget.NestedScrollView
+        android:id="@+id/show_foundation_profile_scroll_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_margin="@dimen/standard_margin"
+                android:layout_height="wrap_content">
+
+                <klogi.com.RtlViewPager
+                    android:id="@+id/show_foundation_profile_image_viewpager"
+                    android:layout_width="match_parent"
+                    android:layout_height="300dp"/>
+
+                <com.viewpagerindicator.CirclePageIndicator
+                    android:id="@+id/show_foundation_profile_image_indicator"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom"
+                    android:padding="10dp"
+                    app:centered="true"
+                    app:fillColor="@color/white"
+                    app:pageColor="@color/greenBackground"
+                    app:snap="false" />
+            </FrameLayout>
+
+
+            <android.support.constraint.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/background_rounded_corners_full_color"
+                android:layout_marginTop="@dimen/double_margin"
+                android:layout_marginStart="@dimen/show_profile_horizontal_margin"
+                android:layout_marginLeft="@dimen/show_profile_horizontal_margin"
+                android:layout_marginEnd="@dimen/show_profile_horizontal_margin"
+                android:layout_marginRight="@dimen/show_profile_horizontal_margin"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/show_foundation_profile_foundation_name"
+                    style="@style/TitleStyle"
+                    android:text="@string/foundation_name"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"/>
+
+                <TextView
+                    android:id="@+id/show_foundation_profile_address"
+                    style="@style/TitleStyle"
+                    android:text="@string/default_address"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/show_foundation_profile_foundation_name"/>
+
+                <TextView
+                    android:id="@+id/show_foundation_profile_phone_number"
+                    style="@style/TitleStyle"
+                    android:text="@string/no_contact_phone_available"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/show_foundation_profile_address"/>
+
+                <TextView
+                    android:id="@+id/show_foundation_profile_email"
+                    style="@style/TitleStyle"
+                    android:text="@string/no_email_available"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/show_foundation_profile_phone_number"/>
+
+                <TextView
+                    android:id="@+id/show_foundation_profile_website"
+                    style="@style/TitleStyle"
+                    android:layout_marginBottom="@dimen/double_margin"
+                    android:text="@string/no_website_available"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/show_foundation_profile_email"/>
+
+            </android.support.constraint.ConstraintLayout>
+
+        </LinearLayout>
+
+
+    </android.support.v4.widget.NestedScrollView>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/foundation_profile_share_fab"
+        style="@style/DefaultFabStyle"
+        android:elevation="@dimen/fab_button_default_elevation"
+        app:fabSize="normal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:pressedTranslationZ="@dimen/fab_button_default_translation"
+        android:contentDescription="@string/share_this_profile"
+        app:srcCompat="@drawable/ic_share_24dp"/> <!--translation 6dp added to initial elevation at 6dp-->
+
+</android.support.constraint.ConstraintLayout>

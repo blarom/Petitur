@@ -428,6 +428,21 @@ public class Utilities {
         Intent refresh = new Intent(activity, activity.getClass());
         activity.startActivity(refresh);
     }
+    public static void shareProfile(Activity activity, String shareText, Uri imageUri) {
+
+        Intent shareIntent = new Intent();
+        shareIntent.setAction(Intent.ACTION_SEND);
+
+        shareIntent.putExtra(Intent.EXTRA_TEXT, shareText);
+
+        shareIntent.putExtra(Intent.EXTRA_STREAM, imageUri);
+        shareIntent.setType("image/*");
+
+        shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        activity.startActivity(Intent.createChooser(shareIntent, "Share images..."));
+
+    }
+
 
     //List utilities
     public static List<String> sortListAccordingToDates(List<String> dates, boolean descending) {

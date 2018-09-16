@@ -171,6 +171,7 @@
     <string name="coat_length">Coat length</string>
     <string name="special_needs">Special needs</string>
     <string name="good_with_cats">Good with cats</string>
+    <string name="good_with_birds">Good with birds</string>
     <string name="house_trained">House trained</string>
     <string name="good_with_dogs">Good with dogs</string>
     <string name="castrated">Castrated</string>
@@ -229,7 +230,7 @@
     <string name="welcome_morning">Good morning,\u0020</string>
     <string name="welcome_day">Hello\u0020</string>
     <string name="welcome_evening">Good evening,\u0020</string>
-    <string name="dialog_filter_my_pets" translatable="false">\@string/my_pets</string>
+    <string name="dialog_filter_my_pets" translatable="false">@string/my_pets</string>
     <string name="dialog_filter_all_pets">All Pets</string>
     <string name="bundled_requested_favorites" translatable="false">bundled_requested_favorites</string>
     <string name="dialog_filter_my_favorites">My Favorites</string>
@@ -285,7 +286,7 @@
     <string name="default_address">Street, City, Country</string>
     <string name="family_s_pseudonym">Family\'s pseudonym</string>
     <string name="no_contact_phone_available">No contact phone available</string>
-    <string name="i_want_to_help_fostering_adoption_organizations">Want to help fostering/adoption organizations</string>
+    <string name="i_want_to_help_pet_organizations">Want to help pet organizations</string>
     <string name="our_experience_with_pets">Our experience with pets</string>
     <string name="no_experience">No experience.</string>
     <string name="saved_profile_scroll_position" translatable="false">saved_profile_scroll_position</string>
@@ -299,7 +300,7 @@
     <string name="no_website_available">No website available</string>
     <string name="language_preference_set_flag" translatable="false">language_preference_set_flag</string>
     <string name="error_during_image_cropping">There was an error during image cropping, please try again.</string>
-    <string name="selected_pet_profile_image_position" translatable="false">selected_pet_profile_image_position</string>
+    <string name="selected_profile_image_position" translatable="false">selected_profile_image_position</string>
     <string name="please_choose_the_information_you_wish_to_share">Please choose the information you wish to share:</string>
     <string name="my_phone_number">My phone number</string>
     <string name="my_full_name">My full name</string>
@@ -343,6 +344,7 @@
     <string-array name="pet_types">
         <item>@string/dog</item>
         <item>@string/cat</item>
+        <item>@string/parrot</item>
     </string-array>
     <string-array name="pet_sizes">
         <item>@string/dialog_filter_button_small</item>

@@ -58,6 +58,7 @@ public class Pet implements Parcelable, Comparable<Pet> {
         gk = in.readByte() != 0;
         gc = in.readByte() != 0;
         gd = in.readByte() != 0;
+        gb = in.readByte() != 0;
         cs = in.readByte() != 0;
         hT = in.readByte() != 0;
         sn = in.readByte() != 0;
@@ -295,6 +296,14 @@ public class Pet implements Parcelable, Comparable<Pet> {
         this.gd = gd;
     }
 
+    private boolean gb = false; //good with birds
+    public boolean getGB() {
+        return gb;
+    }
+    public void setGB(boolean gb) {
+        this.gb = gb;
+    }
+
     private boolean cs = false; //castrated
     public boolean getCs() {
         return cs;
@@ -489,6 +498,7 @@ public class Pet implements Parcelable, Comparable<Pet> {
         parcel.writeByte((byte) (gk ? 1 : 0));
         parcel.writeByte((byte) (gc ? 1 : 0));
         parcel.writeByte((byte) (gd ? 1 : 0));
+        parcel.writeByte((byte) (gb ? 1 : 0));
         parcel.writeByte((byte) (cs ? 1 : 0));
         parcel.writeByte((byte) (hT ? 1 : 0));
         parcel.writeByte((byte) (sn ? 1 : 0));

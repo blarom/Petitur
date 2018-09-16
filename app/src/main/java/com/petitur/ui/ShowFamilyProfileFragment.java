@@ -1,7 +1,6 @@
 package com.petitur.ui;
 
 import android.content.Context;
-import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -10,22 +9,19 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.NestedScrollView;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.URLUtil;
 import android.widget.CheckBox;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.petitur.R;
-import com.squareup.picasso.MemoryPolicy;
-import com.squareup.picasso.Picasso;
-import com.petitur.adapters.ImagesRecycleViewAdapter;
+import com.petitur.adapters.ImagesViewPagerAdapter;
 import com.petitur.data.Family;
 import com.petitur.resources.ImageSyncAsyncTaskLoader;
 import com.petitur.resources.Utilities;
+import com.viewpagerindicator.CirclePageIndicator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,35 +32,32 @@ import butterknife.OnClick;
 import butterknife.Unbinder;
 
 
-public class FamilyProfileFragment extends Fragment implements
-        ImagesRecycleViewAdapter.ImageClickHandler,
+public class ShowFamilyProfileFragment extends Fragment implements
         LoaderManager.LoaderCallbacks<List<Object>>,
-        ImageSyncAsyncTaskLoader.OnImageSyncOperationsHandler {
+        ImageSyncAsyncTaskLoader.OnImageSyncOperationsHandler,
+        ImagesViewPagerAdapter.ImageClickHandler {
 
 
     //region Parameters
     private static final int SINGLE_OBJECT_IMAGES_SYNC_LOADER = 8521;
-    @BindView(R.id.family_profile_main_image) ImageView mImageViewMainImage;
-    @BindView(R.id.family_profile_recyclerview_images)
-    RecyclerView mRecyclerViewImages;
-    @BindView(R.id.family_profile_pseudonym) TextView mTextViewFamilyPseudonym;
-    @BindView(R.id.family_profile_address) TextView mTextViewFamilyAddress;
-    @BindView(R.id.family_profile_value_experience) TextView mTextViewFamilyExperience;
-    @BindView(R.id.family_profile_checkbox_foster) CheckBox mCheckBoxFoster;
-    @BindView(R.id.family_profile_checkbox_adopt) CheckBox mCheckBoxAdopt;
-    @BindView(R.id.family_profile_checkbox_foster_and_adopt) CheckBox mCheckBoxFosterAndAdopt;
-    @BindView(R.id.family_profile_checkbox_want_to_help) CheckBox mCheckBoxWantToHelp;
-    @BindView(R.id.family_profile_scroll_container)
-    NestedScrollView mScrollContainer;
-    private ImagesRecycleViewAdapter mImagesRecycleViewAdapter;
+    @BindView(R.id.show_family_profile_pseudonym) TextView mTextViewFamilyPseudonym;
+    @BindView(R.id.show_family_profile_address) TextView mTextViewFamilyAddress;
+    @BindView(R.id.show_family_profile_value_experience) TextView mTextViewFamilyExperience;
+    @BindView(R.id.show_family_profile_checkbox_foster) CheckBox mCheckBoxFoster;
+    @BindView(R.id.show_family_profile_checkbox_adopt) CheckBox mCheckBoxAdopt;
+    @BindView(R.id.show_family_profile_checkbox_foster_and_adopt) CheckBox mCheckBoxFosterAndAdopt;
+    @BindView(R.id.show_family_profile_checkbox_want_to_help) CheckBox mCheckBoxWantToHelp;
+    @BindView(R.id.show_family_profile_scroll_container) NestedScrollView mScrollContainer;
+    @BindView(R.id.show_family_profile_image_viewpager) klogi.com.RtlViewPager mImageViewPager;
+    @BindView(R.id.show_family_profile_image_indicator) CirclePageIndicator mImageIndicator;
     private Unbinder mBinding;
     private Family mFamily;
     private List<Uri> mDisplayedImageList;
-    private String mClickedImageUriString;
+    private String mSelectedImageUriString;
     private ImageSyncAsyncTaskLoader mImageSyncAsyncTaskLoader;
     private boolean mAlreadyLoadedImages;
     private int mScrollPosition;
-    private int mImagesRecyclerViewPosition;
+    private int mSelectedImagePosition;
     //endregion
 
 
@@ -74,7 +67,7 @@ public class FamilyProfileFragment extends Fragment implements
         getExtras();
     }
     @Override public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_family_profile, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_show_family_profile, container, false);
 
         initializeViews(rootView);
         if (savedInstanceState!=null) restoreFragmentParameters(savedInstanceState);
@@ -89,13 +82,12 @@ public class FamilyProfileFragment extends Fragment implements
     }
     @Override public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putInt(getString(R.string.saved_profile_scroll_position), mScrollContainer.getScrollY());
+        mScrollPosition = mScrollContainer.getScrollY();
+        outState.putInt(getString(R.string.saved_profile_scroll_position), mScrollPosition);
         outState.putParcelable(getString(R.string.family_profile_parcelable), mFamily);
-        if (mRecyclerViewImages!=null) {
-            mImagesRecyclerViewPosition = Utilities.getLinearRecyclerViewPosition(mRecyclerViewImages);
-            outState.putInt(getString(R.string.saved_profile_images_rv_position), mImagesRecyclerViewPosition);
-        }
         outState.putBoolean(getString(R.string.saved_profile_images_loaded_state), mAlreadyLoadedImages);
+        mSelectedImagePosition = mImageViewPager.getCurrentItem();
+        outState.putInt(getString(R.string.selected_profile_image_position), mSelectedImagePosition);
     }
     @Override public void onDestroyView() {
         super.onDestroyView();
@@ -116,27 +108,25 @@ public class FamilyProfileFragment extends Fragment implements
     }
     private void initializeViews(View rootView) {
         mBinding = ButterKnife.bind(this, rootView);
-        mClickedImageUriString = Utilities.getImageUriForObjectWithFileProvider(getContext(), mFamily, "mainImage").toString();
-        setupImagesRecyclerView();
-    }
-    private void setupImagesRecyclerView() {
-        mRecyclerViewImages.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
-        mRecyclerViewImages.setNestedScrollingEnabled(true);
-        mImagesRecycleViewAdapter = new ImagesRecycleViewAdapter(getContext(), this, null);
-        mRecyclerViewImages.setAdapter(mImagesRecycleViewAdapter);
-        mRecyclerViewImages.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-                mImagesRecyclerViewPosition = Utilities.getLinearRecyclerViewPosition(mRecyclerViewImages);
-            }
-        });
+        mSelectedImageUriString = Utilities.getImageUriForObjectWithFileProvider(getContext(), mFamily, "mainImage").toString();
     }
     private void restoreFragmentParameters(@Nullable Bundle savedInstanceState) {
         if (savedInstanceState != null) {
             mFamily = savedInstanceState.getParcelable(getString(R.string.family_profile_parcelable));
             mAlreadyLoadedImages = savedInstanceState.getBoolean(getString(R.string.saved_profile_images_loaded_state));
+            mScrollPosition = savedInstanceState.getInt(getString(R.string.container_scroll_position), 0);
+            mSelectedImagePosition =savedInstanceState.getInt(getString(R.string.selected_profile_image_position), 0);
         }
+    }
+    private void setupImagesViewPager() {
+
+        ImagesViewPagerAdapter adapter = new ImagesViewPagerAdapter(getContext(), this, mDisplayedImageList);
+        mImageViewPager.setAdapter(adapter);
+        mImageIndicator.setViewPager(mImageViewPager);
+        mImageViewPager.setCurrentItem(mSelectedImagePosition);
+
+        final float density = getResources().getDisplayMetrics().density;
+        mImageIndicator.setRadius(5 * density);
     }
     private void updateProfileFieldsOnScreen() {
 
@@ -158,13 +148,13 @@ public class FamilyProfileFragment extends Fragment implements
     }
     private void displayImages() {
         if (getContext()==null) return;
-        Utilities.displayObjectImageInImageView(getContext(), mFamily, "mainImage", mImageViewMainImage);
-        mDisplayedImageList = Utilities.getExistingImageUriListForObject(getContext(), mFamily, false);
-        mImagesRecycleViewAdapter.setContents(mDisplayedImageList);
 
-        if (mRecyclerViewImages!=null) {
-            mRecyclerViewImages.scrollToPosition(mImagesRecyclerViewPosition);
-        }
+        mDisplayedImageList = Utilities.getExistingImageUriListForObject(getContext(), mFamily, false);
+        if (mDisplayedImageList.size()==0) mDisplayedImageList.add(Utilities.getGenericImageUri(mFamily));
+
+        setupImagesViewPager();
+
+        mSelectedImageUriString = mDisplayedImageList.get(0).toString();
     }
     private void startImageSyncThread() {
 
@@ -185,27 +175,23 @@ public class FamilyProfileFragment extends Fragment implements
         }
 
     }
-
-
-    //View click listeners
-    @OnClick(R.id.family_profile_share_fab) public void shareProfile() {
-
-        Intent shareIntent = new Intent();
-        shareIntent.setAction(Intent.ACTION_SEND);
+    private void shareFamilyProfile() {
 
         StringBuilder builder = new StringBuilder("");
         builder.append(mFamily.getPn());
         builder.append("\n");
         builder.append(Utilities.getAddressStringFromComponents(null, mFamily.getSt(), mFamily.getCt(), mFamily.getSe(), null));
-        shareIntent.putExtra(Intent.EXTRA_TEXT, builder.toString());
 
-        Uri imageUri = Utilities.getImageUriForObjectWithFileProvider(getContext(), mFamily, Utilities.getImageNameFromUri(mClickedImageUriString));
-        shareIntent.putExtra(Intent.EXTRA_STREAM, imageUri);
-        shareIntent.setType("image/*");
+        mSelectedImagePosition = mImageViewPager.getCurrentItem();
+        mSelectedImageUriString = mDisplayedImageList.get(mSelectedImagePosition).toString();
+        Uri imageUri = Utilities.getImageUriForObjectWithFileProvider(getContext(), mFamily, Utilities.getImageNameFromUri(mSelectedImageUriString));
+        if (getActivity()!=null) Utilities.shareProfile(getActivity(), builder.toString(), imageUri);
+    }
 
-        shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        startActivity(Intent.createChooser(shareIntent, "Share images..."));
 
+    //View click listeners
+    @OnClick(R.id.family_profile_share_fab) public void shareProfile() {
+        shareFamilyProfile();
     }
 
 
@@ -213,13 +199,13 @@ public class FamilyProfileFragment extends Fragment implements
 
     //Communication with RecyclerView adapters
     @Override public void onImageClick(int clickedItemIndex) {
-        mClickedImageUriString = mDisplayedImageList.get(clickedItemIndex).toString();
-        Picasso.with(getContext())
-                .load(mClickedImageUriString)
-                .placeholder(mImageViewMainImage.getDrawable()) //inspired by: https://github.com/square/picasso/issues/257
-                //.error(R.drawable.ic_image_not_available)
-                .memoryPolicy(MemoryPolicy.NO_CACHE)
-                .into(mImageViewMainImage);
+        String clickedImageUriString = mDisplayedImageList.get(clickedItemIndex).toString();
+        if (URLUtil.isNetworkUrl(clickedImageUriString)) {
+            Utilities.goToWebLink(getContext(), mDisplayedImageList.get(clickedItemIndex).toString());
+        }
+        else {
+            mSelectedImageUriString = clickedImageUriString;
+        }
     }
 
     //Communication with Loader

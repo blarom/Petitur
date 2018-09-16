@@ -184,67 +184,83 @@
 
             </LinearLayout>
 
-            <TextView
-                style="@style/FilterSubtitleStyle"
-                android:text="@string/breed"/>
-
-            <android.support.constraint.ConstraintLayout
+            <LinearLayout
+                android:id="@+id/dialog_filter_breed_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:orientation="vertical">
 
-                <AutoCompleteTextView
-                    android:id="@+id/dialog_filter_autocompletetextview_breed"
-                    android:layout_width="0dp"
+                <TextView
+                    style="@style/FilterSubtitleStyle"
+                    android:text="@string/breed"/>
+
+                <android.support.constraint.ConstraintLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/filter_option_any"
-                    app:layout_constraintEnd_toStartOf="@id/dialog_filter_arrow_breed"
-                    app:layout_constraintLeft_toLeftOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"/>
+                    android:orientation="horizontal">
 
-                <ImageView
-                    android:id="@+id/dialog_filter_arrow_breed"
-                    android:layout_width="wrap_content"
-                    android:layout_height="0dp"
-                    android:contentDescription="@string/show_dropdown"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:srcCompat="@drawable/ic_arrow_drop_down_24dp"/>
+                    <AutoCompleteTextView
+                        android:id="@+id/dialog_filter_autocompletetextview_breed"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/filter_option_any"
+                        app:layout_constraintEnd_toStartOf="@id/dialog_filter_arrow_breed"
+                        app:layout_constraintLeft_toLeftOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"/>
 
-            </android.support.constraint.ConstraintLayout>
+                    <ImageView
+                        android:id="@+id/dialog_filter_arrow_breed"
+                        android:layout_width="wrap_content"
+                        android:layout_height="0dp"
+                        android:contentDescription="@string/show_dropdown"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:srcCompat="@drawable/ic_arrow_drop_down_24dp"/>
 
-            <TextView
-                style="@style/FilterSubtitleStyle"
-                android:text="@string/coat_length"/>
+                </android.support.constraint.ConstraintLayout>
 
-            <android.support.constraint.ConstraintLayout
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/dialog_filter_coat_length_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:orientation="vertical">
 
-                <AutoCompleteTextView
-                    android:id="@+id/dialog_filter_autocompletetextview_coat_length"
-                    android:layout_width="0dp"
+                <TextView
+                    style="@style/FilterSubtitleStyle"
+                    android:text="@string/coat_length"/>
+
+                <android.support.constraint.ConstraintLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/filter_option_any"
-                    app:layout_constraintEnd_toStartOf="@id/dialog_filter_arrow_coat_length"
-                    app:layout_constraintLeft_toLeftOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"/>
+                    android:orientation="horizontal">
 
-                <ImageView
-                    android:id="@+id/dialog_filter_arrow_coat_length"
-                    android:layout_width="wrap_content"
-                    android:layout_height="0dp"
-                    android:contentDescription="@string/show_dropdown"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:srcCompat="@drawable/ic_arrow_drop_down_24dp"/>
+                    <AutoCompleteTextView
+                        android:id="@+id/dialog_filter_autocompletetextview_coat_length"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/filter_option_any"
+                        app:layout_constraintEnd_toStartOf="@id/dialog_filter_arrow_coat_length"
+                        app:layout_constraintLeft_toLeftOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"/>
 
-            </android.support.constraint.ConstraintLayout>
+                    <ImageView
+                        android:id="@+id/dialog_filter_arrow_coat_length"
+                        android:layout_width="wrap_content"
+                        android:layout_height="0dp"
+                        android:contentDescription="@string/show_dropdown"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:srcCompat="@drawable/ic_arrow_drop_down_24dp"/>
+
+                </android.support.constraint.ConstraintLayout>
+
+            </LinearLayout>
 
             <GridLayout
                 android:layout_width="match_parent"
@@ -282,6 +298,11 @@
                     android:id="@+id/dialog_filter_checkbox_special_needs"
                     style="@style/FilterGridCheckBoxStyle"
                     android:text="@string/special_needs"/>
+
+                <CheckBox
+                    android:id="@+id/dialog_filter_checkbox_good_with_birds"
+                    style="@style/FilterGridCheckBoxStyle"
+                    android:text="@string/good_with_birds"/>
 
             </GridLayout>
 

@@ -135,6 +135,7 @@
     <string name="coat_length">אורך פרווה</string>
     <string name="special_needs">צרכים מיוחדים</string>
     <string name="good_with_cats">טוב עם חתולים</string>
+    <string name="good_with_birds">טוב עם ציפורים</string>
     <string name="house_trained">מחונך בית</string>
     <string name="good_with_dogs">טוב עם כלבים</string>
     <string name="castrated">מרוסס/מעוקר</string>
@@ -152,7 +153,7 @@
     <string name="unit_km">ק\"מ</string>
     <string name="dog">כלב</string>
     <string name="cat">חתול</string>
-    <string name="parrot">תוקי</string>
+    <string name="parrot">תוכי</string>
     <string name="pet_age_required">גיל (*נדרש)</string>
     <string name="must_create_family_profile">הינכם נדרשים ליצור את פרופיל המשפחה על מנת להגדיר העדפות.</string>
     <string name="could_not_save_preferences">מצערים, לא הצלחתנו לשמור את העדפות חיית המחמ, נא נסה שוב מאוחר יותר.ד</string>
@@ -220,7 +221,7 @@
     <string name="default_address">רחוב, עיר, מדינה</string>
     <string name="family_s_pseudonym">שם המשפחה הבדוי</string>
     <string name="no_contact_phone_available">אין מספר טלפון להתקשרות</string>
-    <string name="i_want_to_help_fostering_adoption_organizations">רוצה לעזור לעמותות</string>
+    <string name="i_want_to_help_pet_organizations">רוצה לעזור לעמותות</string>
     <string name="our_experience_with_pets">הניסיון שלנו עם חיות מחמד</string>
     <string name="no_experience">ללא ניסיון</string>
     <string name="no_foundation_found_for_your_search">לא נמצאה עמותה בחיפוש.</string>

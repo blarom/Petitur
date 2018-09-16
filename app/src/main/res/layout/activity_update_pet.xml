@@ -314,6 +314,11 @@
                     style="@style/FilterGridCheckBoxStyle"
                     android:text="@string/special_needs"/>
 
+                <CheckBox
+                    android:id="@+id/update_pet_checkbox_good_with_birds"
+                    style="@style/FilterGridCheckBoxStyle"
+                    android:text="@string/good_with_birds"/>
+
             </GridLayout>
             
             <android.support.design.widget.TextInputLayout

@@ -38,7 +38,7 @@ import butterknife.Unbinder;
 
 public class SearchProfileActivity extends BaseActivity implements
         FirebaseDao.FirebaseOperationsHandler,
-        PetProfileFragment.PetProfileFragmentOperationsHandler {
+        ShowPetProfileFragment.PetProfileFragmentOperationsHandler {
 
 
     //region Parameters
@@ -54,10 +54,10 @@ public class SearchProfileActivity extends BaseActivity implements
     @BindView(R.id.search_profile_fragment_container) FrameLayout mFragmentContainer;
     @BindView(R.id.search_profile_query_container) FrameLayout mQueryContainer;
     private FragmentManager mFragmentManager;
-    private FamilyProfileFragment mFamilyProfileFragment;
-    private FoundationProfileFragment mFoundationProfileFragment;
+    private ShowFamilyProfileFragment mShowFamilyProfileFragment;
+    private ShowFoundationProfileFragment mShowFoundationProfileFragment;
     private String mRequestedFoundationProfileID;
-    private PetProfileFragment mPetProfileFragment;
+    private ShowPetProfileFragment mShowPetProfileFragment;
     private boolean mRequestedFoundationForPet;
     private String mFullName;
     private boolean mReceivedFullPetProfile;
@@ -75,7 +75,7 @@ public class SearchProfileActivity extends BaseActivity implements
 
         getExtras();
         initializeParameters();
-        handleProfileActions();
+        displayProfile();
     }
     @Override protected void onDestroy() {
         super.onDestroy();
@@ -170,14 +170,17 @@ public class SearchProfileActivity extends BaseActivity implements
         } });
 
         if (!TextUtils.isEmpty(mRequestedFoundationProfileID)) {
+            mQueryContainer.setVisibility(View.GONE);
             mQuery = mRequestedFoundationProfileID;
             mQueryEditText.setText(mQuery);
         }
         else if (!TextUtils.isEmpty(mRequestedFamilyProfileID)) {
+            mQueryContainer.setVisibility(View.GONE);
             mQuery = mRequestedFamilyProfileID;
             mQueryEditText.setText(mQuery);
         }
         else if (!TextUtils.isEmpty(mRequestedPetProfileID)) {
+            mQueryContainer.setVisibility(View.GONE);
             mQuery = mRequestedPetProfileID;
             mQueryEditText.setText(mQuery);
         }
@@ -191,17 +194,18 @@ public class SearchProfileActivity extends BaseActivity implements
         mRequestedFoundationForPet = false;
 
     }
-    private void handleProfileActions() {
+    private void displayProfile() {
 
+        //Priority order is pet, family then foundation
         if (mReceivedFullPetProfile) {
             showPetProfileFragment();
             getFoundationProfileForPet();
         }
-        else if (mReceivedFullFoundationProfile) {
-            showFoundationProfileFragment();
-        }
         else if (mReceivedFullFamilyProfile) {
             showFamilyProfileFragment();
+        }
+        else if (mReceivedFullFoundationProfile) {
+            showFoundationProfileFragment();
         }
         else if (!TextUtils.isEmpty(mRequestedFoundationProfileID)
                 || !TextUtils.isEmpty(mRequestedFamilyProfileID)
@@ -213,100 +217,98 @@ public class SearchProfileActivity extends BaseActivity implements
         if (mCurrentFirebaseUser != null) {
 
             mQuery = mQueryEditText.getText().toString();
+            if (TextUtils.isEmpty(mQuery)) return;
 
-            if (!TextUtils.isEmpty(mQuery)) {
+            List<QueryCondition> queryConditions = new ArrayList<>();
+            QueryCondition queryCondition;
 
-                List<QueryCondition> queryConditions = new ArrayList<>();
-                QueryCondition queryCondition;
-                if (Utilities.isCandidateForEmail(mQuery) && mRequestedFoundationProfileID==null) {
+            if (Utilities.isCandidateForEmail(mQuery)) {
 
-                    queryCondition = new QueryCondition(getString(R.string.query_condition_equalsString), "em", mQuery, true, 0);
-                    queryConditions.add(queryCondition);
+                queryCondition = new QueryCondition(getString(R.string.query_condition_equalsString), "em", mQuery, true, 0);
+                queryConditions.add(queryCondition);
 
-                    //TODO: continue making adjustments here
-
-                    showLoadingIndicator();
-                    mFirebaseDao.requestObjectsWithConditions(new Foundation(), queryConditions);
-                    if (TextUtils.isEmpty(mRequestedFoundationProfileID)) mFirebaseDao.requestObjectsWithConditions(new Family(), queryConditions);
-                }
-                else if (Utilities.isCandidateForFirebaseId(mQuery)) {
-
-                    queryCondition = new QueryCondition(getString(R.string.query_condition_equalsString), "ui", mQuery, true, 0);
-                    queryConditions.add(queryCondition);
-
-                    showLoadingIndicator();
-                    if (mRequestedFoundationProfileID != null) {
-                        mFirebaseDao.requestObjectsWithConditions(new Foundation(), queryConditions);
-                    }
-                    else if (mRequestedPetProfileID != null) {
-                        mFirebaseDao.requestObjectsWithConditions(new Pet(), queryConditions);
-                    }
-                    else {
-                        mFirebaseDao.requestObjectsWithConditions(new Foundation(), queryConditions);
-                        mFirebaseDao.requestObjectsWithConditions(new Family(), queryConditions);
-                        mFirebaseDao.requestObjectsWithConditions(new Pet(), queryConditions);
-                    }
-                }
+                showLoadingIndicator();
+                if (!TextUtils.isEmpty(mRequestedFoundationProfileID)) mFirebaseDao.requestObjectsWithConditions(new Foundation(), queryConditions);
+                else if (!TextUtils.isEmpty(mRequestedFamilyProfileID)) mFirebaseDao.requestObjectsWithConditions(new Family(), queryConditions);
                 else {
-                    Toast.makeText(getApplicationContext(), R.string.invalid_search_parameters, Toast.LENGTH_SHORT).show();
+                    mFirebaseDao.requestObjectsWithConditions(new Foundation(), queryConditions);
+                    mFirebaseDao.requestObjectsWithConditions(new Family(), queryConditions);
                 }
+            }
+            else if (Utilities.isCandidateForFirebaseId(mQuery)) {
+
+                queryCondition = new QueryCondition(getString(R.string.query_condition_equalsString), "ui", mQuery, true, 0);
+                queryConditions.add(queryCondition);
+
+                showLoadingIndicator();
+                if (!TextUtils.isEmpty(mRequestedFoundationProfileID)) mFirebaseDao.requestObjectsWithConditions(new Foundation(), queryConditions);
+                else if (!TextUtils.isEmpty(mRequestedFamilyProfileID)) mFirebaseDao.requestObjectsWithConditions(new Family(), queryConditions);
+                else if (!TextUtils.isEmpty(mRequestedPetProfileID)) mFirebaseDao.requestObjectsWithConditions(new Pet(), queryConditions);
+                else {
+                    mFirebaseDao.requestObjectsWithConditions(new Foundation(), queryConditions);
+                    mFirebaseDao.requestObjectsWithConditions(new Family(), queryConditions);
+                    mFirebaseDao.requestObjectsWithConditions(new Pet(), queryConditions);
+                }
+            }
+            else {
+                Toast.makeText(getApplicationContext(), R.string.invalid_search_parameters, Toast.LENGTH_SHORT).show();
             }
         }
     }
     private void showFamilyProfileFragment() {
 
         mFragmentContainer.setVisibility(View.VISIBLE);
-        if (mFamilyProfileFragment==null) {
-            mFamilyProfileFragment = new FamilyProfileFragment();
+        if (mShowFamilyProfileFragment ==null) {
+            mShowFamilyProfileFragment = new ShowFamilyProfileFragment();
 
             Bundle bundle = new Bundle();
             bundle.putParcelable(getString(R.string.family_profile_parcelable), mFamily);
-            mFamilyProfileFragment.setArguments(bundle);
+            mShowFamilyProfileFragment.setArguments(bundle);
 
             FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
-            fragmentTransaction.replace(R.id.search_profile_fragment_container, mFamilyProfileFragment);
+            fragmentTransaction.replace(R.id.search_profile_fragment_container, mShowFamilyProfileFragment);
             fragmentTransaction.commit();
         }
         else {
-            mFamilyProfileFragment.updateProfile(mFamily);
+            mShowFamilyProfileFragment.updateProfile(mFamily);
         }
     }
     private void showPetProfileFragment() {
 
         mFragmentContainer.setVisibility(View.VISIBLE);
-        if (mPetProfileFragment==null) {
-            mPetProfileFragment = new PetProfileFragment();
+        if (mShowPetProfileFragment ==null) {
+            mShowPetProfileFragment = new ShowPetProfileFragment();
 
             Bundle bundle = new Bundle();
             bundle.putParcelable(getString(R.string.pet_profile_parcelable), mPet);
             bundle.putParcelable(getString(R.string.family_profile_parcelable), mFamily);
             bundle.putString(getString(R.string.user_name), mFullName);
-            mPetProfileFragment.setArguments(bundle);
+            mShowPetProfileFragment.setArguments(bundle);
 
             FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
-            fragmentTransaction.replace(R.id.search_profile_fragment_container, mPetProfileFragment);
+            fragmentTransaction.replace(R.id.search_profile_fragment_container, mShowPetProfileFragment);
             fragmentTransaction.commit();
         }
         else {
-            mPetProfileFragment.updateProfile(mPet);
+            mShowPetProfileFragment.updateProfile(mPet);
         }
     }
     private void showFoundationProfileFragment() {
 
         mFragmentContainer.setVisibility(View.VISIBLE);
-        if (mFoundationProfileFragment==null) {
-            mFoundationProfileFragment = new FoundationProfileFragment();
+        if (mShowFoundationProfileFragment ==null) {
+            mShowFoundationProfileFragment = new ShowFoundationProfileFragment();
 
             Bundle bundle = new Bundle();
             bundle.putParcelable(getString(R.string.family_profile_parcelable), mFoundation);
-            mFoundationProfileFragment.setArguments(bundle);
+            mShowFoundationProfileFragment.setArguments(bundle);
 
             FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
-            fragmentTransaction.replace(R.id.search_profile_fragment_container, mFoundationProfileFragment);
+            fragmentTransaction.replace(R.id.search_profile_fragment_container, mShowFoundationProfileFragment);
             fragmentTransaction.commit();
         }
         else {
-            mFoundationProfileFragment.updateProfile(mFoundation);
+            mShowFoundationProfileFragment.updateProfile(mFoundation);
         }
     }
     private void showLoadingIndicator() {
@@ -317,7 +319,9 @@ public class SearchProfileActivity extends BaseActivity implements
         mProgressBarLoadingIndicator.setVisibility(View.INVISIBLE);
     }
     private void getFoundationProfileForPet() {
-        if (!TextUtils.isEmpty(mPet.getOI())) {
+        if (mFoundation==null) {
+
+            if (TextUtils.isEmpty(mPet.getOI())) return;
 
             List<QueryCondition> queryConditions = new ArrayList<>();
             QueryCondition queryCondition = new QueryCondition(getString(R.string.query_condition_equalsString), "ui", mPet.getOI(), true, 0);
@@ -325,6 +329,10 @@ public class SearchProfileActivity extends BaseActivity implements
 
             mRequestedFoundationForPet = true;
             mFirebaseDao.requestObjectsWithConditions(new Foundation(), queryConditions);
+        }
+        else {
+            mShowPetProfileFragment.updateProfile(mFoundation);
+            mRequestedFoundationForPet = false;
         }
     }
 
@@ -366,8 +374,8 @@ public class SearchProfileActivity extends BaseActivity implements
         }
         else {
             mFoundation = foundations.get(0);
-            if (mRequestedFoundationForPet && mPetProfileFragment!=null) {
-                mPetProfileFragment.updateProfile(mFoundation);
+            if (mRequestedFoundationForPet && mShowPetProfileFragment !=null) {
+                mShowPetProfileFragment.updateProfile(mFoundation);
                 mRequestedFoundationForPet = false;
             }
             else if (!mRequestedFoundationForPet) {

@@ -56,6 +56,7 @@ public class Foundation implements Parcelable {
         gKP = in.readByte() != 0;
         gCP = in.readByte() != 0;
         gDP = in.readByte() != 0;
+        gBP = in.readByte() != 0;
         csP = in.readByte() != 0;
         hTP = in.readByte() != 0;
         snP = in.readByte() != 0;
@@ -325,6 +326,14 @@ public class Foundation implements Parcelable {
         this.gDP = gdP;
     }
 
+    private boolean gBP = false; //good with birds preference
+    public boolean getGBP() {
+        return gBP;
+    }
+    public void setGBP(boolean gBP) {
+        this.gBP = gBP;
+    }
+
     private boolean csP = false; //castrated preference
     public boolean getCsP() {
         return csP;
@@ -401,6 +410,7 @@ public class Foundation implements Parcelable {
         parcel.writeByte((byte) (gKP ? 1 : 0));
         parcel.writeByte((byte) (gCP ? 1 : 0));
         parcel.writeByte((byte) (gDP ? 1 : 0));
+        parcel.writeByte((byte) (gBP ? 1 : 0));
         parcel.writeByte((byte) (csP ? 1 : 0));
         parcel.writeByte((byte) (hTP ? 1 : 0));
         parcel.writeByte((byte) (snP ? 1 : 0));

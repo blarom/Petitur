@@ -8,7 +8,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -37,8 +36,6 @@ import com.petitur.R;
 import com.petitur.resources.CustomLocationListener;
 import com.petitur.resources.Utilities;
 
-import org.w3c.dom.Text;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -65,9 +62,9 @@ public class MapActivity extends BaseActivity implements
     public static final String DEBUG_TAG = "Petitur Map";
     private GoogleMap mMap;
     private double[] mUserCoordinates;
-    private List<Pet> mPetsArrayList;
-    private List<Family> mFamiliesArrayList;
-    private List<Foundation> mFoundationsArrayList;
+    private List<Pet> mPetsList;
+    private List<Family> mFamiliesList;
+    private List<Foundation> mFoundationsList;
     private List<Marker> mMarkersForBoundsCalculation;
     private Unbinder mBinding;
     private LocationManager mLocationManager;
@@ -80,6 +77,9 @@ public class MapActivity extends BaseActivity implements
     private boolean mAlreadyShowingMapMarkersFromFirebase;
     private LatLngBounds mBounds;
     private Bundle mSavedInstanceState;
+    private Family mFamily;
+    private Foundation mFoundation;
+    private User mUser;
     //endregion
 
 
@@ -182,10 +182,26 @@ public class MapActivity extends BaseActivity implements
             if (tag.substring(0,7).equals(PLACE_TAG)) {
                 showMarkerInfoDialog(marker);
             }
-            else if (mPetsArrayList !=null && tag.substring(0,7).equals(PET_TAG)) {
-                Intent intent = new Intent(MapActivity.this, SearchProfileActivity.class);
-                intent.putExtra(getString(R.string.pet_profile_id), id);
-                startActivity(intent);
+            else if (mPetsList !=null && tag.substring(0,7).equals(PET_TAG)) {
+
+                Pet relevantPet = new Pet();
+                for (Pet pet : mPetsList) {
+                    if (pet.getUI().equals(id)) { relevantPet = pet; break; }
+                }
+                if (mUser.getIF()) {
+                    Intent intent = new Intent(MapActivity.this, UpdatePetActivity.class);
+                    intent.putExtra(getString(R.string.pet_profile_parcelable), relevantPet);
+                    if (mFamily != null) intent.putExtra(getString(R.string.family_profile_parcelable), mFamily);
+                    if (mFoundation != null) intent.putExtra(getString(R.string.foundation_profile_parcelable), mFoundation);
+                    startActivity(intent);
+                }
+                else {
+                    Intent intent = new Intent(MapActivity.this, SearchProfileActivity.class);
+                    intent.putExtra(getString(R.string.pet_profile_parcelable), relevantPet);
+                    if (mFamily != null) intent.putExtra(getString(R.string.family_profile_parcelable), mFamily);
+                    if (mFoundation != null) intent.putExtra(getString(R.string.foundation_profile_parcelable), mFoundation);
+                    startActivity(intent);
+                }
             }
 //            else if (mFamiliesArrayList!=null) {
 //                Intent intent = new Intent(MapActivity.this, ShowFamilyProfileActivity.class);
@@ -227,13 +243,22 @@ public class MapActivity extends BaseActivity implements
 
         Intent intent = getIntent();
         if (intent.hasExtra(getString(R.string.pets_at_distance_parcelable))) {
-            mPetsArrayList = intent.getParcelableArrayListExtra(getString(R.string.pets_at_distance_parcelable));
+            mPetsList = intent.getParcelableArrayListExtra(getString(R.string.pets_at_distance_parcelable));
         }
         if (intent.hasExtra(getString(R.string.search_results_families_at_distance_list))) {
-            mFamiliesArrayList = intent.getParcelableArrayListExtra(getString(R.string.search_results_families_at_distance_list));
+            mFamiliesList = intent.getParcelableArrayListExtra(getString(R.string.search_results_families_at_distance_list));
         }
         if (intent.hasExtra(getString(R.string.search_results_foundations_at_distance_list))) {
-            mFoundationsArrayList = intent.getParcelableArrayListExtra(getString(R.string.search_results_foundations_at_distance_list));
+            mFoundationsList = intent.getParcelableArrayListExtra(getString(R.string.search_results_foundations_at_distance_list));
+        }
+        if (intent.hasExtra(getString(R.string.family_profile_parcelable))) {
+            mFamily = intent.getParcelableExtra(getString(R.string.family_profile_parcelable));
+        }
+        if (intent.hasExtra(getString(R.string.foundation_profile_parcelable))) {
+            mFoundation = intent.getParcelableExtra(getString(R.string.foundation_profile_parcelable));
+        }
+        if (intent.hasExtra(getString(R.string.bundled_user))) {
+            mUser = intent.getParcelableExtra(getString(R.string.bundled_user));
         }
     }
     private void initializeParameters() {
@@ -315,8 +340,8 @@ public class MapActivity extends BaseActivity implements
         double longitude;
         Marker currentMarker;
         MarkerOptions currentMarkerOptions;
-        if (mPetsArrayList !=null) {
-            for (Pet pet : mPetsArrayList) {
+        if (mPetsList !=null) {
+            for (Pet pet : mPetsList) {
                 latitude = pet.getGeo().getLatitude();
                 longitude = pet.getGeo().getLongitude();
                 coords = new LatLng(latitude, longitude);
@@ -326,8 +351,8 @@ public class MapActivity extends BaseActivity implements
                 mMarkersForBoundsCalculation.add(currentMarker);
             }
         }
-        if (mFamiliesArrayList!=null) {
-            for (Family family : mFamiliesArrayList) {
+        if (mFamiliesList !=null) {
+            for (Family family : mFamiliesList) {
                 latitude = family.getGeo().getLatitude();
                 longitude = family.getGeo().getLongitude();
                 coords = new LatLng(latitude, longitude);
@@ -337,8 +362,8 @@ public class MapActivity extends BaseActivity implements
                 mMarkersForBoundsCalculation.add(currentMarker);
             }
         }
-        if (mFoundationsArrayList!=null) {
-            for (Foundation foundation : mFoundationsArrayList) {
+        if (mFoundationsList !=null) {
+            for (Foundation foundation : mFoundationsList) {
                 latitude = foundation.getGeo().getLatitude();
                 longitude = foundation.getGeo().getLongitude();
                 coords = new LatLng(latitude, longitude);

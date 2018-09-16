@@ -98,12 +98,14 @@ public class PetListActivity extends BaseActivity implements
     private boolean mTempSelectedGoodWithKids;
     private boolean mTempSelectedGoodWithCats;
     private boolean mTempSelectedGoodWithDogs;
+    private boolean mTempSelectedGoodWithBirds;
     private boolean mTempSelectedCastrated;
     private boolean mTempSelectedHouseTrained;
     private boolean mTempSelectedSpecialNeeds;
     private boolean mSelectedGoodWithKids;
     private boolean mSelectedGoodWithCats;
     private boolean mSelectedGoodWithDogs;
+    private boolean mSelectedGoodWithBirds;
     private boolean mSelectedCastrated;
     private boolean mSelectedHouseTrained;
     private boolean mSelectedSpecialNeeds;
@@ -172,6 +174,7 @@ public class PetListActivity extends BaseActivity implements
     private CheckBox dialogFilterCheckBoxGoodWithKids;
     private CheckBox dialogFilterCheckBoxGoodWithCats;
     private CheckBox dialogFilterCheckBoxGoodWithDogs;
+    private CheckBox dialogFilterCheckBoxGoodWithBirds;
     private CheckBox dialogFilterCheckBoxCastrated;
     private CheckBox dialogFilterCheckBoxHouseTrained;
     private CheckBox dialogFilterCheckBoxSpecialNeeds;
@@ -342,7 +345,7 @@ public class PetListActivity extends BaseActivity implements
     private void getFamilyOrFoundationProfileFromFirebase() {
         if (mCurrentFirebaseUser != null) {
 
-            if (mUser.getIF()) {
+            if (mFoundation==null && mUser.getIF()) {
                 //Setting the requested Foundation's id
                 mFoundation = new Foundation();
                 mFoundation.setOI(mCurrentFirebaseUser.getUid());
@@ -350,7 +353,7 @@ public class PetListActivity extends BaseActivity implements
                 //Getting the rest of the family's parameters
                 mFirebaseDao.requestObjectsWithConditions(mFoundation, Utilities.getQueryConditionsForSingleObjectSearchByOwnerId(this, mFoundation));
             }
-            else {
+            else if (mFamily==null) {
                 //Setting the requested Family's id
                 mFamily = new Family();
                 mFamily.setOI(mCurrentFirebaseUser.getUid());
@@ -481,6 +484,7 @@ public class PetListActivity extends BaseActivity implements
         mSelectedGoodWithKids = mTempSelectedGoodWithKids;
         mSelectedGoodWithCats = mTempSelectedGoodWithCats;
         mSelectedGoodWithDogs = mTempSelectedGoodWithDogs;
+        mSelectedGoodWithBirds = mTempSelectedGoodWithBirds;
         mSelectedCastrated = mTempSelectedCastrated;
         mSelectedHouseTrained = mTempSelectedHouseTrained;
         mSelectedSpecialNeeds = mTempSelectedSpecialNeeds;
@@ -492,7 +496,7 @@ public class PetListActivity extends BaseActivity implements
 
         //Get the dialog view
         LayoutInflater inflater = LayoutInflater.from(this);
-        View dialogView = inflater.inflate(R.layout.dialog_filter, null);
+        final View dialogView = inflater.inflate(R.layout.dialog_filter, null);
 
         //region Setting the sort order
         mSortOptions = new ArrayList<>();
@@ -594,6 +598,8 @@ public class PetListActivity extends BaseActivity implements
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int pos, long l) {
                 mTempSelectedPetType = mPetTypesList.get(pos);
+                modifyBreedOptionAccordingToPetType(dialogView);
+                modifyCoatLengthOptionAccordingToPetType(dialogView);
             }
 
             @Override
@@ -874,45 +880,11 @@ public class PetListActivity extends BaseActivity implements
         //endregion
 
         //region Getting the breed
-        mDialogFilterAutoCompleteTextViewBreed =  dialogView.findViewById(R.id.dialog_filter_autocompletetextview_breed);
-        final ArrayAdapter<String> breedArrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, mDisplayedAvailableDogBreeds);
-        String breedToDisplay = Utilities.getDisplayedTextFromFlagText(mDisplayedAvailableDogBreeds, mAvailableDogBreeds, mTempSelectedDogBreed);
-        mDialogFilterAutoCompleteTextViewBreed.setText(breedToDisplay);
-        mDialogFilterAutoCompleteTextViewBreed.setAdapter(breedArrayAdapter);
-        mDialogFilterAutoCompleteTextViewBreed.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(final View arg0) {
-                mDialogFilterAutoCompleteTextViewBreed.showDropDown();
-            }
-        });
-        ImageView dialogFilterImageViewArrowBreed = dialogView.findViewById(R.id.dialog_filter_arrow_breed);
-        dialogFilterImageViewArrowBreed.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mDialogFilterAutoCompleteTextViewBreed.showDropDown();
-            }
-        });
+        modifyBreedOptionAccordingToPetType(dialogView);
         //endregion
 
         //region Getting the coat length
-        mDialogFilterAutoCompleteTextViewCoatLength =  dialogView.findViewById(R.id.dialog_filter_autocompletetextview_coat_length);
-        final ArrayAdapter<String> coatLengthArrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, mDisplayedPetCoatLengths);
-        String coatLengthToDisplay = Utilities.getDisplayedTextFromFlagText(mDisplayedPetCoatLengths, mPetCoatLengths, mTempSelectedCoatLength);
-        mDialogFilterAutoCompleteTextViewCoatLength.setText(coatLengthToDisplay);
-        mDialogFilterAutoCompleteTextViewCoatLength.setAdapter(coatLengthArrayAdapter);
-        mDialogFilterAutoCompleteTextViewCoatLength.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(final View arg0) {
-                mDialogFilterAutoCompleteTextViewCoatLength.showDropDown();
-            }
-        });
-        ImageView dialogFilterImageViewArrowCoatLength = dialogView.findViewById(R.id.dialog_filter_arrow_coat_length);
-        dialogFilterImageViewArrowCoatLength.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mDialogFilterAutoCompleteTextViewCoatLength.showDropDown();
-            }
-        });
+        modifyCoatLengthOptionAccordingToPetType(dialogView);
         //endregion
 
         //region Getting the checked button states
@@ -940,6 +912,15 @@ public class PetListActivity extends BaseActivity implements
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
                 mTempSelectedGoodWithDogs = isChecked;
+            }
+        });
+
+        dialogFilterCheckBoxGoodWithBirds = dialogView.findViewById(R.id.dialog_filter_checkbox_good_with_birds);
+        dialogFilterCheckBoxGoodWithBirds.setChecked(mTempSelectedGoodWithDogs);
+        dialogFilterCheckBoxGoodWithBirds.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                mTempSelectedGoodWithBirds = isChecked;
             }
         });
 
@@ -1013,6 +994,105 @@ public class PetListActivity extends BaseActivity implements
         //endregion
 
     }
+    private void modifyBreedOptionAccordingToPetType(View dialogView) {
+
+        if (mTempSelectedPetType.equals(Utilities.getFlag(this).getString(R.string.any))) {
+            dialogView.findViewById(R.id.dialog_filter_breed_container).setVisibility(View.GONE);
+        }
+        else {
+            dialogView.findViewById(R.id.dialog_filter_breed_container).setVisibility(View.VISIBLE);
+            mDialogFilterAutoCompleteTextViewBreed =  dialogView.findViewById(R.id.dialog_filter_autocompletetextview_breed);
+
+            ImageView dialogFilterImageViewArrowBreed = dialogView.findViewById(R.id.dialog_filter_arrow_breed);
+            mDialogFilterAutoCompleteTextViewBreed.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(final View arg0) {
+                    mDialogFilterAutoCompleteTextViewBreed.showDropDown();
+                }
+            });
+
+            String breedToDisplay = getString(R.string.any);
+            if (mTempSelectedPetType.equals(Utilities.getFlag(this).getString(R.string.dog))) {
+                final ArrayAdapter<String> breedArrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, mDisplayedAvailableDogBreeds);
+                breedToDisplay = Utilities.getDisplayedTextFromFlagText(mDisplayedAvailableDogBreeds, mAvailableDogBreeds, mTempSelectedDogBreed);
+                mDialogFilterAutoCompleteTextViewBreed.setAdapter(breedArrayAdapter);
+
+                dialogFilterImageViewArrowBreed.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        //inspired by: https://stackoverflow.com/questions/11284368/autocompletetextview-force-to-show-all-items
+                        if (!mDialogFilterAutoCompleteTextViewBreed.getText().toString().equals("")) breedArrayAdapter.getFilter().filter(null);
+                        mDialogFilterAutoCompleteTextViewBreed.showDropDown();
+                    }
+                });
+
+            }
+            else if (mTempSelectedPetType.equals(Utilities.getFlag(this).getString(R.string.cat))) {
+                final ArrayAdapter<String> breedArrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, mDisplayedAvailableCatBreeds);
+                breedToDisplay = Utilities.getDisplayedTextFromFlagText(mDisplayedAvailableCatBreeds, mAvailableCatBreeds, mTempSelectedCatBreed);
+                mDialogFilterAutoCompleteTextViewBreed.setAdapter(breedArrayAdapter);
+
+                dialogFilterImageViewArrowBreed.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        //inspired by: https://stackoverflow.com/questions/11284368/autocompletetextview-force-to-show-all-items
+                        if (!mDialogFilterAutoCompleteTextViewBreed.getText().toString().equals("")) breedArrayAdapter.getFilter().filter(null);
+                        mDialogFilterAutoCompleteTextViewBreed.showDropDown();
+                    }
+                });
+            }
+            else if (mTempSelectedPetType.equals(Utilities.getFlag(this).getString(R.string.parrot))) {
+                final ArrayAdapter<String> breedArrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, mDisplayedAvailableParrotBreeds);
+                breedToDisplay = Utilities.getDisplayedTextFromFlagText(mDisplayedAvailableParrotBreeds, mAvailableParrotBreeds, mTempSelectedParrotBreed);
+                mDialogFilterAutoCompleteTextViewBreed.setAdapter(breedArrayAdapter);
+
+                dialogFilterImageViewArrowBreed.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        //inspired by: https://stackoverflow.com/questions/11284368/autocompletetextview-force-to-show-all-items
+                        if (!mDialogFilterAutoCompleteTextViewBreed.getText().toString().equals("")) breedArrayAdapter.getFilter().filter(null);
+                        mDialogFilterAutoCompleteTextViewBreed.showDropDown();
+                    }
+                });
+            }
+
+            mDialogFilterAutoCompleteTextViewBreed.setText(breedToDisplay);
+        }
+
+    }
+    private void modifyCoatLengthOptionAccordingToPetType(View dialogView) {
+
+        if (mTempSelectedPetType.equals(Utilities.getFlag(this).getString(R.string.any))
+                || mTempSelectedPetType.equals(Utilities.getFlag(this).getString(R.string.parrot))) {
+            dialogView.findViewById(R.id.dialog_filter_coat_length_container).setVisibility(View.GONE);
+        }
+        else {
+
+            dialogView.findViewById(R.id.dialog_filter_coat_length_container).setVisibility(View.VISIBLE);
+            mDialogFilterAutoCompleteTextViewCoatLength =  dialogView.findViewById(R.id.dialog_filter_autocompletetextview_coat_length);
+
+            ImageView dialogFilterImageViewArrowCoatLength = dialogView.findViewById(R.id.dialog_filter_arrow_coat_length);
+            mDialogFilterAutoCompleteTextViewBreed.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(final View arg0) {
+                    mDialogFilterAutoCompleteTextViewBreed.showDropDown();
+                }
+            });
+            dialogFilterImageViewArrowCoatLength.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    mDialogFilterAutoCompleteTextViewBreed.showDropDown();
+                }
+            });
+
+            ArrayAdapter<String> coatLengthArrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, mDisplayedPetCoatLengths);
+            String coatLengthToDisplay = Utilities.getDisplayedTextFromFlagText(mDisplayedPetCoatLengths, mPetCoatLengths, mTempSelectedCoatLength);
+            mDialogFilterAutoCompleteTextViewCoatLength.setText(coatLengthToDisplay);
+            mDialogFilterAutoCompleteTextViewCoatLength.setAdapter(coatLengthArrayAdapter);
+
+        }
+
+    }
     private void resetButtonsAndTempSearchParameters() {
         dialogFilterSpinnerSort.setSelection(0);
         mTempSortOrder = mSortOptions.get(0);
@@ -1050,6 +1130,8 @@ public class PetListActivity extends BaseActivity implements
         mTempSelectedGoodWithCats = false;
         dialogFilterCheckBoxGoodWithDogs.setChecked(false);
         mTempSelectedGoodWithDogs = false;
+        dialogFilterCheckBoxGoodWithBirds.setChecked(false);
+        mTempSelectedGoodWithBirds = false;
         dialogFilterCheckBoxCastrated.setChecked(false);
         mTempSelectedCastrated = false;
         dialogFilterCheckBoxHouseTrained.setChecked(false);
@@ -1068,10 +1150,18 @@ public class PetListActivity extends BaseActivity implements
         else {
 
             mTempPetDistance = getRequestedDistanceFromUserInput(mDialogFilterEditTextDistance.getText().toString());
-            mTempSelectedBreed = Utilities.getFlagTextFromDisplayedText(
-                    mDisplayedAvailableDogBreeds, mAvailableDogBreeds, mDialogFilterAutoCompleteTextViewBreed.getText().toString());
-            mTempSelectedCoatLength = Utilities.getFlagTextFromDisplayedText(
-                    mDisplayedPetCoatLengths, mPetCoatLengths, mDialogFilterAutoCompleteTextViewCoatLength.getText().toString());
+
+            if (mDialogFilterAutoCompleteTextViewBreed!=null) {
+                mTempSelectedBreed = Utilities.getFlagTextFromDisplayedText(
+                        mDisplayedAvailableDogBreeds, mAvailableDogBreeds, mDialogFilterAutoCompleteTextViewBreed.getText().toString());
+            }
+            else mTempSelectedBreed = Utilities.getFlag(this).getString(R.string.any);
+
+            if (mDialogFilterAutoCompleteTextViewCoatLength!=null) {
+                mTempSelectedCoatLength = Utilities.getFlagTextFromDisplayedText(
+                        mDisplayedPetCoatLengths, mPetCoatLengths, mDialogFilterAutoCompleteTextViewCoatLength.getText().toString());
+            }
+            else mTempSelectedCoatLength = Utilities.getFlag(this).getString(R.string.any);
 
             setFilterParametersEqualToTempParameters();
             if (mUser.getIF()) {
@@ -1093,12 +1183,18 @@ public class PetListActivity extends BaseActivity implements
         if (mSelectedPetType.equals(Utilities.getFlag(getApplicationContext()).getString(R.string.dog))) mFamily.setDRP(mSelectedBreed);
         else if (mSelectedPetType.equals(Utilities.getFlag(getApplicationContext()).getString(R.string.cat))) mFamily.setCRP(mSelectedBreed);
         else if (mSelectedPetType.equals(Utilities.getFlag(getApplicationContext()).getString(R.string.parrot))) mFamily.setPRP(mSelectedBreed);
+        else {
+            mFamily.setDRP(mSelectedBreed);
+            mFamily.setCRP(mSelectedBreed);
+            mFamily.setPRP(mSelectedBreed);
+        }
 
         mFamily.setCLP(mSelectedCoatLength);
 
         mFamily.setGKP(mSelectedGoodWithKids);
         mFamily.setGCP(mSelectedGoodWithCats);
         mFamily.setGDP(mSelectedGoodWithDogs);
+        mFamily.setGBP(mSelectedGoodWithBirds);
         mFamily.setCsP(mSelectedCastrated);
         mFamily.setHTP(mSelectedHouseTrained);
         mFamily.setSNP(mSelectedSpecialNeeds);
@@ -1116,12 +1212,18 @@ public class PetListActivity extends BaseActivity implements
         if (mSelectedPetType.equals(Utilities.getFlag(getApplicationContext()).getString(R.string.dog))) mFoundation.setDRP(mSelectedBreed);
         else if (mSelectedPetType.equals(Utilities.getFlag(getApplicationContext()).getString(R.string.cat))) mFoundation.setCRP(mSelectedBreed);
         else if (mSelectedPetType.equals(Utilities.getFlag(getApplicationContext()).getString(R.string.parrot))) mFoundation.setPRP(mSelectedBreed);
+        else {
+            mFoundation.setDRP(mSelectedBreed);
+            mFoundation.setCRP(mSelectedBreed);
+            mFoundation.setPRP(mSelectedBreed);
+        }
 
         mFoundation.setCLP(mSelectedCoatLength);
 
         mFoundation.setGKP(mSelectedGoodWithKids);
         mFoundation.setGCP(mSelectedGoodWithCats);
         mFoundation.setGDP(mSelectedGoodWithDogs);
+        mFoundation.setGBP(mSelectedGoodWithBirds);
         mFoundation.setCsP(mSelectedCastrated);
         mFoundation.setHTP(mSelectedHouseTrained);
         mFoundation.setSNP(mSelectedSpecialNeeds);
@@ -1164,8 +1266,8 @@ public class PetListActivity extends BaseActivity implements
         }
 
         //Setting the breed/race
-        if (!TextUtils.isEmpty(mSelectedBreed) &&
-                !mSelectedBreed.equals(Utilities.getFlag(getApplicationContext()).getString(R.string.filter_option_any))) {
+        if (!TextUtils.isEmpty(mSelectedPetType) && !mSelectedPetType.equals(Utilities.getFlag(getApplicationContext()).getString(R.string.filter_option_any))
+                && !TextUtils.isEmpty(mSelectedBreed) && !mSelectedBreed.equals(Utilities.getFlag(getApplicationContext()).getString(R.string.filter_option_any))) {
             queryCondition = new QueryCondition(getString(R.string.query_condition_equalsString), "rc", mSelectedBreed, true, 0);
             queryConditions.add(queryCondition);
         }
@@ -1188,6 +1290,10 @@ public class PetListActivity extends BaseActivity implements
         }
         if (mSelectedGoodWithDogs) {
             queryCondition = new QueryCondition(getString(R.string.query_condition_equalsBoolean), "gd", "", mSelectedGoodWithDogs, 0);
+            queryConditions.add(queryCondition);
+        }
+        if (mSelectedGoodWithBirds) {
+            queryCondition = new QueryCondition(getString(R.string.query_condition_equalsBoolean), "gb", "", mSelectedGoodWithBirds, 0);
             queryConditions.add(queryCondition);
         }
         if (mSelectedCastrated) {
@@ -1335,6 +1441,7 @@ public class PetListActivity extends BaseActivity implements
             mTempSelectedGoodWithKids = mFoundation.getGKP();
             mTempSelectedGoodWithCats = mFoundation.getGCP();
             mTempSelectedGoodWithDogs = mFoundation.getGDP();
+            mTempSelectedGoodWithBirds = mFoundation.getGBP();
             mTempSelectedCastrated = mFoundation.getCsP();
             mTempSelectedHouseTrained = mFoundation.getHTP();
             mTempSelectedSpecialNeeds = mFoundation.getSNP();
@@ -1357,6 +1464,7 @@ public class PetListActivity extends BaseActivity implements
             mTempSelectedGoodWithKids = mFamily.getGKP();
             mTempSelectedGoodWithCats = mFamily.getGCP();
             mTempSelectedGoodWithDogs = mFamily.getGDP();
+            mTempSelectedGoodWithBirds = mFamily.getGBP();
             mTempSelectedCastrated = mFamily.getCsP();
             mTempSelectedHouseTrained = mFamily.getHTP();
             mTempSelectedSpecialNeeds = mFamily.getSNP();
@@ -1390,6 +1498,9 @@ public class PetListActivity extends BaseActivity implements
         if (mPetsAtDistance!=null && mPetsAtDistance.size()>0) {
             Intent intent = new Intent(this, MapActivity.class);
             intent.putParcelableArrayListExtra(getString(R.string.pets_at_distance_parcelable), new ArrayList<>(mPetsAtDistance));
+            if (mFamily!=null) intent.putExtra(getString(R.string.family_profile_parcelable), mFamily);
+            if (mFoundation!=null) intent.putExtra(getString(R.string.foundation_profile_parcelable), mFoundation);
+            intent.putExtra(getString(R.string.bundled_user), mUser);
             startActivity(intent);
         }
     }

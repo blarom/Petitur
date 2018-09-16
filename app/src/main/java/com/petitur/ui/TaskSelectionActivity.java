@@ -64,6 +64,8 @@ public class TaskSelectionActivity extends BaseActivity implements
     private User mUser;
     private boolean mFoundationNotCreatedYet;
     private boolean mFamilyNotCreatedYet;
+    private Foundation mFoundation;
+    private Family mFamily;
     //endregion
 
 
@@ -321,6 +323,8 @@ public class TaskSelectionActivity extends BaseActivity implements
         Intent intent = new Intent(this, PetListActivity.class);
         Bundle bundle = new Bundle();
         bundle.putParcelable(getString(R.string.bundled_user), mUser);
+        if (mFamily!=null) bundle.putParcelable(getString(R.string.family_profile_parcelable), mFamily);
+        if (mFoundation!=null) bundle.putParcelable(getString(R.string.foundation_profile_parcelable), mFoundation);
         if (requestedFavorites) bundle.putBoolean(getString(R.string.bundled_requested_favorites), true);
         intent.putExtras(bundle);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
@@ -331,6 +335,8 @@ public class TaskSelectionActivity extends BaseActivity implements
         Intent intent = new Intent(this, UpdatePetActivity.class);
         Bundle bundle = new Bundle();
         bundle.putString(getString(R.string.selected_pet_id), pet.getUI());
+        if (mFamily!=null) bundle.putParcelable(getString(R.string.family_profile_parcelable), mFamily);
+        if (mFoundation!=null) bundle.putParcelable(getString(R.string.foundation_profile_parcelable), mFoundation);
         intent.putExtras(bundle);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         startActivity(intent);
@@ -402,6 +408,7 @@ public class TaskSelectionActivity extends BaseActivity implements
             Utilities.startUpdateFamilyProfileActivity(TaskSelectionActivity.this);
         }
         else {
+            mFamily = families.get(0);
             mFamilyNotCreatedYet = false;
         }
     }
@@ -413,6 +420,7 @@ public class TaskSelectionActivity extends BaseActivity implements
             Utilities.startUpdateFoundationProfileActivity(TaskSelectionActivity.this);
         }
         else {
+            mFoundation = foundations.get(0);
             mFoundationNotCreatedYet = false;
         }
     }
