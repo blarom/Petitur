@@ -8,7 +8,7 @@
     <string name="location_rationale">חשיפת מיקום נדרשת על מנת לשפר את תוצאות החיפוש באמצעות חישוב המרחק לחיית המחמד ביחס אליך. אם לא תרשה/י זאת, החיפוש יהיה פחות שימושי.</string>
     <string name="save">שמור</string>
     <string name="done">בצע</string>
-    <string name="sign_in">הירשם</string>
+    <string name="sign_in">התחבר</string>
     <string name="sign_out">צא</string>
     <string name="preferences">הגדרות</string>
     <string name="my_profile">הפרופיל שלי</string>
@@ -111,7 +111,7 @@
     <string name="foster_and_possibly_adopt">אומנה וייתכן אימוץ</string>
     <string name="family_main_image">דף ראשי של המשפחה</string>
     <string name="please_fill_user_profile">נא מלא את פרופיל המשתמש שלך לפי שתוכל/י להמשיך.</string>
-    <string name="family_s_pseudonym_required">שם המשפחה (*נדרש, מוצג לאחרים)</string>
+    <string name="family_s_pseudonym_required">שם בדוי למשפחה (*נדרש, מוצג לאחרים)</string>
     <string name="please_wait_syncing_images">נא המתן עד שכלל התמונות יסוכרנו באינטרנט.</string>
     <string name="no_internet_sync_later">אין חיבור לאינטרנט! נא כנס לפרופיל שוב מאוחר יותר כדי לסנכרן את התמונות החדשות.</string>
     <string name="filter">סנן</string>
@@ -175,8 +175,6 @@
     <string name="welcome_evening">ערב טוב,\u0020</string>
     <string name="dialog_filter_all_pets">כל החיות</string>
     <string name="dialog_filter_my_favorites">המועדפים שלי</string>
-    <string name="language_selection_english">אנגלית</string>
-    <string name="language_selection_hebrew">עברית</string>
     <string name="yes">כן</string>
     <string name="no">לא</string>
     <string name="sure_to_change_app_language">האם אתם בטוחים שאתם רוצים שלנות את שפת האפליקציה? האפליקצית תחל מחדש אם כן.</string>
@@ -257,4 +255,21 @@
     <string name="email_">מייל:\u0020</string>
     <string name="website_no_registered">(לא רשום אתר)</string>
     <string name="website_">אתר ווב:\u0020</string>
+    <string name="app_meant_for_two_types_users">פטיטור מיועדת לשני סוגי משתמשים: משפחות ועמותות. לכל אחד גישה לאפשרויות שונות באפליקציה בהתאם לצרכיו.</string>
+    <string name="before_start_must_set_settings_family">לפי שתוכלו להשתמש באפליקציה כמשפחה, אתם נדרשים להגדיר את שפת האפליקציה, שם בדוי למשפחתכם, מדינה ועיר למשפחה. תוכלו תמיד לשנות את הגדות דרך האופציות הלוח העליון של אפליקציה.</string>
+    <string name="before_start_must_set_settings_foundation">לפי שתוכלו להשתמש באפליקציה כעמותה, אתם נדרשים להגדיר את שפת האפליקציה, שם העמותה וכתובת מדויקת של העמותה. תוכלו תמיד לשנות את הגדות דרך האופציות הלוח העליון של אפליקציה.</string>
+    <string name="family_explanation">- משפחות מספקות בית זמני או קבוע לחיות מחמד.</string>
+    <string name="glad_you_want_to_help">אנו שמחים שאתם רוצים לעזור לחיות מחמד למצוא בית חם!</string>
+    <string name="if_organization_click_this_link">אתם מוגדרים כמשפחה כברירת מחדל. אם אתם עמותה, אתם לחצו על הלינק על מנת לשלוח מייל עם פרטיכם, כדי שנוכל להגדיר את החשבון שלכם בהתאם.</string>
+    <string name="link" translatable="false">לינק</string>
+    <string name="must_enter_valid_values_to_continue">הינכם נדרשים למלא את הערכים עבור כלל השדות על מנת להמשיך.</string>
+    <string name="new_user">משתמש חדש</string>
+    <string name="no_email_clients_installed">לא קיימות אפליקציות מייל במכשירכם.</string>
+    <string name="no_pet_found_for_your_search">לא נמצאה חיית מחמד עבור חיפושכם.</string>
+    <string name="ok_i_m_done">סיימתי!</string>
+    <string name="organization_explanation">- עמותות מספקות גג זמני לחיות מחמד שמחכות לבית אצל משפחה.</string>
+    <string name="registered_as_organization_or_click_link">הינכם רשומים כעמותה. אם מדובר בטעות, נא לחצו על הלינק כדי שנוכל להגדיר לכם פרופיל של משפחה.</string>
+    <string name="send_mail">שלח מייל…</string>
+    <string name="welcome_">ברוכים הבאים,\u0020</string>
+    <string name="must_complete_registration">הינכם נדרשים להשלים את הרישום הראשוני באפליקציה כדי להפעיל אותה.</string>
 </resources>

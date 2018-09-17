@@ -13,12 +13,8 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.ImageView;
-import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.firebase.ui.auth.IdpResponse;
@@ -53,7 +49,6 @@ public class UpdateFamilyActivity extends BaseActivity implements
     @BindView(R.id.update_family_value_country) TextInputEditText mEditTextCountry;
     @BindView(R.id.update_family_value_state) TextInputEditText mEditTextState;
     @BindView(R.id.update_family_value_city) TextInputEditText mEditTextCity;
-    @BindView(R.id.update_family_value_street) TextInputEditText mEditTextStreet;
     @BindView(R.id.update_family_value_history) TextInputEditText mEditTextExperience;
     @BindView(R.id.update_family_checkbox_foster) CheckBox mCheckBoxFoster;
     @BindView(R.id.update_family_checkbox_adopt) CheckBox mCheckBoxAdopt;
@@ -92,8 +87,9 @@ public class UpdateFamilyActivity extends BaseActivity implements
         setContentView(R.layout.activity_update_family);
 
         mSavedInstanceState = savedInstanceState;
+        getExtras();
         initializeParameters();
-        getFamilyProfileFromFirebase();
+        if (mFamily==null || TextUtils.isEmpty(mFamily.getUI())) getFamilyProfileFromFirebase();
         setupPetImagesRecyclerView();
         Utilities.displayObjectImageInImageView(getApplicationContext(), mFamily, "mainImage", mImageViewMain);
     }
@@ -131,7 +127,7 @@ public class UpdateFamilyActivity extends BaseActivity implements
                 Exception error = result.getError();
             }
         }
-        if (requestCode == Utilities.FIREBASE_SIGN_IN_KEY) {
+        if (requestCode == Utilities.FIREBASE_SIGN_IN_FLAG) {
             IdpResponse response = IdpResponse.fromResultIntent(data);
 
             if (resultCode == RESULT_OK) {
@@ -227,6 +223,13 @@ public class UpdateFamilyActivity extends BaseActivity implements
 
 
     //Functional methods
+    private void getExtras() {
+
+        Intent intent = getIntent();
+        if (intent.hasExtra(getString(R.string.family_profile_parcelable))) {
+            mFamily = intent.getParcelableExtra(getString(R.string.family_profile_parcelable));
+        }
+    }
     private void initializeParameters() {
         if (getSupportActionBar()!=null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -237,7 +240,7 @@ public class UpdateFamilyActivity extends BaseActivity implements
         mEditTextUsername.setEnabled(false);
         mEditTextEmail.setEnabled(false);
 
-        mFamily = new Family();
+        if (mFamily==null) mFamily = new Family();
         mFirebaseDao = new FirebaseDao(getBaseContext(), this);
         mCurrentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         mFirebaseAuth = FirebaseAuth.getInstance();
@@ -282,7 +285,6 @@ public class UpdateFamilyActivity extends BaseActivity implements
         mEditTextCountry.setText(mFamily.getCn());
         mEditTextState.setText(mFamily.getSe());
         mEditTextCity.setText(mFamily.getCt());
-        mEditTextStreet.setText(mFamily.getSt());
         mEditTextExperience.setText(mFamily.getXp());
         mCheckBoxFoster.setChecked(mFamily.getFD());
         mCheckBoxAdopt.setChecked(mFamily.getAD());
@@ -341,15 +343,13 @@ public class UpdateFamilyActivity extends BaseActivity implements
         String country = mEditTextCountry.getText().toString();
         String state = mEditTextState.getText().toString();
         String city = mEditTextCity.getText().toString();
-        String street = mEditTextStreet.getText().toString();
 
         mFamily.setPn(pseudonym);
         mFamily.setCn(country);
         mFamily.setCt(city);
         mFamily.setSe(state);
-        mFamily.setSt(street);
 
-        String addressString = Utilities.getAddressStringFromComponents(null, street, city, state, country);
+        String addressString = Utilities.getAddressStringFromComponents(null, null, city, state, country);
         Address address = Utilities.getAddressObjectFromAddressString(this, addressString);
         if (address!=null) {
             String geoAddressCountry = address.getCountryCode();
@@ -360,7 +360,6 @@ public class UpdateFamilyActivity extends BaseActivity implements
             mFamily.setGeo(new GeoPoint(geoAddressLatitude, geoAddressLongitude));
         }
 
-        mFamily.setSt(mEditTextStreet.getText().toString());
         mFamily.setXp(mEditTextExperience.getText().toString());
 
         mFamily.setFD(mCheckBoxFoster.isChecked());

@@ -15,9 +15,8 @@ public class Family implements Parcelable{
     public Family() {
 
     }
-    public Family(String pseudonym, String street, String city, String country) {
+    public Family(String pseudonym, String city, String country) {
         this.pn = pseudonym;
-        this.st = street;
         this.ct = city;
         this.cn = country;
     }
@@ -31,7 +30,6 @@ public class Family implements Parcelable{
     protected Family(Parcel in) {
         oI = in.readString();
         pn = in.readString();
-        pnL = in.readString();
         uI = in.readString();
         em = in.readString();
         cp = in.readString();
@@ -41,8 +39,6 @@ public class Family implements Parcelable{
         ctL = in.readString();
         se = in.readString();
         seL = in.readString();
-        st = in.readString();
-        stL = in.readString();
         xp = in.readString();
         fD = in.readByte() != 0;
         aD = in.readByte() != 0;
@@ -100,14 +96,6 @@ public class Family implements Parcelable{
     }
     public void setPn(String pseudonym) {
         this.pn = pseudonym;
-    }
-
-    private String pnL = "Default"; //name in local language
-    public String getPnL() {
-        return pnL;
-    }
-    public void setPnL(String pnL) {
-        this.pnL = pnL;
     }
 
     private String uI = ""; //unique identifier
@@ -186,22 +174,6 @@ public class Family implements Parcelable{
     }
     public void setCtL(String ctL) {
         this.ctL = ctL;
-    }
-
-    private String st = ""; //street
-    public String getSt() {
-        return st;
-    }
-    public void setSt(String st) {
-        this.st = st;
-    }
-
-    private String stL = ""; //street localized (only used locally)
-    public String getStL() {
-        return stL;
-    }
-    public void setStL(String stL) {
-        this.stL = stL;
     }
 
     private String xp = ""; //experience
@@ -421,7 +393,6 @@ public class Family implements Parcelable{
     public void writeToParcel(Parcel parcel, int i) {
         parcel.writeString(oI);
         parcel.writeString(pn);
-        parcel.writeString(pnL);
         parcel.writeString(uI);
         parcel.writeString(em);
         parcel.writeString(cp);
@@ -431,8 +402,6 @@ public class Family implements Parcelable{
         parcel.writeString(ctL);
         parcel.writeString(se);
         parcel.writeString(seL);
-        parcel.writeString(st);
-        parcel.writeString(stL);
         parcel.writeString(xp);
         parcel.writeByte((byte) (fD ? 1 : 0));
         parcel.writeByte((byte) (aD ? 1 : 0));
@@ -459,7 +428,7 @@ public class Family implements Parcelable{
         parcel.writeString(srT);
         parcel.writeStringList(fPI);
 
-        parcel.writeDouble(geo.getLatitude());
-        parcel.writeDouble(geo.getLongitude());
+        parcel.writeDouble((geo==null)? 0.0 : geo.getLatitude());
+        parcel.writeDouble((geo==null)? 0.0 : geo.getLongitude());
     }
 }

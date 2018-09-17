@@ -1667,7 +1667,7 @@ public class PetListActivity extends BaseActivity implements
         //If family is not in database then create it, otherwise update mPet
         if (families.size() == 0 || families.get(0)==null) {
             Toast.makeText(getBaseContext(), R.string.must_create_family_profile, Toast.LENGTH_SHORT).show();
-            Utilities.startUpdateFamilyProfileActivity(PetListActivity.this);
+            Utilities.startUpdateFamilyProfileActivity(PetListActivity.this, mFamily);
         }
         else {
             mFamily = families.get(0);
@@ -1682,7 +1682,7 @@ public class PetListActivity extends BaseActivity implements
         //If family is not in database then create it, otherwise update mPet
         if (foundations.size() == 0 || foundations.get(0)==null) {
             Toast.makeText(getBaseContext(), R.string.must_create_family_profile, Toast.LENGTH_SHORT).show();
-            Utilities.startUpdateFamilyProfileActivity(PetListActivity.this);
+            Utilities.startUpdateFoundationProfileActivity(PetListActivity.this, mFoundation);
         }
         else {
             mFoundation = foundations.get(0);

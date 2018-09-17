@@ -108,7 +108,7 @@ public class MapActivity extends BaseActivity implements
     @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == Utilities.FIREBASE_SIGN_IN_KEY) {
+        if (requestCode == Utilities.FIREBASE_SIGN_IN_FLAG) {
             IdpResponse response = IdpResponse.fromResultIntent(data);
 
             if (resultCode == RESULT_OK) {

@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".ui.NewUserActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/standard_margin"
+        android:focusableInTouchMode="true"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/new_user_welcome_title_textview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="@dimen/standard_margin"
+            android:text="@string/welcome"
+            android:textSize="20sp"/>
+
+        <TextView
+            android:id="@+id/new_user_explanation_welcome_message_textview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/double_margin"
+            android:text="@string/glad_you_want_to_help"
+            android:textSize="18sp"/>
+
+        <TextView
+            android:id="@+id/new_user_explanation_how_it_works_textview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/standard_margin"
+            android:text="@string/app_meant_for_two_types_users"
+            android:textSize="18sp"/>
+
+        <TextView
+            android:id="@+id/new_user_explanation_how_it_works_family_textview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/standard_margin"
+            android:text="@string/family_explanation"
+            android:textSize="18sp"/>
+
+        <TextView
+            android:id="@+id/new_user_explanation_how_it_works_organization_textview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/double_margin"
+            android:text="@string/organization_explanation"
+            android:textSize="18sp"/>
+
+        <TextView
+            android:id="@+id/new_user_explanation_for_family_textview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/double_margin"
+            android:text="@string/if_organization_click_this_link"
+            android:textSize="18sp"/>
+
+        <TextView
+            android:id="@+id/new_user_explanation_for_foundation_textview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/double_margin"
+            android:text="@string/registered_as_organization_or_click_link"
+            android:textSize="18sp"/>
+
+        <TextView
+            android:id="@+id/new_user_explanation_family_settings_textview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/double_margin"
+            android:text="@string/before_start_must_set_settings_family"
+            android:textSize="18sp"/>
+
+        <TextView
+            android:id="@+id/new_user_explanation_foundation_settings_textview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/double_margin"
+            android:text="@string/before_start_must_set_settings_foundation"
+            android:textSize="18sp"/>
+
+        <Spinner
+            android:id="@+id/new_user_language_selection_spinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/double_margin"
+            android:entries="@array/languages"/>
+
+        <android.support.design.widget.TextInputLayout
+            android:id="@+id/new_user_family_pseudonym_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:hint="@string/family_s_pseudonym_required">
+
+            <android.support.design.widget.TextInputEditText
+                android:id="@+id/new_user_family_pseudonym"
+                style="@style/TextInputEditTextParametersStyle"/>
+
+        </android.support.design.widget.TextInputLayout>
+
+        <android.support.design.widget.TextInputLayout
+            android:id="@+id/new_user_foundation_name_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:hint="@string/foundation_name_required">
+
+            <android.support.design.widget.TextInputEditText
+                android:id="@+id/new_user_foundation_name"
+                style="@style/TextInputEditTextParametersStyle"/>
+
+        </android.support.design.widget.TextInputLayout>
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:hint="@string/country_required">
+
+            <android.support.design.widget.TextInputEditText
+                android:id="@+id/new_user_country"
+                style="@style/TextInputEditTextParametersStyle"
+                android:inputType="textCapWords"/>
+
+        </android.support.design.widget.TextInputLayout>
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:hint="@string/state_if_relevant">
+
+            <android.support.design.widget.TextInputEditText
+                android:id="@+id/new_user_state"
+                style="@style/TextInputEditTextParametersStyle"
+                android:inputType="textCapWords"/>
+        </android.support.design.widget.TextInputLayout>
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:hint="@string/city_required">
+
+            <android.support.design.widget.TextInputEditText
+                android:id="@+id/new_user_city"
+                style="@style/TextInputEditTextParametersStyle"
+                android:inputType="textCapWords"/>
+
+        </android.support.design.widget.TextInputLayout>
+
+        <android.support.design.widget.TextInputLayout
+            android:id="@+id/new_user_street_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:hint="@string/street_required">
+
+            <android.support.design.widget.TextInputEditText
+                android:id="@+id/new_user_street"
+                style="@style/TextInputEditTextParametersStyle"/>
+
+        </android.support.design.widget.TextInputLayout>
+
+        <android.support.design.widget.TextInputLayout
+            android:id="@+id/new_user_street_number_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:hint="@string/street_number_required">
+
+            <android.support.design.widget.TextInputEditText
+                android:id="@+id/new_user_street_number"
+                style="@style/TextInputEditTextParametersStyle"/>
+
+        </android.support.design.widget.TextInputLayout>
+
+        <Button
+            android:id="@+id/new_user_done_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="@dimen/double_margin"
+            android:text="@string/ok_i_m_done"/>
+
+    </LinearLayout>
+
+</ScrollView>

@@ -83,6 +83,14 @@ public class User implements Parcelable {
         this.iF = iF;
     }
 
+    private boolean iFT = true; //is First Time logging in
+    public boolean getIFT() {
+        return iFT;
+    }
+    public void setIFT(boolean iFT) {
+        this.iFT = iFT;
+    }
+
     private String lg = "en"; //app language
     public String getLg() {
         return lg;

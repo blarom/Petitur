@@ -87,8 +87,9 @@ public class UpdateFoundationActivity extends BaseActivity  implements
         setContentView(R.layout.activity_update_foundation);
 
         mSavedInstanceState = savedInstanceState;
+        getExtras();
         initializeParameters();
-        getFoundationProfileFromFirebase();
+        if (mFoundation==null || TextUtils.isEmpty(mFoundation.getUI())) getFoundationProfileFromFirebase();
         setupFoundationImagesRecyclerView();
         Utilities.displayObjectImageInImageView(getApplicationContext(), mFoundation, "mainImage", mImageViewMain);
     }
@@ -125,7 +126,7 @@ public class UpdateFoundationActivity extends BaseActivity  implements
                 Exception error = result.getError();
             }
         }
-        if (requestCode == Utilities.FIREBASE_SIGN_IN_KEY) {
+        if (requestCode == Utilities.FIREBASE_SIGN_IN_FLAG) {
             IdpResponse response = IdpResponse.fromResultIntent(data);
 
             if (resultCode == RESULT_OK) {
@@ -220,6 +221,13 @@ public class UpdateFoundationActivity extends BaseActivity  implements
 
 
     //Functional methods
+    private void getExtras() {
+
+        Intent intent = getIntent();
+        if (intent.hasExtra(getString(R.string.foundation_profile_parcelable))) {
+            mFoundation = intent.getParcelableExtra(getString(R.string.foundation_profile_parcelable));
+        }
+    }
     private void initializeParameters() {
         if (getSupportActionBar()!=null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -230,7 +238,7 @@ public class UpdateFoundationActivity extends BaseActivity  implements
         mTempImageUris = new Uri[]{null, null, null, null, null, null, null};
         mFoundationFound = false;
         mFoundationCriticalParametersSet = false;
-        mFoundation = new Foundation();
+        if (mFoundation==null) mFoundation = new Foundation();
         mFirebaseDao = new FirebaseDao(getBaseContext(), this);
         mCurrentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         mFirebaseAuth = FirebaseAuth.getInstance();

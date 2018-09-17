@@ -18,11 +18,13 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
+import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 
 import com.firebase.ui.auth.IdpResponse;
@@ -38,6 +40,7 @@ import com.petitur.data.User;
 import com.petitur.resources.LocaleHelper;
 import com.petitur.resources.Utilities;
 
+import java.util.Arrays;
 import java.util.List;
 
 import butterknife.BindView;
@@ -69,7 +72,7 @@ public class PreferencesActivity extends BaseActivity implements FirebaseDao.Fir
     private Bundle mSavedInstanceState;
     private Menu mMenu;
     private String mLanguageCode;
-    private int mLastSelectedPosition;
+    private int mLastSelectedLanguagePosition;
     //endregion
 
 
@@ -101,7 +104,7 @@ public class PreferencesActivity extends BaseActivity implements FirebaseDao.Fir
         mBinding.unbind();
     }
     @Override public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == Utilities.FIREBASE_SIGN_IN_KEY) {
+        if (requestCode == Utilities.FIREBASE_SIGN_IN_FLAG) {
             IdpResponse response = IdpResponse.fromResultIntent(data);
 
             if (resultCode == RESULT_OK) {
@@ -183,23 +186,21 @@ public class PreferencesActivity extends BaseActivity implements FirebaseDao.Fir
             }
         });
 
-        setLanguageInSpinner();
-
         mLanguageSelectionSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int pos, long id) {
 
-                if (pos == mLastSelectedPosition) return;
+                if (pos == mLastSelectedLanguagePosition) return;
 
                 //Getting the selected language
                 String selectedItem = (String) adapterView.getItemAtPosition(pos);
-                mLanguageCode = "en";
+                mLanguageCode = getString(R.string.language_code_english);
 
                 if (selectedItem.equals(getString(R.string.language_selection_english))) {
-                    mLanguageCode = "en";
+                    mLanguageCode = getString(R.string.language_code_english);
                 }
                 else if (selectedItem.equals(getString(R.string.language_selection_hebrew))) {
-                    mLanguageCode = "iw";
+                    mLanguageCode = getString(R.string.language_code_hebrew);
                 }
 
                 //Creating an alert dialog to make sure the user wants to change the language
@@ -216,11 +217,7 @@ public class PreferencesActivity extends BaseActivity implements FirebaseDao.Fir
                         Context context = LocaleHelper.setLocale(getApplicationContext(), mLanguageCode);
 
                         //Relaunching the app
-                        Intent intent = getPackageManager().getLaunchIntentForPackage( getPackageName() );
-                        if (intent!=null) {
-                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                            startActivity(intent);
-                        }
+                        Utilities.restartApplication(PreferencesActivity.this);
                     }
                 });
                 alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, getString(R.string.no), new DialogInterface.OnClickListener() {
@@ -236,6 +233,7 @@ public class PreferencesActivity extends BaseActivity implements FirebaseDao.Fir
 
             }
         });
+        mLastSelectedLanguagePosition = Utilities.setupLanguageInSpinner(PreferencesActivity.this, mUser, mLanguageSelectionSpinner);
 
         Utilities.hideSoftKeyboard(this);
     }
@@ -400,26 +398,23 @@ public class PreferencesActivity extends BaseActivity implements FirebaseDao.Fir
 
         int position = 0;
         if (!TextUtils.isEmpty(mUser.getUI())) {
-            switch (mUser.getLg()) {
-                case "en":
-                    position = Utilities.getSpinnerPositionFromText(mLanguageSelectionSpinner, getString(R.string.language_selection_english));
-                    break;
-                case "he":
-                    position = Utilities.getSpinnerPositionFromText(mLanguageSelectionSpinner, getString(R.string.language_selection_hebrew));
-                    break;
+            if (mUser.getLg().equals(getString(R.string.language_code_english))) {
+                position = Utilities.getSpinnerPositionFromText(mLanguageSelectionSpinner, getString(R.string.language_selection_english));
+
+            } else if (mUser.getLg().equals(getString(R.string.language_code_hebrew))) {
+                position = Utilities.getSpinnerPositionFromText(mLanguageSelectionSpinner, getString(R.string.language_selection_hebrew));
             }
         }
         else {
-            switch (Utilities.getAppPreferenceLanguage(getApplicationContext())) {
-                case "en":
-                    position = Utilities.getSpinnerPositionFromText(mLanguageSelectionSpinner, getString(R.string.language_selection_english));
-                    break;
-                case "he":
-                    position = Utilities.getSpinnerPositionFromText(mLanguageSelectionSpinner, getString(R.string.language_selection_hebrew));
-                    break;
+            String languagePref = Utilities.getAppPreferenceLanguage(getApplicationContext());
+            if (languagePref.equals(getString(R.string.language_code_english))) {
+                position = Utilities.getSpinnerPositionFromText(mLanguageSelectionSpinner, getString(R.string.language_selection_english));
+
+            } else if (languagePref.equals(getString(R.string.language_code_hebrew))) {
+                position = Utilities.getSpinnerPositionFromText(mLanguageSelectionSpinner, getString(R.string.language_selection_hebrew));
             }
         }
-        mLastSelectedPosition = position;
+        mLastSelectedLanguagePosition = position;
         mLanguageSelectionSpinner.setSelection(position);
     }
 

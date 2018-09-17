@@ -104,7 +104,7 @@
     <string name="state">State</string>
     <string name="country">Country</string>
     <string name="no_pet_found_press_done_to_create">No pet found for your organization, press DONE to create a new pet.</string>
-    <string name="foundation_name_required">Foundation Name (*required)</string>
+    <string name="foundation_name_required">Organization Name (*required)</string>
     <string name="website">Website</string>
     <string name="contact_email">Contact Email</string>
     <string name="contact_phone">Contact phone</string>
@@ -130,7 +130,7 @@
     <string name="foster_and_possibly_adopt">Foster and possibly adopt</string>
     <string name="family_main_image">Family main image</string>
     <string name="please_fill_user_profile">Please fill in your user profile before continuing.</string>
-    <string name="family_s_pseudonym_required">Family\'s name (*required)</string>
+    <string name="family_s_pseudonym_required">Family\'s pseudonym (*required)</string>
     <string name="please_wait_syncing_images">Please wait while your new images are being synced online.</string>
     <string name="no_internet_sync_later">No internet connection! Please enter this profile at a later date to sync the newer images.</string>
     <string name="filter">Filter</string>
@@ -226,6 +226,7 @@
     <string name="my_pets">My pets</string>
     <string name="tips_and_info">Tips and Info</string>
     <string name="welcome">Welcome</string>
+    <string name="welcome_">Welcome,\u0020</string>
     <string name="welcome_night">Wonderful night,\u0020</string>
     <string name="welcome_morning">Good morning,\u0020</string>
     <string name="welcome_day">Hello\u0020</string>
@@ -234,8 +235,10 @@
     <string name="dialog_filter_all_pets">All Pets</string>
     <string name="bundled_requested_favorites" translatable="false">bundled_requested_favorites</string>
     <string name="dialog_filter_my_favorites">My Favorites</string>
-    <string name="language_selection_english">English</string>
-    <string name="language_selection_hebrew">Hebrew</string>
+    <string name="language_selection_english" translatable="false">English</string>
+    <string name="language_selection_hebrew" translatable="false">עברית</string>
+    <string name="language_code_english" translatable="false">en</string>
+    <string name="language_code_hebrew" translatable="false">iw</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="sure_to_change_app_language">Are you sure you want to the change the App\'s language? This will restart the app.</string>
@@ -328,8 +331,29 @@
     <string name="website_no_registered">(No website registered)</string>
     <string name="website_">Website:\u0020</string>
     <string name="no_pet_found_for_your_search">No pet found for your search.</string>
-    <string name="pet_profile_id">pet_profile_id</string>
-    <string name="family_profile_id">family_profile_id</string>
+    <string name="pet_profile_id" translatable="false">pet_profile_id</string>
+    <string name="family_profile_id" translatable="false">family_profile_id</string>
+    <string name="ok_i_m_done">OK, I\'m done!</string>
+    <string name="glad_you_want_to_help">We\'re glad you want to help pets find a warm home!</string>
+    <string name="app_meant_for_two_types_users">Petitur is meant for two types of users: Families and Organizations. Each type of user can access app options relevant to their needs.</string>
+    <string name="family_explanation">- Families provide temporary or permanent homes for pets.</string>
+    <string name="organization_explanation">- Organizations provide shelter for pets while they await their new home.</string>
+    <string name="if_organization_click_this_link">You are currently a Family user by default. If you\'re a fostering/adoption organization, click this link
+        to send us an email with your credentials, so that we can activate your Organization user account.</string>
+    <string name="before_start_must_set_settings_family">Before you can start using the app as a Family, you must set your preferred app language,
+        family pseudonym, country and city. You can always change your settings and profile info through the relevant option in the app\'s toolbar.</string>
+    <string name="before_start_must_set_settings_foundation">Before you can start using the app as an Organization, you must set your preferred app language,
+        Organization name and exact address. You can always change your settings and profile info through the relevant option in the app\'s toolbar.</string>
+    <string name="link" translatable="false">link</string>
+    <string name="new_user">New User</string>
+    <string name="registered_as_organization_or_click_link">You are registered as a fostering/adoption Organization.
+        If this is an error, click this link so that we may correct your profile type.</string>
+    <string name="firebase_name" translatable="false">firebase_name</string>
+    <string name="must_enter_valid_values_to_continue">You must enter valid values for all fields before you can continue.</string>
+    <string name="no_email_clients_installed">There are no email clients installed on this device.</string>
+    <string name="send_mail">Send mail…</string>
+    <string name="app_email" translatable="false">petiturmobileapp@gmail.com</string>
+    <string name="must_complete_registration">You must complete the initial registration to use the app.</string>
 
     <string-array name="pet_genders">
         <item>@string/male</item>

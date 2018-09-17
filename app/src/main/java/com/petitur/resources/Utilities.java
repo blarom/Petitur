@@ -2,7 +2,9 @@ package com.petitur.resources;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -24,10 +26,17 @@ import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
@@ -70,7 +79,7 @@ import java.util.Random;
 public class Utilities {
 
     private static final String DEBUG_TAG = "Petitur Utilities";
-    public static final int FIREBASE_SIGN_IN_KEY = 123;
+    public static final int FIREBASE_SIGN_IN_FLAG = 123;
 
     //App utilities
     public static void closeApp(Activity activity) {
@@ -85,13 +94,15 @@ public class Utilities {
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         activity.startActivity(intent);
     }
-    public static void startUpdateFamilyProfileActivity(Activity activity) {
+    public static void startUpdateFamilyProfileActivity(Activity activity, Family family) {
         Intent intent = new Intent(activity.getApplicationContext(), UpdateFamilyActivity.class);
+        intent.putExtra(activity.getString(R.string.family_profile_parcelable), family);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         activity.startActivity(intent);
     }
-    public static void startUpdateFoundationProfileActivity(Activity activity) {
+    public static void startUpdateFoundationProfileActivity(Activity activity, Foundation foundation) {
         Intent intent = new Intent(activity.getApplicationContext(), UpdateFoundationActivity.class);
+        intent.putExtra(activity.getString(R.string.foundation_profile_parcelable), foundation);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         activity.startActivity(intent);
     }
@@ -164,6 +175,63 @@ public class Utilities {
         conf.setLocale(desiredLocale);
         Context localizedContext = context.createConfigurationContext(conf);
         return localizedContext.getResources();
+    }
+    public static void sendEmailToAdmin(Activity activity, User user, boolean requestingToBeOrganization) {
+
+        if (user==null) return;
+
+        //inspired by: https://stackoverflow.com/questions/2197741/how-can-i-send-emails-from-my-android-application
+
+        String subject = "Request for Organization registration";
+        String body = "\nPlease leave the following information as-is:\n"
+                + "User name: " + user.getNm() + "\n"
+                + "Email used for app: " + user.getEm() + "\n"
+                + "UI: " + user.getUI() + "\n"
+                + "OI: " + user.getOI() + "\n"
+                + "Status: " + ((user.getIF())? "org":"fam") + "\n";
+        if (requestingToBeOrganization) {
+            body += "Request: change profile to Organization\n\n"
+                    + "Please fill in the following information:"
+                    + "Organization's website: " + "\n"
+                    + "Organization's email: " + "\n"
+                    + "Other contact information: " + "\n"
+                    + "Explanation for the request: \n";
+        }
+        else {
+            body += "Request: change profile to Family\n\n"
+                    + "Explanation for the request: ";
+        }
+
+        body += "\n\n\nNB: Please note that if the above form is not properly completed, your request may not be fulfilled.";
+        if (requestingToBeOrganization) {
+            body += "\n\nIn order to maintain the quality, reliability and security of the app for its users, requests to change profiles to Organizations are processed manually and with care.\n"
+                    + "The processing time is highly dependent on the quality of the information and explanations you provide, as well as the ease of performing relevant background checks.\n\n"
+                    + "Furthermore, please note that any use of an Organization account to promote the sale and/or transfer of pets from breeders, or to perform any activity that is deemed by "
+                    + "the administrators to contradict the spirit of the app, will automatically lead to the demotion of your profile to a Family profile and/or the restriction of your account, "
+                    + "depending on the severity of the infraction.";
+        }
+
+        Intent intent = new Intent(Intent.ACTION_SENDTO);
+        intent.setType("message/rfc822");
+        intent.setData(Uri.parse("mailto:"));
+        intent.putExtra(Intent.EXTRA_EMAIL  , new String[]{activity.getString(R.string.app_email)});
+        intent.putExtra(Intent.EXTRA_SUBJECT, subject);
+        intent.putExtra(Intent.EXTRA_TEXT   , body);
+
+        try {
+            activity.startActivity(Intent.createChooser(intent, activity.getString(R.string.send_mail)));
+        } catch (android.content.ActivityNotFoundException ex) {
+            Toast.makeText(activity.getBaseContext(), R.string.no_email_clients_installed, Toast.LENGTH_SHORT).show();
+        }
+
+    }
+    public static void restartApplication(Activity activity) {
+
+        Intent intent = activity.getPackageManager().getLaunchIntentForPackage( activity.getPackageName() );
+        if (intent!=null) {
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            activity.startActivity(intent);
+        }
     }
 
 
@@ -336,7 +404,7 @@ public class Utilities {
                         .createSignInIntentBuilder()
                         .setAvailableProviders(providers)
                         .build(),
-                Utilities.FIREBASE_SIGN_IN_KEY);
+                Utilities.FIREBASE_SIGN_IN_FLAG);
     }
     public static void updateSignInMenuItem(Menu menu, Context context, boolean signedIn) {
         if (signedIn) {
@@ -441,6 +509,50 @@ public class Utilities {
         shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         activity.startActivity(Intent.createChooser(shareIntent, "Share images..."));
 
+    }
+    public static int setupLanguageInSpinner(final Activity activity, final User mUser, Spinner mSpinnerLanguage) {
+
+        ArrayAdapter<String> adapter= new ArrayAdapter<String>(
+                activity.getBaseContext(),
+                R.layout.list_item_languages,
+                Arrays.asList(activity.getResources().getStringArray(R.array.languages))) {
+            @NonNull public View getView(int position, View convertView, @NonNull ViewGroup parent) {
+                View v = super.getView(position, convertView, parent);
+                if (mUser.getLg().equals(activity.getString(R.string.language_code_english))) ((TextView) v).setGravity(Gravity.LEFT);
+                else ((TextView) v).setGravity(Gravity.RIGHT|Gravity.CENTER_VERTICAL);
+                return v;
+            }
+
+            public View getDropDownView(int position, View convertView,ViewGroup parent) {
+                View v = super.getDropDownView(position, convertView,parent);
+                if (mUser.getLg().equals(activity.getString(R.string.language_code_english))) ((TextView) v).setGravity(Gravity.LEFT);
+                else ((TextView) v).setGravity(Gravity.RIGHT|Gravity.CENTER_VERTICAL);
+                return v;
+            }
+
+        };
+        mSpinnerLanguage.setAdapter(adapter);
+
+        int position = 0;
+        if (!TextUtils.isEmpty(mUser.getUI())) {
+            if (mUser.getLg().equals(activity.getString(R.string.language_code_english))) {
+                position = Utilities.getSpinnerPositionFromText(mSpinnerLanguage, activity.getString(R.string.language_selection_english));
+
+            } else if (mUser.getLg().equals(activity.getString(R.string.language_code_hebrew))) {
+                position = Utilities.getSpinnerPositionFromText(mSpinnerLanguage, activity.getString(R.string.language_selection_hebrew));
+            }
+        }
+        else {
+            String languagePref = Utilities.getAppPreferenceLanguage(activity.getBaseContext());
+            if (languagePref.equals(activity.getString(R.string.language_code_english))) {
+                position = Utilities.getSpinnerPositionFromText(mSpinnerLanguage, activity.getString(R.string.language_selection_english));
+
+            } else if (languagePref.equals(activity.getString(R.string.language_code_hebrew))) {
+                position = Utilities.getSpinnerPositionFromText(mSpinnerLanguage, activity.getString(R.string.language_selection_hebrew));
+            }
+        }
+        mSpinnerLanguage.setSelection(position);
+        return position;
     }
 
 
@@ -1080,7 +1192,7 @@ public class Utilities {
                     Family family = (Family) objectsList.get(i);
                     boolean isNearby = checkIfObjectIsNearby(
                             context,
-                            Utilities.getAddressStringFromComponents(null, family.getSt(), family.getCt(), family.getSe(), family.getCn()),
+                            Utilities.getAddressStringFromComponents(null, null, family.getCt(), family.getSe(), family.getCn()),
                             family.getGeo().getLatitude(),
                             family.getGeo().getLongitude(),
                             userLatitude,

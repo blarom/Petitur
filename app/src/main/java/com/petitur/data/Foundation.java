@@ -417,7 +417,7 @@ public class Foundation implements Parcelable {
         parcel.writeInt(dP);
         parcel.writeString(srT);
 
-        parcel.writeDouble(geo.getLatitude());
-        parcel.writeDouble(geo.getLongitude());
+        parcel.writeDouble((geo==null)? 0.0 : geo.getLatitude());
+        parcel.writeDouble((geo==null)? 0.0 : geo.getLongitude());
     }
 }

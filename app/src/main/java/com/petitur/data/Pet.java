@@ -507,8 +507,8 @@ public class Pet implements Parcelable, Comparable<Pet> {
         parcel.writeInt(dt);
         parcel.writeByte((byte) (fv ? 1 : 0));
 
-        parcel.writeDouble(geo.getLatitude());
-        parcel.writeDouble(geo.getLongitude());
+        parcel.writeDouble((geo==null)? 0.0 : geo.getLatitude());
+        parcel.writeDouble((geo==null)? 0.0 : geo.getLongitude());
         parcel.writeMap(vet);
         parcel.writeMap(fam);
     }

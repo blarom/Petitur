@@ -132,7 +132,7 @@ public class ShowFamilyProfileFragment extends Fragment implements
 
         mTextViewFamilyPseudonym.setText(mFamily.getPn());
 
-        String address = Utilities.getAddressStringFromComponents(null, mFamily.getSt(), mFamily.getCt(), mFamily.getSe(), mFamily.getCn());
+        String address = Utilities.getAddressStringFromComponents(null, null, mFamily.getCt(), mFamily.getSe(), mFamily.getCn());
         mTextViewFamilyAddress.setText(address);
         mTextViewFamilyExperience.setText(mFamily.getXp());
 
@@ -180,7 +180,7 @@ public class ShowFamilyProfileFragment extends Fragment implements
         StringBuilder builder = new StringBuilder("");
         builder.append(mFamily.getPn());
         builder.append("\n");
-        builder.append(Utilities.getAddressStringFromComponents(null, mFamily.getSt(), mFamily.getCt(), mFamily.getSe(), null));
+        builder.append(Utilities.getAddressStringFromComponents(null, null, mFamily.getCt(), mFamily.getSe(), null));
 
         mSelectedImagePosition = mImageViewPager.getCurrentItem();
         mSelectedImageUriString = mDisplayedImageList.get(mSelectedImagePosition).toString();
