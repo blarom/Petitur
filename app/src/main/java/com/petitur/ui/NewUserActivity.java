@@ -81,9 +81,9 @@ public class NewUserActivity extends BaseActivity {
     }
     @Override public void onBackPressed() {
         if (mFoundation==null && mFamily == null) {
-            Intent data = new Intent();
-            data.putExtra(getString(R.string.bundled_user), mUser);
-            setResult(RESULT_OK, data);
+            Toast.makeText(this, R.string.must_complete_registration, Toast.LENGTH_SHORT).show();
+            //Utilities.restartApplication(this);
+            finishAffinity(); //closes the app
         }
         super.onBackPressed();
     }
@@ -94,6 +94,12 @@ public class NewUserActivity extends BaseActivity {
         Intent intent = getIntent();
         if (intent.hasExtra(getString(R.string.bundled_user))) {
             mUser = intent.getParcelableExtra(getString(R.string.bundled_user));
+        }
+        if (intent.hasExtra(getString(R.string.family_profile_parcelable))) {
+            mFamily = intent.getParcelableExtra(getString(R.string.family_profile_parcelable));
+        }
+        if (intent.hasExtra(getString(R.string.foundation_profile_parcelable))) {
+            mFoundation = intent.getParcelableExtra(getString(R.string.foundation_profile_parcelable));
         }
         if (intent.hasExtra(getString(R.string.firebase_name))) {
             mFirebaseName = intent.getStringExtra(getString(R.string.firebase_name));
@@ -239,13 +245,14 @@ public class NewUserActivity extends BaseActivity {
                 return;
             }
 
-            mFoundation = new Foundation();
+            if (mFoundation==null) mFoundation = new Foundation();
+            mFoundation.setOI(mUser.getOI());
             mFoundation.setNm(name);
             mFoundation.setCn(country);
             mFoundation.setSe(state);
             mFoundation.setCt(city);
             mFoundation.setSt(street);
-            mFoundation.setStN(streetNumber );
+            mFoundation.setStN(streetNumber);
         }
         else {
             String name = mEditTextFamilyPseudonym.getText().toString();
@@ -258,7 +265,8 @@ public class NewUserActivity extends BaseActivity {
                 return;
             }
 
-            mFamily = new Family();
+            if (mFamily==null) mFamily = new Family();
+            mFamily.setOI(mUser.getOI());
             mFamily.setPn(name);
             mFamily.setCn(country);
             mFamily.setSe(state);
@@ -273,23 +281,24 @@ public class NewUserActivity extends BaseActivity {
     private void returnProfileToTaskActivity() {
 
         if (mUser.getIF() && mFoundation!=null) {
-
-            mUser.setIFT(false);
-
             Intent data = new Intent();
             data.putExtra(getString(R.string.bundled_user), mUser);
             data.putExtra(getString(R.string.foundation_profile_parcelable), mFoundation);
-            onBackPressed();
+            setResult(RESULT_OK, data);
+            finish();
         }
         else if (!mUser.getIF() && mFamily!=null) {
-
-            mUser.setIFT(false);
-
             Intent data = new Intent();
             data.putExtra(getString(R.string.bundled_user), mUser);
             data.putExtra(getString(R.string.family_profile_parcelable), mFamily);
             setResult(RESULT_OK, data);
-            onBackPressed();
+            finish();
+        }
+        else if (mFoundation==null && mFamily == null) {
+            Intent data = new Intent();
+            data.putExtra(getString(R.string.bundled_user), mUser);
+            setResult(RESULT_OK, data);
+            finish();
         }
     }
 

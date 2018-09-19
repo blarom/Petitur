@@ -184,7 +184,7 @@ public class Family implements Parcelable{
         this.xp = xp;
     }
 
-    private boolean fD = false; //Want to foster dogs
+    private boolean fD = false; //Want to foster pets
     public boolean getFD() {
         return fD;
     }
@@ -192,7 +192,7 @@ public class Family implements Parcelable{
         this.fD = fD;
     }
 
-    private boolean aD = false; //Want to adopt dogs
+    private boolean aD = false; //Want to adopt pets
     public boolean getAD() {
         return aD;
     }
@@ -200,7 +200,7 @@ public class Family implements Parcelable{
         this.aD = aD;
     }
 
-    private boolean FAD = false; //Want to foster and maybe adopt dogs
+    private boolean FAD = false; //Want to foster and maybe adopt pets
     public boolean getFAD() {
         return FAD;
     }
@@ -360,7 +360,7 @@ public class Family implements Parcelable{
         this.snP = snP;
     }
 
-    private int dP = 0; //distance preference
+    private int dP = 10000000; //distance preference in meters (default is 10000km)
     public int getDP() {
         return dP;
     }

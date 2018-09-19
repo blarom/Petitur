@@ -98,7 +98,7 @@
     <string name="please_sign_in_to_see_map_markers">Please sign-in to see your map markers.</string>
     <string name="marker_title">Marker Title</string>
     <string name="marker_description">Description</string>
-    <string name="please_enter_marker_info">Please enter the marker information.</string>
+    <string name="creating_new_map_marker">Creating a new map marker</string>
     <string name="street_incl_number">Street (including number)</string>
     <string name="city">City</string>
     <string name="state">State</string>
@@ -229,7 +229,7 @@
     <string name="welcome_">Welcome,\u0020</string>
     <string name="welcome_night">Wonderful night,\u0020</string>
     <string name="welcome_morning">Good morning,\u0020</string>
-    <string name="welcome_day">Hello\u0020</string>
+    <string name="welcome_day">Hello,\u0020</string>
     <string name="welcome_evening">Good evening,\u0020</string>
     <string name="dialog_filter_my_pets" translatable="false">@string/my_pets</string>
     <string name="dialog_filter_all_pets">All Pets</string>
@@ -344,7 +344,7 @@
         family pseudonym, country and city. You can always change your settings and profile info through the relevant option in the app\'s toolbar.</string>
     <string name="before_start_must_set_settings_foundation">Before you can start using the app as an Organization, you must set your preferred app language,
         Organization name and exact address. You can always change your settings and profile info through the relevant option in the app\'s toolbar.</string>
-    <string name="link" translatable="false">link</string>
+    <string name="link">link</string>
     <string name="new_user">New User</string>
     <string name="registered_as_organization_or_click_link">You are registered as a fostering/adoption Organization.
         If this is an error, click this link so that we may correct your profile type.</string>
@@ -354,6 +354,7 @@
     <string name="send_mail">Send mail…</string>
     <string name="app_email" translatable="false">petiturmobileapp@gmail.com</string>
     <string name="must_complete_registration">You must complete the initial registration to use the app.</string>
+    <string name="bundled_address_string" translatable="false">bundled_address_string</string>
 
     <string-array name="pet_genders">
         <item>@string/male</item>

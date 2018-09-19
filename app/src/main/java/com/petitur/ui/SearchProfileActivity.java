@@ -82,8 +82,8 @@ public class SearchProfileActivity extends BaseActivity implements
         if (mBinding!=null) mBinding.unbind();
     }
     @Override public boolean onCreateOptionsMenu(Menu menu) {
-        if (!mReceivedFullPetProfile) getMenuInflater().inflate(R.menu.search_profile_menu, menu);
-        else getMenuInflater().inflate(R.menu.show_pet_menu, menu);
+        if (!mReceivedFullPetProfile && !mReceivedFullFamilyProfile && !mReceivedFullFoundationProfile) getMenuInflater().inflate(R.menu.search_profile_menu, menu);
+        else getMenuInflater().inflate(R.menu.show_blank_menu, menu);
         return true;
     }
     @Override public boolean onOptionsItemSelected(MenuItem item) {
@@ -281,7 +281,8 @@ public class SearchProfileActivity extends BaseActivity implements
 
             Bundle bundle = new Bundle();
             bundle.putParcelable(getString(R.string.pet_profile_parcelable), mPet);
-            bundle.putParcelable(getString(R.string.family_profile_parcelable), mFamily);
+            if (mFamily!=null) bundle.putParcelable(getString(R.string.family_profile_parcelable), mFamily);
+            if (mFoundation!=null) bundle.putParcelable(getString(R.string.foundation_profile_parcelable), mFoundation);
             bundle.putString(getString(R.string.user_name), mFullName);
             mShowPetProfileFragment.setArguments(bundle);
 
@@ -300,7 +301,7 @@ public class SearchProfileActivity extends BaseActivity implements
             mShowFoundationProfileFragment = new ShowFoundationProfileFragment();
 
             Bundle bundle = new Bundle();
-            bundle.putParcelable(getString(R.string.family_profile_parcelable), mFoundation);
+            bundle.putParcelable(getString(R.string.foundation_profile_parcelable), mFoundation);
             mShowFoundationProfileFragment.setArguments(bundle);
 
             FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();

@@ -18,9 +18,12 @@ import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.LoaderManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
+import android.support.v4.content.Loader;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -40,6 +43,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
@@ -76,10 +84,15 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 
+import okhttp3.internal.Util;
+
 public class Utilities {
 
     private static final String DEBUG_TAG = "Petitur Utilities";
     public static final int FIREBASE_SIGN_IN_FLAG = 123;
+    public static final int UPDATE_PROFILE_FLAG = 456;
+    public static final int NEW_USER_FLAG = 101;
+    public static final int GEO_ADDRESS_LOOKUP_LOADER = 9687;
 
     //App utilities
     public static void closeApp(Activity activity) {
@@ -98,22 +111,37 @@ public class Utilities {
         Intent intent = new Intent(activity.getApplicationContext(), UpdateFamilyActivity.class);
         intent.putExtra(activity.getString(R.string.family_profile_parcelable), family);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-        activity.startActivity(intent);
+        activity.startActivityForResult(intent, Utilities.UPDATE_PROFILE_FLAG);
     }
     public static void startUpdateFoundationProfileActivity(Activity activity, Foundation foundation) {
         Intent intent = new Intent(activity.getApplicationContext(), UpdateFoundationActivity.class);
         intent.putExtra(activity.getString(R.string.foundation_profile_parcelable), foundation);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-        activity.startActivity(intent);
+        activity.startActivityForResult(intent, UPDATE_PROFILE_FLAG);
     }
-    public static void handleUserSignIn(Activity activity, FirebaseUser mCurrentFirebaseUser, FirebaseAuth mFirebaseAuth, Menu mMenu) {
+    public static void handleUserSignIn(final Activity activity, FirebaseUser mCurrentFirebaseUser, FirebaseAuth mFirebaseAuth, Menu mMenu) {
         if (mCurrentFirebaseUser==null) {
             Utilities.setAppPreferenceUserHasNotRefusedSignIn(activity.getApplicationContext(), true);
             Utilities.showSignInScreen(activity);
         }
         else {
             Utilities.setAppPreferenceUserHasNotRefusedSignIn(activity.getApplicationContext(), false);
+
+            //inspired by: https://stackoverflow.com/questions/35541675/properly-log-out-a-user-from-android-app
+            GoogleSignInClient mGoogleSignInClient ;
+            GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                    .requestIdToken(activity.getString(R.string.default_web_client_id))
+                    .requestEmail()
+                    .build();
+            mGoogleSignInClient = GoogleSignIn.getClient(activity.getBaseContext(), gso);
+            mGoogleSignInClient.signOut();
+
+//            GoogleApiClient mGoogleApiClient = new GoogleApiClient.Builder(activity.getBaseContext())
+//                    .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+//                    .build();
+//            Auth.GoogleSignInApi.signOut(mGoogleApiClient);
             mFirebaseAuth.signOut();
+
             Utilities.updateSignInMenuItem(mMenu, activity.getBaseContext(), false);
         }
     }
@@ -183,15 +211,15 @@ public class Utilities {
         //inspired by: https://stackoverflow.com/questions/2197741/how-can-i-send-emails-from-my-android-application
 
         String subject = "Request for Organization registration";
-        String body = "\nPlease leave the following information as-is:\n"
+        String body = "\nPlease leave the following information as-is:\n\n"
                 + "User name: " + user.getNm() + "\n"
                 + "Email used for app: " + user.getEm() + "\n"
                 + "UI: " + user.getUI() + "\n"
                 + "OI: " + user.getOI() + "\n"
                 + "Status: " + ((user.getIF())? "org":"fam") + "\n";
         if (requestingToBeOrganization) {
-            body += "Request: change profile to Organization\n\n"
-                    + "Please fill in the following information:"
+            body += "Request: change profile to Organization\n\n\n"
+                    + "Please fill in the following information:\n\n"
                     + "Organization's website: " + "\n"
                     + "Organization's email: " + "\n"
                     + "Other contact information: " + "\n"
@@ -393,15 +421,18 @@ public class Utilities {
 
         Utilities.setAppPreferenceUserHasNotRefusedSignIn(activity, false);
         FirebaseAuth auth = FirebaseAuth.getInstance();
-        //List<AuthUI.IdpConfig> providers = Arrays.asList(
-        //        new AuthUI.IdpConfig.EmailBuilder().build(),
-        //        new AuthUI.IdpConfig.GoogleBuilder().build());
 
-        List<AuthUI.IdpConfig> providers = Collections.singletonList(new AuthUI.IdpConfig.EmailBuilder().build());
+        List<AuthUI.IdpConfig> providers = Arrays.asList(
+                new AuthUI.IdpConfig.EmailBuilder().build(),
+                new AuthUI.IdpConfig.GoogleBuilder().build());
+
+        //List<AuthUI.IdpConfig> providers = Collections.singletonList(new AuthUI.IdpConfig.EmailBuilder().build());
 
         activity.startActivityForResult(
+
                 AuthUI.getInstance()
                         .createSignInIntentBuilder()
+                        .setIsSmartLockEnabled(false, true) //TODO: check if this causes problems - see https://github.com/firebase/FirebaseUI-Android/blob/master/auth/README.md
                         .setAvailableProviders(providers)
                         .build(),
                 Utilities.FIREBASE_SIGN_IN_FLAG);

@@ -125,6 +125,7 @@ public class ShowPetProfileFragment extends Fragment implements
         if (getArguments() != null) {
             mPet = getArguments().getParcelable(getString(R.string.pet_profile_parcelable));
             mFamily = getArguments().getParcelable(getString(R.string.family_profile_parcelable));
+            mFoundation = getArguments().getParcelable(getString(R.string.foundation_profile_parcelable));
             mFullName = getArguments().getString(getString(R.string.user_name));
         }
     }
@@ -235,6 +236,7 @@ public class ShowPetProfileFragment extends Fragment implements
         mSelectedImageUriString = mDisplayedImageList.get(0).toString();
     }
     private void openFoundationProfile() {
+        //TODO fix the dialog pet type display
         Intent intent = new Intent(getContext(), SearchProfileActivity.class);
         if (mFoundation!=null) intent.putExtra(getString(R.string.foundation_profile_parcelable), mFoundation);
         else intent.putExtra(getString(R.string.foundation_profile_id), mPet.getOI());

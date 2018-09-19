@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<LinearLayout
+<ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -7,348 +7,322 @@
     android:padding="?dialogPreferredPadding"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <ScrollView
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:focusableInTouchMode="true"
+        android:orientation="vertical">
+
+        <TextView
+            style="@style/FilterSubtitleStyle"
+            android:text="@string/sort_by"/>
+
+        <Spinner
+            android:id="@+id/dialog_filter_sort_spinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            />
 
         <LinearLayout
+            style="@style/FilterButtonsContainerStyle">
+
+            <ToggleButton
+                android:id="@+id/dialog_filter_button_pet_list_my_pets"
+                style="@style/FilterButtonStyle"
+                android:checked="true"
+                android:textOff="@string/dialog_filter_my_pets"
+                android:textOn="@string/dialog_filter_my_pets"/>
+
+            <View style="@style/FilterSeparatorStyle"/>
+
+            <ToggleButton
+                android:id="@+id/dialog_filter_button_pet_list_all_pets"
+                style="@style/FilterButtonStyle"
+                android:textOff="@string/dialog_filter_all_pets"
+                android:textOn="@string/dialog_filter_all_pets"/>
+
+
+        </LinearLayout>
+
+        <TextView
+            style="@style/FilterSubtitleStyle"
+            android:text="@string/type"/>
+
+        <Spinner
+            android:id="@+id/dialog_filter_type_spinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            style="@style/FilterSubtitleStyle"
+            android:text="@string/gender"/>
+
+        <LinearLayout
+            style="@style/FilterButtonsContainerStyle">
+
+            <ToggleButton
+                android:id="@+id/dialog_filter_button_gender_any"
+                style="@style/FilterButtonStyle"
+                android:checked="true"
+                android:textOff="@string/dialog_filter_button_any"
+                android:textOn="@string/dialog_filter_button_any"/>
+
+            <View style="@style/FilterSeparatorStyle"/>
+
+            <ToggleButton
+                android:id="@+id/dialog_filter_button_gender_male"
+                style="@style/FilterButtonStyle"
+                android:textOff="@string/dialog_filter_button_male"
+                android:textOn="@string/dialog_filter_button_male"/>
+
+            <View style="@style/FilterSeparatorStyle"/>
+
+            <ToggleButton
+                android:id="@+id/dialog_filter_button_gender_female"
+                style="@style/FilterButtonStyle"
+                android:textOff="@string/dialog_filter_button_female"
+                android:textOn="@string/dialog_filter_button_female"/>
+
+        </LinearLayout>
+
+        <TextView
+            style="@style/FilterSubtitleStyle"
+            android:text="@string/age"/>
+
+        <LinearLayout
+            style="@style/FilterButtonsContainerStyle">
+
+            <ToggleButton
+                android:id="@+id/dialog_filter_button_age_any"
+                style="@style/FilterButtonStyle"
+                android:checked="true"
+                android:textOff="@string/dialog_filter_button_any"
+                android:textOn="@string/dialog_filter_button_any"/>
+
+            <View style="@style/FilterSeparatorStyle"/>
+
+            <ToggleButton
+                android:id="@+id/dialog_filter_button_age_puppy"
+                style="@style/FilterButtonStyle"
+                android:textOff="@string/dialog_filter_button_puppy"
+                android:textOn="@string/dialog_filter_button_puppy"/>
+
+            <View style="@style/FilterSeparatorStyle"/>
+
+            <ToggleButton
+                android:id="@+id/dialog_filter_button_age_young"
+                style="@style/FilterButtonStyle"
+                android:textOff="@string/dialog_filter_button_young"
+                android:textOn="@string/dialog_filter_button_young"/>
+
+            <View style="@style/FilterSeparatorStyle"/>
+
+            <ToggleButton
+                android:id="@+id/dialog_filter_button_age_adult"
+                style="@style/FilterButtonStyle"
+                android:textOff="@string/dialog_filter_button_adult"
+                android:textOn="@string/dialog_filter_button_adult"/>
+
+            <View style="@style/FilterSeparatorStyle"/>
+
+            <ToggleButton
+                android:id="@+id/dialog_filter_button_age_senior"
+                style="@style/FilterButtonStyle"
+                android:textOff="@string/dialog_filter_button_senior"
+                android:textOn="@string/dialog_filter_button_senior"/>
+
+        </LinearLayout>
+
+        <TextView
+            style="@style/FilterSubtitleStyle"
+            android:text="@string/size"/>
+
+        <LinearLayout
+            style="@style/FilterButtonsContainerStyle">
+
+            <ToggleButton
+                android:id="@+id/dialog_filter_button_size_any"
+                style="@style/FilterButtonStyle"
+                android:checked="true"
+                android:textOff="@string/dialog_filter_button_any"
+                android:textOn="@string/dialog_filter_button_any"/>
+
+            <View style="@style/FilterSeparatorStyle"/>
+
+            <ToggleButton
+                android:id="@+id/dialog_filter_button_size_small"
+                style="@style/FilterButtonStyle"
+                android:textOff="@string/dialog_filter_button_small"
+                android:textOn="@string/dialog_filter_button_small"/>
+
+            <View style="@style/FilterSeparatorStyle"/>
+
+            <ToggleButton
+                android:id="@+id/dialog_filter_button_size_medium"
+                style="@style/FilterButtonStyle"
+                android:textOff="@string/dialog_filter_button_medium"
+                android:textOn="@string/dialog_filter_button_medium"/>
+
+            <View style="@style/FilterSeparatorStyle"/>
+
+            <ToggleButton
+                android:id="@+id/dialog_filter_button_size_large"
+                style="@style/FilterButtonStyle"
+                android:textOff="@string/dialog_filter_button_large"
+                android:textOn="@string/dialog_filter_button_large"/>
+
+            <View style="@style/FilterSeparatorStyle"/>
+
+            <ToggleButton
+                android:id="@+id/dialog_filter_button_size_extra_large"
+                style="@style/FilterButtonStyle"
+                android:textOff="@string/dialog_filter_button_extra_large"
+                android:textOn="@string/dialog_filter_button_extra_large"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/dialog_filter_breed_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
             <TextView
                 style="@style/FilterSubtitleStyle"
-                android:text="@string/sort_by"/>
+                android:text="@string/breed"/>
 
-            <Spinner
-                android:id="@+id/dialog_filter_sort_spinner"
+            <android.support.constraint.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                />
-
-            <LinearLayout
-                style="@style/FilterButtonsContainerStyle">
-
-                <ToggleButton
-                    android:id="@+id/dialog_filter_button_pet_list_my_pets"
-                    style="@style/FilterButtonStyle"
-                    android:checked="true"
-                    android:textOff="@string/dialog_filter_my_pets"
-                    android:textOn="@string/dialog_filter_my_pets"/>
-
-                <View style="@style/FilterSeparatorStyle"/>
-
-                <ToggleButton
-                    android:id="@+id/dialog_filter_button_pet_list_all_pets"
-                    style="@style/FilterButtonStyle"
-                    android:textOff="@string/dialog_filter_all_pets"
-                    android:textOn="@string/dialog_filter_all_pets"/>
-
-
-            </LinearLayout>
-
-            <TextView
-                style="@style/FilterSubtitleStyle"
-                android:text="@string/type"/>
-
-            <Spinner
-                android:id="@+id/dialog_filter_type_spinner"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
-
-            <TextView
-                style="@style/FilterSubtitleStyle"
-                android:text="@string/gender"/>
-
-            <LinearLayout
-                style="@style/FilterButtonsContainerStyle">
-
-                <ToggleButton
-                    android:id="@+id/dialog_filter_button_gender_any"
-                    style="@style/FilterButtonStyle"
-                    android:checked="true"
-                    android:textOff="@string/dialog_filter_button_any"
-                    android:textOn="@string/dialog_filter_button_any"/>
-
-                <View style="@style/FilterSeparatorStyle"/>
-
-                <ToggleButton
-                    android:id="@+id/dialog_filter_button_gender_male"
-                    style="@style/FilterButtonStyle"
-                    android:textOff="@string/dialog_filter_button_male"
-                    android:textOn="@string/dialog_filter_button_male"/>
-
-                <View style="@style/FilterSeparatorStyle"/>
-
-                <ToggleButton
-                    android:id="@+id/dialog_filter_button_gender_female"
-                    style="@style/FilterButtonStyle"
-                    android:textOff="@string/dialog_filter_button_female"
-                    android:textOn="@string/dialog_filter_button_female"/>
-
-            </LinearLayout>
-
-            <TextView
-                style="@style/FilterSubtitleStyle"
-                android:text="@string/age"/>
-
-            <LinearLayout
-                style="@style/FilterButtonsContainerStyle">
-
-                <ToggleButton
-                    android:id="@+id/dialog_filter_button_age_any"
-                    style="@style/FilterButtonStyle"
-                    android:checked="true"
-                    android:textOff="@string/dialog_filter_button_any"
-                    android:textOn="@string/dialog_filter_button_any"/>
-
-                <View style="@style/FilterSeparatorStyle"/>
-
-                <ToggleButton
-                    android:id="@+id/dialog_filter_button_age_puppy"
-                    style="@style/FilterButtonStyle"
-                    android:textOff="@string/dialog_filter_button_puppy"
-                    android:textOn="@string/dialog_filter_button_puppy"/>
-
-                <View style="@style/FilterSeparatorStyle"/>
-
-                <ToggleButton
-                    android:id="@+id/dialog_filter_button_age_young"
-                    style="@style/FilterButtonStyle"
-                    android:textOff="@string/dialog_filter_button_young"
-                    android:textOn="@string/dialog_filter_button_young"/>
-
-                <View style="@style/FilterSeparatorStyle"/>
-
-                <ToggleButton
-                    android:id="@+id/dialog_filter_button_age_adult"
-                    style="@style/FilterButtonStyle"
-                    android:textOff="@string/dialog_filter_button_adult"
-                    android:textOn="@string/dialog_filter_button_adult"/>
-
-                <View style="@style/FilterSeparatorStyle"/>
-
-                <ToggleButton
-                    android:id="@+id/dialog_filter_button_age_senior"
-                    style="@style/FilterButtonStyle"
-                    android:textOff="@string/dialog_filter_button_senior"
-                    android:textOn="@string/dialog_filter_button_senior"/>
-
-            </LinearLayout>
-
-            <TextView
-                style="@style/FilterSubtitleStyle"
-                android:text="@string/size"/>
-
-            <LinearLayout
-                style="@style/FilterButtonsContainerStyle">
-
-                <ToggleButton
-                    android:id="@+id/dialog_filter_button_size_any"
-                    style="@style/FilterButtonStyle"
-                    android:checked="true"
-                    android:textOff="@string/dialog_filter_button_any"
-                    android:textOn="@string/dialog_filter_button_any"/>
-
-                <View style="@style/FilterSeparatorStyle"/>
-
-                <ToggleButton
-                    android:id="@+id/dialog_filter_button_size_small"
-                    style="@style/FilterButtonStyle"
-                    android:textOff="@string/dialog_filter_button_small"
-                    android:textOn="@string/dialog_filter_button_small"/>
-
-                <View style="@style/FilterSeparatorStyle"/>
-
-                <ToggleButton
-                    android:id="@+id/dialog_filter_button_size_medium"
-                    style="@style/FilterButtonStyle"
-                    android:textOff="@string/dialog_filter_button_medium"
-                    android:textOn="@string/dialog_filter_button_medium"/>
-
-                <View style="@style/FilterSeparatorStyle"/>
-
-                <ToggleButton
-                    android:id="@+id/dialog_filter_button_size_large"
-                    style="@style/FilterButtonStyle"
-                    android:textOff="@string/dialog_filter_button_large"
-                    android:textOn="@string/dialog_filter_button_large"/>
-
-                <View style="@style/FilterSeparatorStyle"/>
-
-                <ToggleButton
-                    android:id="@+id/dialog_filter_button_size_extra_large"
-                    style="@style/FilterButtonStyle"
-                    android:textOff="@string/dialog_filter_button_extra_large"
-                    android:textOn="@string/dialog_filter_button_extra_large"/>
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/dialog_filter_breed_container"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <TextView
-                    style="@style/FilterSubtitleStyle"
-                    android:text="@string/breed"/>
-
-                <android.support.constraint.ConstraintLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <AutoCompleteTextView
-                        android:id="@+id/dialog_filter_autocompletetextview_breed"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:hint="@string/filter_option_any"
-                        app:layout_constraintEnd_toStartOf="@id/dialog_filter_arrow_breed"
-                        app:layout_constraintLeft_toLeftOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"/>
-
-                    <ImageView
-                        android:id="@+id/dialog_filter_arrow_breed"
-                        android:layout_width="wrap_content"
-                        android:layout_height="0dp"
-                        android:contentDescription="@string/show_dropdown"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:srcCompat="@drawable/ic_arrow_drop_down_24dp"/>
-
-                </android.support.constraint.ConstraintLayout>
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/dialog_filter_coat_length_container"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <TextView
-                    style="@style/FilterSubtitleStyle"
-                    android:text="@string/coat_length"/>
-
-                <android.support.constraint.ConstraintLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <AutoCompleteTextView
-                        android:id="@+id/dialog_filter_autocompletetextview_coat_length"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:hint="@string/filter_option_any"
-                        app:layout_constraintEnd_toStartOf="@id/dialog_filter_arrow_coat_length"
-                        app:layout_constraintLeft_toLeftOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"/>
-
-                    <ImageView
-                        android:id="@+id/dialog_filter_arrow_coat_length"
-                        android:layout_width="wrap_content"
-                        android:layout_height="0dp"
-                        android:contentDescription="@string/show_dropdown"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:srcCompat="@drawable/ic_arrow_drop_down_24dp"/>
-
-                </android.support.constraint.ConstraintLayout>
-
-            </LinearLayout>
-
-            <GridLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/standard_margin"
-                android:columnCount="2"
-                android:rowCount="3">
-
-                <CheckBox
-                    android:id="@+id/dialog_filter_checkbox_good_with_kids"
-                    style="@style/FilterGridCheckBoxStyle"
-                    android:text="@string/good_with_kids"/>
-
-                <CheckBox
-                    android:id="@+id/dialog_filter_checkbox_castrated"
-                    style="@style/FilterGridCheckBoxStyle"
-                    android:text="@string/castrated"/>
-
-                <CheckBox
-                    android:id="@+id/dialog_filter_checkbox_good_with_dogs"
-                    style="@style/FilterGridCheckBoxStyle"
-                    android:text="@string/good_with_dogs"/>
-
-                <CheckBox
-                    android:id="@+id/dialog_filter_checkbox_house_trained"
-                    style="@style/FilterGridCheckBoxStyle"
-                    android:text="@string/house_trained"/>
-
-                <CheckBox
-                    android:id="@+id/dialog_filter_checkbox_good_with_cats"
-                    style="@style/FilterGridCheckBoxStyle"
-                    android:text="@string/good_with_cats"/>
-
-                <CheckBox
-                    android:id="@+id/dialog_filter_checkbox_special_needs"
-                    style="@style/FilterGridCheckBoxStyle"
-                    android:text="@string/special_needs"/>
-
-                <CheckBox
-                    android:id="@+id/dialog_filter_checkbox_good_with_birds"
-                    style="@style/FilterGridCheckBoxStyle"
-                    android:text="@string/good_with_birds"/>
-
-            </GridLayout>
-
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/standard_margin"
                 android:orientation="horizontal">
 
-                <TextView
+                <AutoCompleteTextView
+                    android:id="@+id/dialog_filter_autocompletetextview_breed"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/filter_option_any"
+                    app:layout_constraintEnd_toStartOf="@id/dialog_filter_arrow_breed"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"/>
+
+                <ImageView
+                    android:id="@+id/dialog_filter_arrow_breed"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="@dimen/standard_margin"
-                    android:layout_marginRight="@dimen/standard_margin"
-                    android:text="@string/distance_from_me"
-                    android:textSize="@dimen/title_text_size"/>
+                    android:layout_height="0dp"
+                    android:contentDescription="@string/show_dropdown"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@drawable/ic_arrow_drop_down_24dp"/>
 
-                <EditText
-                    android:id="@+id/dialog_filter_distance_edittext"
-                    android:layout_width="@dimen/distance_number_edittext_width"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="@dimen/standard_margin"
-                    android:layout_marginRight="@dimen/standard_margin"
-                    android:gravity="start"
-                    android:hint="@string/zero"
-                    android:inputType="numberSigned"
-                    android:textAlignment="textStart"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/unit_km"
-                    android:textSize="@dimen/title_text_size"/>
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="@dimen/double_margin">
-
-            </LinearLayout>
+            </android.support.constraint.ConstraintLayout>
 
         </LinearLayout>
 
-    </ScrollView>
+        <LinearLayout
+            android:id="@+id/dialog_filter_coat_length_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-</LinearLayout>
+            <TextView
+                style="@style/FilterSubtitleStyle"
+                android:text="@string/coat_length"/>
+
+            <Spinner
+                android:id="@+id/dialog_filter_spinner_coat_length"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/filter_option_any"/>
+
+        </LinearLayout>
+
+        <GridLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/standard_margin"
+            android:columnCount="2"
+            android:rowCount="3">
+
+            <CheckBox
+                android:id="@+id/dialog_filter_checkbox_good_with_kids"
+                style="@style/FilterGridCheckBoxStyle"
+                android:text="@string/good_with_kids"/>
+
+            <CheckBox
+                android:id="@+id/dialog_filter_checkbox_castrated"
+                style="@style/FilterGridCheckBoxStyle"
+                android:text="@string/castrated"/>
+
+            <CheckBox
+                android:id="@+id/dialog_filter_checkbox_good_with_dogs"
+                style="@style/FilterGridCheckBoxStyle"
+                android:text="@string/good_with_dogs"/>
+
+            <CheckBox
+                android:id="@+id/dialog_filter_checkbox_house_trained"
+                style="@style/FilterGridCheckBoxStyle"
+                android:text="@string/house_trained"/>
+
+            <CheckBox
+                android:id="@+id/dialog_filter_checkbox_good_with_cats"
+                style="@style/FilterGridCheckBoxStyle"
+                android:text="@string/good_with_cats"/>
+
+            <CheckBox
+                android:id="@+id/dialog_filter_checkbox_special_needs"
+                style="@style/FilterGridCheckBoxStyle"
+                android:text="@string/special_needs"/>
+
+            <CheckBox
+                android:id="@+id/dialog_filter_checkbox_good_with_birds"
+                style="@style/FilterGridCheckBoxStyle"
+                android:text="@string/good_with_birds"/>
+
+        </GridLayout>
+
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/standard_margin"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/standard_margin"
+                android:layout_marginRight="@dimen/standard_margin"
+                android:text="@string/distance_from_me"
+                android:textSize="@dimen/title_text_size"/>
+
+            <EditText
+                android:id="@+id/dialog_filter_distance_edittext"
+                android:layout_width="@dimen/distance_number_edittext_width"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/standard_margin"
+                android:layout_marginRight="@dimen/standard_margin"
+                android:gravity="start"
+                android:hint="@string/zero"
+                android:inputType="numberSigned"
+                android:textAlignment="textStart"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/unit_km"
+                android:textSize="@dimen/title_text_size"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="@dimen/double_margin">
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</ScrollView>

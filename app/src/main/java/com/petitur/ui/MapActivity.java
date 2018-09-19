@@ -137,7 +137,7 @@ public class MapActivity extends BaseActivity implements
         }
     }
     @Override public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.show_pet_menu, menu);
+        getMenuInflater().inflate(R.menu.show_blank_menu, menu);
         return true;
     }
     @Override public boolean onOptionsItemSelected(MenuItem item) {
@@ -552,7 +552,7 @@ public class MapActivity extends BaseActivity implements
         //Building the dialog
         android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
 
-        builder.setTitle(R.string.please_enter_marker_info);
+        builder.setTitle(R.string.creating_new_map_marker);
         title.setText(""); title.setEnabled(true);
         subtitle.setText(""); subtitle.setEnabled(true);
         country.setText(""); country.setEnabled(true);

@@ -8,7 +8,10 @@ import android.content.Intent;
 import android.location.Address;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
 import android.support.v4.widget.NestedScrollView;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -47,6 +50,7 @@ import com.petitur.data.Foundation;
 import com.petitur.data.MapMarker;
 import com.petitur.data.Pet;
 import com.petitur.data.User;
+import com.petitur.resources.GeoAdressLookupAsyncTaskLoader;
 import com.petitur.resources.Utilities;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
@@ -66,7 +70,10 @@ public class UpdatePetActivity extends BaseActivity implements
         FirebaseDao.FirebaseOperationsHandler,
         AdapterView.OnItemSelectedListener,
         SimpleTextRecycleViewAdapter.TextClickHandler,
-        ImagesRecycleViewAdapter.ImageClickHandler, VetEventRecycleViewAdapter.VetEventClickHandler, FosteringFamiliesRecycleViewAdapter.FosteringFamilyClickHandler {
+        ImagesRecycleViewAdapter.ImageClickHandler,
+        VetEventRecycleViewAdapter.VetEventClickHandler,
+        FosteringFamiliesRecycleViewAdapter.FosteringFamilyClickHandler,
+        LoaderManager.LoaderCallbacks<Address> {
 
 
     //region Parameters
@@ -163,6 +170,7 @@ public class UpdatePetActivity extends BaseActivity implements
     private List<String> mDisplayedPetCoatLengths;
     private List<String> mDisplayedPetAgesList;
     private Family mFamily;
+    private boolean mAlreadyGotGeoAddress;
     //endregion
 
 
@@ -329,11 +337,19 @@ public class UpdatePetActivity extends BaseActivity implements
         mEditTextFoundation.setEnabled(false);
         mVideoLinks = new ArrayList<>();
         mCurrentlySyncingImages = false;
+        mAlreadyGotGeoAddress = false;
 
         mFirebaseDao = new FirebaseDao(getBaseContext(), this);
         mCurrentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         mFirebaseAuth = FirebaseAuth.getInstance();
 
+        if (mCurrentFirebaseUser != null) {
+            mNameFromFirebase = mCurrentFirebaseUser.getDisplayName();
+            mEmailFromFirebase = mCurrentFirebaseUser.getEmail();
+            mPhotoUriFromFirebase = mCurrentFirebaseUser.getPhotoUrl();
+            mFirebaseUid = mCurrentFirebaseUser.getUid();
+            boolean emailVerified = mCurrentFirebaseUser.isEmailVerified();
+        }
 
         mDisplayedPetAgesList = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.pet_ages)));
         mPetAgesList = new ArrayList<>(Arrays.asList(Utilities.getFlag(getApplicationContext()).getStringArray(R.array.pet_ages)));
@@ -393,12 +409,6 @@ public class UpdatePetActivity extends BaseActivity implements
     }
     private void updateLayoutWithFoundationAndPetProfiles() {
         if (mCurrentFirebaseUser != null) {
-            // Name, email address, and profile photo Url
-            mNameFromFirebase = mCurrentFirebaseUser.getDisplayName();
-            mEmailFromFirebase = mCurrentFirebaseUser.getEmail();
-            mPhotoUriFromFirebase = mCurrentFirebaseUser.getPhotoUrl();
-            mFirebaseUid = mCurrentFirebaseUser.getUid();
-
             //Initializing the local parameters that depend on this pet, used in the rest of the activity
             mImageName = "mainImage";
 
@@ -653,15 +663,7 @@ public class UpdatePetActivity extends BaseActivity implements
         mPet.setStN(streeNumber);
 
         String addressString = Utilities.getAddressStringFromComponents(streeNumber, street, city, state, country);
-        Address address = Utilities.getAddressObjectFromAddressString(this, addressString);
-        if (address!=null) {
-            String geoAddressCountry = address.getCountryCode();
-            double geoAddressLatitude = address.getLatitude() + Utilities.getCoordinateRandomJitter();
-            double geoAddressLongitude = address.getLongitude() + Utilities.getCoordinateRandomJitter();
-
-            mPet.setGaC(geoAddressCountry);
-            mPet.setGeo(new GeoPoint(geoAddressLatitude, geoAddressLongitude));
-        }
+        if (!mAlreadyGotGeoAddress) startGeoAddressLookupThread(addressString);
 
         mPet.setHs(mEditTextHistory.getText().toString());
 
@@ -988,6 +990,17 @@ public class UpdatePetActivity extends BaseActivity implements
         AlertDialog dialog = builder.create();
         dialog.show();
     }
+    private void startGeoAddressLookupThread(String addressString) {
+
+        LoaderManager loaderManager = getSupportLoaderManager();
+        Loader<Address> imageSyncAsyncTaskLoader = loaderManager.getLoader(Utilities.GEO_ADDRESS_LOOKUP_LOADER);
+        Bundle args = new Bundle();
+        args.putString(getString(R.string.bundled_address_string), addressString);
+        if (!mAlreadyGotGeoAddress && imageSyncAsyncTaskLoader==null) {
+            loaderManager.initLoader(Utilities.GEO_ADDRESS_LOOKUP_LOADER, args, this);
+        }
+
+    }
 
 
     //View click listeners
@@ -1156,4 +1169,23 @@ public class UpdatePetActivity extends BaseActivity implements
 
     }
 
+    //Communication with GeoAddressLookupLoader
+    @NonNull @Override public Loader<Address> onCreateLoader(int id, @Nullable Bundle args) {
+        String addressString = (args==null)? "" : args.getString(getString(R.string.bundled_address_string), "");
+        return new GeoAdressLookupAsyncTaskLoader(this, addressString);
+    }
+    @Override public void onLoadFinished(@NonNull Loader<Address> loader, Address data) {
+        if (data!=null ) {
+            String geoAddressCountry = data.getCountryCode();
+            double geoAddressLatitude = data.getLatitude();
+            double geoAddressLongitude = data.getLongitude();
+
+            mFoundation.setGaC(geoAddressCountry);
+            mFoundation.setGeo(new GeoPoint(geoAddressLatitude, geoAddressLongitude));
+        }
+        getLoaderManager().destroyLoader(Utilities.GEO_ADDRESS_LOOKUP_LOADER);
+    }
+    @Override public void onLoaderReset(@NonNull Loader<Address> loader) {
+
+    }
 }

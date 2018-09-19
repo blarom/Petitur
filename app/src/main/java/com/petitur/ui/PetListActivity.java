@@ -153,7 +153,7 @@ public class PetListActivity extends BaseActivity implements
     private AddressLanguageAsyncTaskLoader mAddressLanguageSyncAsyncTaskLoader;
     private EditText mDialogFilterEditTextDistance;
     private AutoCompleteTextView mDialogFilterAutoCompleteTextViewBreed;
-    private AutoCompleteTextView mDialogFilterAutoCompleteTextViewCoatLength;
+    private Spinner mDialogFilterSpinnerCoatLength;
     private Spinner dialogFilterSpinnerSort;
     private ToggleButton dialogFilterButtonListMyPets;
     private ToggleButton dialogFilterButtonListAllPets;
@@ -341,6 +341,9 @@ public class PetListActivity extends BaseActivity implements
 
         mPetDistance = getResources().getInteger(R.integer.default_pet_distance);
         mTempPetDistance = mPetDistance;
+
+        setTempFiltersAccordingToFamilyOrFoundationPreferences();
+        setFilterParametersEqualToTempParameters();
     }
     private void getFamilyOrFoundationProfileFromFirebase() {
         if (mCurrentFirebaseUser != null) {
@@ -353,7 +356,7 @@ public class PetListActivity extends BaseActivity implements
                 //Getting the rest of the family's parameters
                 mFirebaseDao.requestObjectsWithConditions(mFoundation, Utilities.getQueryConditionsForSingleObjectSearchByOwnerId(this, mFoundation));
             }
-            else if (mFamily==null) {
+            else if (mFamily==null && !mUser.getIF()) {
                 //Setting the requested Family's id
                 mFamily = new Family();
                 mFamily.setOI(mCurrentFirebaseUser.getUid());
@@ -592,8 +595,8 @@ public class PetListActivity extends BaseActivity implements
         //region Getting the pet type
         ArrayAdapter<String> spinnerAdapterType = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, mDisplayedPetTypesList);
         dialogFilterSpinnerType = dialogView.findViewById(R.id.dialog_filter_type_spinner);
-        dialogFilterSpinnerType.setSelection(Utilities.getListPositionFromText(mPetTypesList, mTempSelectedPetType));
         dialogFilterSpinnerType.setAdapter(spinnerAdapterType);
+        dialogFilterSpinnerType.setSelection(Utilities.getListPositionFromText(mPetTypesList, mTempSelectedPetType), false);
         dialogFilterSpinnerType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int pos, long l) {
@@ -1069,26 +1072,11 @@ public class PetListActivity extends BaseActivity implements
         else {
 
             dialogView.findViewById(R.id.dialog_filter_coat_length_container).setVisibility(View.VISIBLE);
-            mDialogFilterAutoCompleteTextViewCoatLength =  dialogView.findViewById(R.id.dialog_filter_autocompletetextview_coat_length);
-
-            ImageView dialogFilterImageViewArrowCoatLength = dialogView.findViewById(R.id.dialog_filter_arrow_coat_length);
-            mDialogFilterAutoCompleteTextViewBreed.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(final View arg0) {
-                    mDialogFilterAutoCompleteTextViewBreed.showDropDown();
-                }
-            });
-            dialogFilterImageViewArrowCoatLength.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    mDialogFilterAutoCompleteTextViewBreed.showDropDown();
-                }
-            });
+            mDialogFilterSpinnerCoatLength = dialogView.findViewById(R.id.dialog_filter_spinner_coat_length);
 
             ArrayAdapter<String> coatLengthArrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, mDisplayedPetCoatLengths);
-            String coatLengthToDisplay = Utilities.getDisplayedTextFromFlagText(mDisplayedPetCoatLengths, mPetCoatLengths, mTempSelectedCoatLength);
-            mDialogFilterAutoCompleteTextViewCoatLength.setText(coatLengthToDisplay);
-            mDialogFilterAutoCompleteTextViewCoatLength.setAdapter(coatLengthArrayAdapter);
+            mDialogFilterSpinnerCoatLength.setAdapter(coatLengthArrayAdapter);
+            mDialogFilterSpinnerCoatLength.setSelection(Utilities.getListPositionFromText(mPetCoatLengths, mTempSelectedCoatLength), false);
 
         }
 
@@ -1097,7 +1085,7 @@ public class PetListActivity extends BaseActivity implements
         dialogFilterSpinnerSort.setSelection(0);
         mTempSortOrder = mSortOptions.get(0);
 
-        dialogFilterSpinnerType.setSelection(0);
+        dialogFilterSpinnerType.setSelection(0, false);
         mTempSelectedPetType = mPetTypesList.get(0);
 
         dialogFilterButtonGenderAny.setChecked(true);
@@ -1121,8 +1109,9 @@ public class PetListActivity extends BaseActivity implements
 
         String breedToDisplay = Utilities.getDisplayedTextFromFlagText(mDisplayedAvailableDogBreeds, mAvailableDogBreeds, mAvailableDogBreeds.get(0));
         mDialogFilterAutoCompleteTextViewBreed.setText(breedToDisplay);
-        String coatLengthToDisplay = Utilities.getDisplayedTextFromFlagText(mDisplayedPetCoatLengths, mPetCoatLengths, mPetCoatLengths.get(0));
-        mDialogFilterAutoCompleteTextViewCoatLength.setText(coatLengthToDisplay);
+        if (mDialogFilterSpinnerCoatLength !=null) {
+            mDialogFilterSpinnerCoatLength.setSelection(0, false);
+        }
 
         dialogFilterCheckBoxGoodWithKids.setChecked(false);
         mTempSelectedGoodWithKids = false;
@@ -1149,6 +1138,7 @@ public class PetListActivity extends BaseActivity implements
         }
         else {
 
+            //Preparing the values to save
             mTempPetDistance = getRequestedDistanceFromUserInput(mDialogFilterEditTextDistance.getText().toString());
 
             if (mDialogFilterAutoCompleteTextViewBreed!=null) {
@@ -1157,13 +1147,15 @@ public class PetListActivity extends BaseActivity implements
             }
             else mTempSelectedBreed = Utilities.getFlag(this).getString(R.string.any);
 
-            if (mDialogFilterAutoCompleteTextViewCoatLength!=null) {
+            if (mDialogFilterSpinnerCoatLength !=null) {
                 mTempSelectedCoatLength = Utilities.getFlagTextFromDisplayedText(
-                        mDisplayedPetCoatLengths, mPetCoatLengths, mDialogFilterAutoCompleteTextViewCoatLength.getText().toString());
+                        mDisplayedPetCoatLengths, mPetCoatLengths, mDialogFilterSpinnerCoatLength.getSelectedItem().toString());
             }
             else mTempSelectedCoatLength = Utilities.getFlag(this).getString(R.string.any);
 
             setFilterParametersEqualToTempParameters();
+
+            //Saving the values
             if (mUser.getIF()) {
                 saveSearchParametersToLocalFoundationProfile();
                 mFirebaseDao.updateObject(mFoundation);
@@ -1385,7 +1377,7 @@ public class PetListActivity extends BaseActivity implements
     }
     private void handlePetFavorites() {
 
-        if (mFamily!=null) {
+        if (mFamily!=null && mFamily.getFPI()!=null) {
             List<String> favoriteIds = new ArrayList<>(mFamily.getFPI());
             for (Pet pet : mPetsAtDistance) {
                 for (String id : favoriteIds) {
@@ -1425,7 +1417,7 @@ public class PetListActivity extends BaseActivity implements
     }
     private void setTempFiltersAccordingToFamilyOrFoundationPreferences() {
 
-        if (mUser.getIF()) {
+        if (mUser.getIF() && mFoundation!=null) {
             if (!TextUtils.isEmpty(mFoundation.getSrT())) mTempSortOrder = mFoundation.getSrT();
             else mTempSortOrder = Utilities.getFlag(getApplicationContext()).getString(R.string.distance_ascending);
 
@@ -1448,7 +1440,7 @@ public class PetListActivity extends BaseActivity implements
 
             mTempPetDistance = mFoundation.getDP();
         }
-        else {
+        else if (!mUser.getIF() && mFamily!=null){
             if (!TextUtils.isEmpty(mFamily.getSrT())) mTempSortOrder = mFamily.getSrT();
             else mTempSortOrder = Utilities.getFlag(getApplicationContext()).getString(R.string.distance_ascending);
 

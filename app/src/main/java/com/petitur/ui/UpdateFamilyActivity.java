@@ -3,10 +3,13 @@ package com.petitur.ui;
 import android.content.Intent;
 import android.location.Address;
 import android.net.Uri;
-import android.support.annotation.NonNull;
-import android.support.design.widget.TextInputEditText;
-import android.support.v4.widget.NestedScrollView;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.design.widget.TextInputEditText;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
+import android.support.v4.widget.NestedScrollView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -17,13 +20,18 @@ import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.firebase.ui.auth.IdpResponse;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.GeoPoint;
 import com.petitur.R;
 import com.petitur.adapters.ImagesRecycleViewAdapter;
-import com.petitur.data.*;
+import com.petitur.data.Family;
+import com.petitur.data.FirebaseDao;
+import com.petitur.data.Foundation;
+import com.petitur.data.MapMarker;
+import com.petitur.data.Pet;
+import com.petitur.data.User;
+import com.petitur.resources.GeoAdressLookupAsyncTaskLoader;
 import com.petitur.resources.Utilities;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
@@ -37,7 +45,8 @@ import butterknife.Unbinder;
 
 public class UpdateFamilyActivity extends BaseActivity implements
         FirebaseDao.FirebaseOperationsHandler,
-        ImagesRecycleViewAdapter.ImageClickHandler {
+        ImagesRecycleViewAdapter.ImageClickHandler,
+        LoaderManager.LoaderCallbacks<Address> {
 
 
     //region Parameters
@@ -78,6 +87,7 @@ public class UpdateFamilyActivity extends BaseActivity implements
     private Uri[] mTempImageUris;
     private boolean mCurrentlySyncingImages;
     private boolean mRequireOnlineSync;
+    private boolean mAlreadyGotGeoAddress;
     //endregion
 
 
@@ -90,6 +100,9 @@ public class UpdateFamilyActivity extends BaseActivity implements
         getExtras();
         initializeParameters();
         if (mFamily==null || TextUtils.isEmpty(mFamily.getUI())) getFamilyProfileFromFirebase();
+        updateLayoutWithUserData();
+        updateLayoutWithFamilyData();
+        updateFamilyWithUserInput();
         setupPetImagesRecyclerView();
         Utilities.displayObjectImageInImageView(getApplicationContext(), mFamily, "mainImage", mImageViewMain);
     }
@@ -125,20 +138,6 @@ public class UpdateFamilyActivity extends BaseActivity implements
             }
             else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
                 Exception error = result.getError();
-            }
-        }
-        if (requestCode == Utilities.FIREBASE_SIGN_IN_FLAG) {
-            IdpResponse response = IdpResponse.fromResultIntent(data);
-
-            if (resultCode == RESULT_OK) {
-                // Successfully signed in
-                mCurrentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-                getFamilyProfileFromFirebase();
-            } else {
-                // Sign in failed. If response is null the user canceled the
-                // sign-in flow using the back button. Otherwise check
-                // response.getError().getErrorCode() and handle the error.
-                // ...
             }
         }
     }
@@ -177,6 +176,11 @@ public class UpdateFamilyActivity extends BaseActivity implements
 
                 if (mFamilyCriticalParametersSet) {
                     mFirebaseDao.updateObject(mFamily);
+
+                    //Return the updated Family to the TaskSelectionActivity
+                    Intent data = new Intent();
+                    data.putExtra(getString(R.string.family_profile_parcelable), mFamily);
+                    setResult(RESULT_OK, data);
                     finish();
                 }
                 else Toast.makeText(getApplicationContext(), R.string.family_not_saved, Toast.LENGTH_SHORT).show();
@@ -245,25 +249,25 @@ public class UpdateFamilyActivity extends BaseActivity implements
         mCurrentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         mFirebaseAuth = FirebaseAuth.getInstance();
 
+        if (mCurrentFirebaseUser != null) {
+            mNameFromFirebase = mCurrentFirebaseUser.getDisplayName();
+            mEmailFromFirebase = mCurrentFirebaseUser.getEmail();
+            mPhotoUriFromFirebase = mCurrentFirebaseUser.getPhotoUrl();
+            mFirebaseUid = mCurrentFirebaseUser.getUid();
+            boolean emailVerified = mCurrentFirebaseUser.isEmailVerified();
+        }
+
         mFamilyCriticalParametersSet = false;
         mImagesReady = new boolean[]{false, false, false, false, false, false};
         mTempImageUris = new Uri[]{null, null, null, null, null, null, null};
         mFamilyFound = false;
         mCurrentlySyncingImages = false;
+        mAlreadyGotGeoAddress = false;
 
     }
     private void getFamilyProfileFromFirebase() {
         if (mCurrentFirebaseUser != null) {
-            // Name, email address, and profile photo Url
-            mNameFromFirebase = mCurrentFirebaseUser.getDisplayName();
-            mEmailFromFirebase = mCurrentFirebaseUser.getEmail();
-            mPhotoUriFromFirebase = mCurrentFirebaseUser.getPhotoUrl();
-
-            // Check if user's email is verified
-            boolean emailVerified = mCurrentFirebaseUser.isEmailVerified();
-
             //Setting the requested Family's id
-            mFirebaseUid = mCurrentFirebaseUser.getUid();
             mFamily.setOI(mFirebaseUid);
 
             //Initializing the local parameters that depend on this family, used in the rest of the activity
@@ -279,7 +283,8 @@ public class UpdateFamilyActivity extends BaseActivity implements
     }
     private void updateLayoutWithFamilyData() {
 
-        if (mEditTextPseudonym==null) return;
+        if (mEditTextPseudonym==null || mFamily==null) return;
+
         mEditTextPseudonym.setText(mFamily.getPn());
         mEditTextCell.setText(mFamily.getCp());
         mEditTextCountry.setText(mFamily.getCn());
@@ -334,6 +339,8 @@ public class UpdateFamilyActivity extends BaseActivity implements
         if (mFirebaseAuth!=null) mFirebaseAuth.removeAuthStateListener(mAuthStateListener);
     }
     private void updateFamilyWithUserInput() {
+        if (mFamily == null) return;
+
         mFamily.setOI(mFirebaseUid);
         mFamily.setCp(mEditTextCell.getText().toString());
         mFamily.setEm(mEditTextEmail.getText().toString());
@@ -350,15 +357,7 @@ public class UpdateFamilyActivity extends BaseActivity implements
         mFamily.setSe(state);
 
         String addressString = Utilities.getAddressStringFromComponents(null, null, city, state, country);
-        Address address = Utilities.getAddressObjectFromAddressString(this, addressString);
-        if (address!=null) {
-            String geoAddressCountry = address.getCountryCode();
-            double geoAddressLatitude = address.getLatitude();
-            double geoAddressLongitude = address.getLongitude();
-
-            mFamily.setGaC(geoAddressCountry);
-            mFamily.setGeo(new GeoPoint(geoAddressLatitude, geoAddressLongitude));
-        }
+        if (!mAlreadyGotGeoAddress) startGeoAddressLookupThread(addressString);
 
         mFamily.setXp(mEditTextExperience.getText().toString());
 
@@ -374,7 +373,18 @@ public class UpdateFamilyActivity extends BaseActivity implements
             mFamilyCriticalParametersSet = true;
         }
 
-        if (TextUtils.isEmpty(mFamily.getUI())) Log.i(DEBUG_TAG, "Error: Family has empty unique ID!");
+        //if (TextUtils.isEmpty(mFamily.getUI())) Log.i(DEBUG_TAG, "Error: Family has empty unique ID!");
+
+    }
+    private void startGeoAddressLookupThread(String addressString) {
+
+        LoaderManager loaderManager = getSupportLoaderManager();
+        Loader<Address> imageSyncAsyncTaskLoader = loaderManager.getLoader(Utilities.GEO_ADDRESS_LOOKUP_LOADER);
+        Bundle args = new Bundle();
+        args.putString(getString(R.string.bundled_address_string), addressString);
+        if (!mAlreadyGotGeoAddress && imageSyncAsyncTaskLoader==null) {
+            loaderManager.initLoader(Utilities.GEO_ADDRESS_LOOKUP_LOADER, args, this);
+        }
 
     }
 
@@ -480,4 +490,23 @@ public class UpdateFamilyActivity extends BaseActivity implements
         mFamily.setIUT(uploadTimes);
     }
 
+    //Communication with GeoAddressLookupLoader
+    @NonNull @Override public Loader<Address> onCreateLoader(int id, @Nullable Bundle args) {
+        String addressString = (args==null)? "" : args.getString(getString(R.string.bundled_address_string), "");
+        return new GeoAdressLookupAsyncTaskLoader(this, addressString);
+    }
+    @Override public void onLoadFinished(@NonNull Loader<Address> loader, Address data) {
+        if (data!=null ) {
+            String geoAddressCountry = data.getCountryCode();
+            double geoAddressLatitude = data.getLatitude();
+            double geoAddressLongitude = data.getLongitude();
+
+            mFamily.setGaC(geoAddressCountry);
+            mFamily.setGeo(new GeoPoint(geoAddressLatitude, geoAddressLongitude));
+        }
+        getLoaderManager().destroyLoader(Utilities.GEO_ADDRESS_LOOKUP_LOADER);
+    }
+    @Override public void onLoaderReset(@NonNull Loader<Address> loader) {
+
+    }
 }

@@ -15,6 +15,22 @@
       },
       "oauth_client": [
         {
+          "client_id": "59569884760-gnlaa8tlluu5eo6ldfsavfar336krc0q.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.petitur",
+            "certificate_hash": "ea6d7d816ab0a82101d0e7ec9162aac63bcca750"
+          }
+        },
+        {
+          "client_id": "59569884760-i8vj8mo9u13fij6ft6sl08p5acml6sa5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.petitur",
+            "certificate_hash": "1f8e6909ad2d82c3bcd57ea11e4c76871d4413f5"
+          }
+        },
+        {
           "client_id": "59569884760-mujjc3h6vjb8ha98me0cnliks9g9643v.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -29,8 +45,13 @@
           "status": 1
         },
         "appinvite_service": {
-          "status": 1,
-          "other_platform_oauth_client": []
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "59569884760-mujjc3h6vjb8ha98me0cnliks9g9643v.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         },
         "ads_service": {
           "status": 2

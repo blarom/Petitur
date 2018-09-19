@@ -79,7 +79,7 @@
     <string name="please_sign_in_to_see_map_markers">נא התחבר כדי לראות את הסימנים שלך במפה.</string>
     <string name="marker_title">כותרת הסימן</string>
     <string name="marker_description">תיאור</string>
-    <string name="please_enter_marker_info">נא כתוב את תיאור הסימן.</string>
+    <string name="creating_new_map_marker">ייצור נקודת ציון חדשה במפה</string>
     <string name="street_incl_number">רחוב (כולל מספר ברחוב)</string>
     <string name="city">עיר</string>
     <string name="state">תת-מדינה</string>
@@ -171,7 +171,7 @@
     <string name="welcome">ברוכים הבאים</string>
     <string name="welcome_night">לילה מקסים,\u0020</string>
     <string name="welcome_morning">בוקר טוב,\u0020</string>
-    <string name="welcome_day">שלום\u0020</string>
+    <string name="welcome_day">שלום,\u0020</string>
     <string name="welcome_evening">ערב טוב,\u0020</string>
     <string name="dialog_filter_all_pets">כל החיות</string>
     <string name="dialog_filter_my_favorites">המועדפים שלי</string>
@@ -261,7 +261,7 @@
     <string name="family_explanation">- משפחות מספקות בית זמני או קבוע לחיות מחמד.</string>
     <string name="glad_you_want_to_help">אנו שמחים שאתם רוצים לעזור לחיות מחמד למצוא בית חם!</string>
     <string name="if_organization_click_this_link">אתם מוגדרים כמשפחה כברירת מחדל. אם אתם עמותה, אתם לחצו על הלינק על מנת לשלוח מייל עם פרטיכם, כדי שנוכל להגדיר את החשבון שלכם בהתאם.</string>
-    <string name="link" translatable="false">לינק</string>
+    <string name="link">לינק</string>
     <string name="must_enter_valid_values_to_continue">הינכם נדרשים למלא את הערכים עבור כלל השדות על מנת להמשיך.</string>
     <string name="new_user">משתמש חדש</string>
     <string name="no_email_clients_installed">לא קיימות אפליקציות מייל במכשירכם.</string>

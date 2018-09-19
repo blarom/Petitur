@@ -132,6 +132,7 @@ public class ShowFoundationProfileFragment extends Fragment implements
         mImageIndicator.setRadius(5 * density);
     }
     private void updateProfileFieldsOnScreen() {
+        if (mFoundation==null) return;
 
         mTextViewFoundationName.setText(mFoundation.getNm());
 
@@ -188,7 +189,7 @@ public class ShowFoundationProfileFragment extends Fragment implements
 
         setupImagesViewPager();
 
-        mSelectedImageUriString = mDisplayedImageList.get(0).toString();
+        if (mDisplayedImageList.get(0)!=null) mSelectedImageUriString = mDisplayedImageList.get(0).toString();
     }
     private void openPhoneDialer() {
         //inspired by: https://stackoverflow.com/questions/36309049/how-to-open-dialer-on-phone-with-a-selected-number-in-android

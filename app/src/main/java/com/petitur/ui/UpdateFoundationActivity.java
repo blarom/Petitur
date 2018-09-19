@@ -4,7 +4,10 @@ import android.content.Intent;
 import android.location.Address;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
 import android.support.v4.widget.NestedScrollView;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -23,6 +26,7 @@ import com.google.firebase.firestore.GeoPoint;
 import com.petitur.R;
 import com.petitur.adapters.ImagesRecycleViewAdapter;
 import com.petitur.data.*;
+import com.petitur.resources.GeoAdressLookupAsyncTaskLoader;
 import com.petitur.resources.Utilities;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
@@ -36,7 +40,8 @@ import butterknife.Unbinder;
 
 public class UpdateFoundationActivity extends BaseActivity  implements
         FirebaseDao.FirebaseOperationsHandler,
-        ImagesRecycleViewAdapter.ImageClickHandler {
+        ImagesRecycleViewAdapter.ImageClickHandler,
+        LoaderManager.LoaderCallbacks<Address> {
 
 
     //region Parameters
@@ -78,6 +83,7 @@ public class UpdateFoundationActivity extends BaseActivity  implements
     private Uri[] mTempImageUris;
     private boolean mCurrentlySyncingImages;
     private boolean mRequireOnlineSync;
+    private boolean mAlreadyGotGeoAddress;
     //endregion
 
 
@@ -90,6 +96,8 @@ public class UpdateFoundationActivity extends BaseActivity  implements
         getExtras();
         initializeParameters();
         if (mFoundation==null || TextUtils.isEmpty(mFoundation.getUI())) getFoundationProfileFromFirebase();
+        updateLayoutWithFoundationData();
+        updateFoundationWithUserInput();
         setupFoundationImagesRecyclerView();
         Utilities.displayObjectImageInImageView(getApplicationContext(), mFoundation, "mainImage", mImageViewMain);
     }
@@ -124,21 +132,6 @@ public class UpdateFoundationActivity extends BaseActivity  implements
             }
             else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
                 Exception error = result.getError();
-            }
-        }
-        if (requestCode == Utilities.FIREBASE_SIGN_IN_FLAG) {
-            IdpResponse response = IdpResponse.fromResultIntent(data);
-
-            if (resultCode == RESULT_OK) {
-                // Successfully signed in
-                mCurrentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-                getFoundationProfileFromFirebase();
-                // ...
-            } else {
-                // Sign in failed. If response is null the user canceled the
-                // sign-in flow using the back button. Otherwise check
-                // response.getError().getErrorCode() and handle the error.
-                // ...
             }
         }
     }
@@ -177,6 +170,11 @@ public class UpdateFoundationActivity extends BaseActivity  implements
 
                 if (mFoundationCriticalParametersSet) {
                     mFirebaseDao.updateObject(mFoundation);
+
+                    //Return the updated Foundation to the TaskSelectionActivity
+                    Intent data = new Intent();
+                    data.putExtra(getString(R.string.foundation_profile_parcelable), mFoundation);
+                    setResult(RESULT_OK, data);
                     finish();
                 }
                 else Toast.makeText(getApplicationContext(), R.string.foundation_not_saved, Toast.LENGTH_SHORT).show();
@@ -243,20 +241,19 @@ public class UpdateFoundationActivity extends BaseActivity  implements
         mCurrentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         mFirebaseAuth = FirebaseAuth.getInstance();
         mCurrentlySyncingImages = false;
+        mAlreadyGotGeoAddress = false;
 
-    }
-    private void getFoundationProfileFromFirebase() {
         if (mCurrentFirebaseUser != null) {
-            // Name, email address, and profile photo Url
             mNameFromFirebase = mCurrentFirebaseUser.getDisplayName();
             mEmailFromFirebase = mCurrentFirebaseUser.getEmail();
             mPhotoUriFromFirebase = mCurrentFirebaseUser.getPhotoUrl();
-
-            // Check if user's email is verified
-            boolean emailVerified = mCurrentFirebaseUser.isEmailVerified();
-
-            //Setting the requested Foundation's id
             mFirebaseUid = mCurrentFirebaseUser.getUid();
+            boolean emailVerified = mCurrentFirebaseUser.isEmailVerified();
+        }
+    }
+    private void getFoundationProfileFromFirebase() {
+        if (mCurrentFirebaseUser != null) {
+            //Setting the requested Foundation's id
             mFoundation.setOI(mFirebaseUid);
 
             //Initializing the local parameters that depend on this family, used in the rest of the activity
@@ -267,7 +264,8 @@ public class UpdateFoundationActivity extends BaseActivity  implements
         }
     }
     private void updateLayoutWithFoundationData() {
-        if (mEditTextName==null) return;
+        if (mEditTextName==null || mFoundation==null) return;
+
         mEditTextName.setText(mFoundation.getNm());
         mEditTextContactPhone.setText(mFoundation.getCP());
         mEditTextContactEmail.setText(mFoundation.getCE());
@@ -320,6 +318,8 @@ public class UpdateFoundationActivity extends BaseActivity  implements
         if (mFirebaseAuth!=null) mFirebaseAuth.removeAuthStateListener(mAuthStateListener);
     }
     private void updateFoundationWithUserInput() {
+        if (mFoundation==null) return;
+
         mFoundation.setOI(mFirebaseUid);
         mFoundation.setCP(mEditTextContactPhone.getText().toString());
         mFoundation.setCE(mEditTextContactEmail.getText().toString());
@@ -340,16 +340,9 @@ public class UpdateFoundationActivity extends BaseActivity  implements
         mFoundation.setSt(street);
         mFoundation.setStN(streeNumber);
 
-        String addressString = Utilities.getAddressStringFromComponents(streeNumber, street, city, state, country);
-        Address address = Utilities.getAddressObjectFromAddressString(this, addressString);
-        if (address!=null) {
-            String geoAddressCountry = address.getCountryCode();
-            double geoAddressLatitude = address.getLatitude();
-            double geoAddressLongitude = address.getLongitude();
 
-            mFoundation.setGaC(geoAddressCountry);
-            mFoundation.setGeo(new GeoPoint(geoAddressLatitude, geoAddressLongitude));
-        }
+        String addressString = Utilities.getAddressStringFromComponents(streeNumber, street, city, state, country);
+        if (!mAlreadyGotGeoAddress) startGeoAddressLookupThread(addressString);
 
         mFoundation.setSt(mEditTextStreet.getText().toString());
         mFoundation.setStN(mEditTextStreetNumber.getText().toString());
@@ -364,6 +357,17 @@ public class UpdateFoundationActivity extends BaseActivity  implements
         }
 
         if (TextUtils.isEmpty(mFoundation.getUI())) Log.i(DEBUG_TAG, "Error: TinDog Foundation has empty unique ID!");
+    }
+    private void startGeoAddressLookupThread(String addressString) {
+
+        LoaderManager loaderManager = getSupportLoaderManager();
+        Loader<Address> imageSyncAsyncTaskLoader = loaderManager.getLoader(Utilities.GEO_ADDRESS_LOOKUP_LOADER);
+        Bundle args = new Bundle();
+        args.putString(getString(R.string.bundled_address_string), addressString);
+        if (!mAlreadyGotGeoAddress && imageSyncAsyncTaskLoader==null) {
+            loaderManager.initLoader(Utilities.GEO_ADDRESS_LOOKUP_LOADER, args, this);
+        }
+
     }
 
 
@@ -461,5 +465,25 @@ public class UpdateFoundationActivity extends BaseActivity  implements
     }
     @Override public void onImageUploaded(List<String> uploadTimes) {
         mFoundation.setIUT(uploadTimes);
+    }
+
+    //Communication with GeoAddressLookupLoader
+    @NonNull @Override public Loader<Address> onCreateLoader(int id, @Nullable Bundle args) {
+        String addressString = (args==null)? "" : args.getString(getString(R.string.bundled_address_string), "");
+        return new GeoAdressLookupAsyncTaskLoader(this, addressString);
+    }
+    @Override public void onLoadFinished(@NonNull Loader<Address> loader, Address data) {
+        if (data!=null ) {
+            String geoAddressCountry = data.getCountryCode();
+            double geoAddressLatitude = data.getLatitude();
+            double geoAddressLongitude = data.getLongitude();
+
+            mFoundation.setGaC(geoAddressCountry);
+            mFoundation.setGeo(new GeoPoint(geoAddressLatitude, geoAddressLongitude));
+        }
+        getLoaderManager().destroyLoader(Utilities.GEO_ADDRESS_LOOKUP_LOADER);
+    }
+    @Override public void onLoaderReset(@NonNull Loader<Address> loader) {
+
     }
 }

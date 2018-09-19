@@ -54,7 +54,6 @@ public class TaskSelectionActivity extends BaseActivity implements
     @BindView(R.id.task_selection_please_sign_in) TextView mPleaseSignInTextView;
     @BindView(R.id.task_selection_welcome) TextView mWelcomeTextView;
     private static final String DEBUG_TAG = "Petitur TaskSelection";
-    private static final int NEW_USER_FLAG = 101;
     public static final int APP_PERMISSIONS_REQUEST_CODE_WRITE_EXTERNAL_STORAGE = 555;
     private static final int APP_PERMISSIONS_REQUEST_CODE_ACCESS_FINE_LOCATION = 123;
     private FirebaseAuth mFirebaseAuth;
@@ -120,7 +119,7 @@ public class TaskSelectionActivity extends BaseActivity implements
                 // ...
             }
         }
-        if (requestCode == NEW_USER_FLAG) {
+        if (requestCode == Utilities.NEW_USER_FLAG) {
 
             if (resultCode == RESULT_OK) {
                 boolean mustRestartApp = false;
@@ -128,7 +127,9 @@ public class TaskSelectionActivity extends BaseActivity implements
                 boolean returnedNullFoundation = true;
                 if (data.hasExtra(getString(R.string.bundled_user))) {
                     User user = data.getParcelableExtra(getString(R.string.bundled_user));
-                    if (!user.getLg().equals(mUser.getLg())) mustRestartApp = true;
+                    if (!user.getLg().equals(mUser.getLg())) {
+                        mustRestartApp = true;
+                    }
                     mUser = user;
                     mFirebaseDao.updateObject(mUser);
                 }
@@ -149,14 +150,36 @@ public class TaskSelectionActivity extends BaseActivity implements
                     }
                 }
 
-                if (mustRestartApp) Utilities.restartApplication(TaskSelectionActivity.this);
-
-                if (returnedNullFamily && returnedNullFoundation) {
-                    Toast.makeText(this, R.string.must_complete_registration, Toast.LENGTH_SHORT).show();
-                    //Utilities.restartApplication(this);
-                    finishAffinity(); //closes the app
+                if (mustRestartApp) {
+                    mUser.setIFT(true);
+                    mFirebaseDao.updateObject(mUser);
+                    Utilities.restartApplication(TaskSelectionActivity.this);
+                }
+                else {
+                    if (returnedNullFamily && returnedNullFoundation) {
+                        mUser.setIFT(true);
+                        mFirebaseDao.updateObject(mUser);
+                        Toast.makeText(this, R.string.must_complete_registration, Toast.LENGTH_SHORT).show();
+                        //Utilities.restartApplication(this);
+                        finishAffinity(); //closes the app
+                    }
+                    else {
+                        mUser.setIFT(false);
+                        mFirebaseDao.updateObject(mUser);
+                    }
                 }
 
+            }
+        }
+        if (requestCode == Utilities.UPDATE_PROFILE_FLAG) {
+
+            if (resultCode == RESULT_OK) {
+                if (data.hasExtra(getString(R.string.family_profile_parcelable))) {
+                    mFamily = data.getParcelableExtra(getString(R.string.family_profile_parcelable));
+                }
+                if (data.hasExtra(getString(R.string.foundation_profile_parcelable))) {
+                    mFoundation = data.getParcelableExtra(getString(R.string.foundation_profile_parcelable));
+                }
             }
         }
     }
@@ -365,7 +388,7 @@ public class TaskSelectionActivity extends BaseActivity implements
         mPleaseSignInTextView.setVisibility(View.VISIBLE);
     }
     private void openPetList(boolean requestedFavorites) {
-        if (!mUser.getIFT() && (mUser.getIF() || !mUser.getIF())) return;
+        if (mUser.getIFT()) return;
         Intent intent = new Intent(this, PetListActivity.class);
         Bundle bundle = new Bundle();
         bundle.putParcelable(getString(R.string.bundled_user), mUser);
@@ -381,13 +404,15 @@ public class TaskSelectionActivity extends BaseActivity implements
         Intent intent = new Intent(this, NewUserActivity.class);
         Bundle bundle = new Bundle();
         bundle.putParcelable(getString(R.string.bundled_user), mUser);
+        if (mFamily!=null) bundle.putParcelable(getString(R.string.family_profile_parcelable), mFamily);
+        if (mFoundation!=null) bundle.putParcelable(getString(R.string.foundation_profile_parcelable), mFoundation);
         bundle.putString(getString(R.string.firebase_name), mCurrentFirebaseUser.getDisplayName());
         intent.putExtras(bundle);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-        startActivityForResult(intent, NEW_USER_FLAG);
+        startActivityForResult(intent, Utilities.NEW_USER_FLAG);
     }
     private void openUpdatePetProfile(@Nonnull Pet pet) {
-        if (!mUser.getIFT() && (mUser.getIF() || !mUser.getIF())) return;
+        if (mUser.getIFT()) return;
         Intent intent = new Intent(this, UpdatePetActivity.class);
         Bundle bundle = new Bundle();
         bundle.putString(getString(R.string.selected_pet_id), pet.getUI());
@@ -464,6 +489,7 @@ public class TaskSelectionActivity extends BaseActivity implements
         }
         else {
             mFamily = families.get(0);
+            if (mUser.getIFT()) openNewUserActivity();
         }
     }
     @Override public void onFoundationListFound(List<Foundation> foundations) {
@@ -474,6 +500,7 @@ public class TaskSelectionActivity extends BaseActivity implements
         }
         else {
             mFoundation = foundations.get(0);
+            if (mUser.getIFT()) openNewUserActivity();
         }
     }
     @Override public void onUserListFound(List<User> users) {
@@ -492,11 +519,8 @@ public class TaskSelectionActivity extends BaseActivity implements
         else {
             mUser = users.get(0);
             modifyUserInterfaceAccordingToCredentials();
-            if (mUser.getIFT()) openNewUserActivity();
-            else {
-                if (mUser.getIF()) getFoundationProfile();
-                else getFamilyProfile();
-            }
+            if (mUser.getIF()) getFoundationProfile();
+            else getFamilyProfile();
         }
     }
     @Override public void onMapMarkerListFound(List<MapMarker> mapMarkers) {
