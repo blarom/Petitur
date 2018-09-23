@@ -9,7 +9,7 @@ import com.petitur.data.*;
 
 import java.util.List;
 
-public class ImageSyncAsyncTaskLoader extends AsyncTaskLoader<List<Object>> implements
+public class ImageSyncAsyncTaskLoader extends AsyncTaskLoader<Object> implements
         FirebaseDao.FirebaseOperationsHandler {
 
 

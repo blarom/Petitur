@@ -16,13 +16,15 @@ import com.petitur.data.User;
 
 import java.util.List;
 
-public class GeoAdressLookupAsyncTaskLoader extends AsyncTaskLoader<Address> {
+public class GeoAdressLookupAsyncTaskLoader extends AsyncTaskLoader<Object> {
 
     private final String mAddressString;
+    private final String objectId;
 
-    public GeoAdressLookupAsyncTaskLoader(Context context, String addressString) {
+    public GeoAdressLookupAsyncTaskLoader(Context context, String addressString, String objectId) {
         super(context);
         this.mAddressString = addressString;
+        this.objectId = objectId;
     }
 
     //Service methods
@@ -30,8 +32,8 @@ public class GeoAdressLookupAsyncTaskLoader extends AsyncTaskLoader<Address> {
         if (TextUtils.isEmpty(mAddressString)) return;
         forceLoad();
     }
-    @Override public Address loadInBackground() {
-        return Utilities.getAddressObjectFromAddressString(getContext(), mAddressString);
+    @Override public Object loadInBackground() {
+        return new Object[] {Utilities.getAddressObjectFromAddressString(getContext(), mAddressString), objectId};
     }
 
 }

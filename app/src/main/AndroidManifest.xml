@@ -37,6 +37,11 @@
             android:name=".ui.MapActivity"
             android:label="@string/title_activity_map">
         </activity>
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="@string/google_maps_key"/>
+
         <activity
             android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
             android:theme="@style/Base.Theme.AppCompat"/> <!-- optional (needed if default theme has no action bar) -->
@@ -59,9 +64,6 @@
                 android:resource="@xml/provider_paths"/>
         </provider>
 
-        <meta-data
-            android:name="com.google.android.geo.API_KEY"
-            android:value="@string/google_maps_key"/>
 
         <activity android:name=".ui.NewUserActivity">
         </activity>

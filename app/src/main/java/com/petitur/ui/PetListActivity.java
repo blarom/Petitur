@@ -1,5 +1,6 @@
 package com.petitur.ui;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -25,6 +26,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
@@ -36,6 +38,7 @@ import android.widget.ToggleButton;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.GeoPoint;
 import com.petitur.R;
 import com.petitur.adapters.PetListRecycleViewAdapter;
 import com.petitur.adapters.VetEventRecycleViewAdapter;
@@ -47,6 +50,7 @@ import com.petitur.data.Pet;
 import com.petitur.data.QueryCondition;
 import com.petitur.data.User;
 import com.petitur.resources.CustomLocationListener;
+import com.petitur.resources.GeoAdressLookupAsyncTaskLoader;
 import com.petitur.resources.ImageSyncAsyncTaskLoader;
 import com.petitur.resources.Utilities;
 
@@ -63,7 +67,7 @@ import butterknife.Unbinder;
 public class PetListActivity extends BaseActivity implements
         PetListRecycleViewAdapter.PetListItemClickHandler,
         CustomLocationListener.LocationListenerHandler,
-        LoaderManager.LoaderCallbacks<List<Object>>,
+        LoaderManager.LoaderCallbacks<Object>,
         ImageSyncAsyncTaskLoader.OnImageSyncOperationsHandler,
         FirebaseDao.FirebaseOperationsHandler {
 
@@ -178,6 +182,7 @@ public class PetListActivity extends BaseActivity implements
     private CheckBox dialogFilterCheckBoxCastrated;
     private CheckBox dialogFilterCheckBoxHouseTrained;
     private CheckBox dialogFilterCheckBoxSpecialNeeds;
+    private GeoAdressLookupAsyncTaskLoader mGeoAddressLookupAsyncTaskLoader;
     //endregion
 
 
@@ -500,6 +505,59 @@ public class PetListActivity extends BaseActivity implements
         //Get the dialog view
         LayoutInflater inflater = LayoutInflater.from(this);
         final View dialogView = inflater.inflate(R.layout.dialog_filter, null);
+
+        setupDialogLayout(dialogView);
+
+        //region Building the dialog
+        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
+        builder.setTitle(R.string.filters);
+        builder.setPositiveButton(R.string.save_and_go, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+
+                saveSearchParametersToProfile();
+                requestFilteredListFromFirebase();
+
+                dialog.dismiss();
+            }
+        });
+        builder.setNeutralButton(getString(R.string.reset), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+            }
+        });
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                dialog.dismiss();
+            }
+        });
+
+        //if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) builder.setView(dialogView);
+        //else builder.setMessage(R.string.device_version_too_low);
+
+        builder.setView(dialogView);
+
+        android.app.AlertDialog dialog = builder.create();
+
+        //Setting the behavior of the reset button
+        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+
+            @Override
+            public void onShow(DialogInterface dialog) {
+                Button button = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_NEUTRAL);
+                button.setOnClickListener(new View.OnClickListener() {
+                    @Override public void onClick(View view) {
+                        resetButtonsAndTempSearchParameters();
+                        setupDialogLayout(dialogView);
+                    }
+                });
+            }
+        });
+
+        dialog.show();
+        //endregion
+
+    }
+    private void setupDialogLayout(final View dialogView) {
 
         //region Setting the sort order
         mSortOptions = new ArrayList<>();
@@ -960,42 +1018,6 @@ public class PetListActivity extends BaseActivity implements
         String distance = ""+mTempPetDistance/1000;
         mDialogFilterEditTextDistance.setText(distance);
         //endregion
-
-        //region Building the dialog
-        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
-        builder.setTitle(R.string.filters);
-        builder.setPositiveButton(R.string.save_and_go, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-
-                saveSearchParametersToProfile();
-                requestFilteredListFromFirebase();
-
-                dialog.dismiss();
-            }
-        });
-        builder.setNeutralButton(getString(R.string.reset), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-
-                resetButtonsAndTempSearchParameters();
-
-            }
-        });
-        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                dialog.dismiss();
-            }
-        });
-
-        //if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) builder.setView(dialogView);
-        //else builder.setMessage(R.string.device_version_too_low);
-
-        builder.setView(dialogView);
-
-        android.app.AlertDialog dialog = builder.create();
-        dialog.show();
-        //endregion
-
     }
     private void modifyBreedOptionAccordingToPetType(View dialogView) {
 
@@ -1108,10 +1130,8 @@ public class PetListActivity extends BaseActivity implements
         mTempSelectedSize = mPetSizesList.get(0);
 
         String breedToDisplay = Utilities.getDisplayedTextFromFlagText(mDisplayedAvailableDogBreeds, mAvailableDogBreeds, mAvailableDogBreeds.get(0));
-        mDialogFilterAutoCompleteTextViewBreed.setText(breedToDisplay);
-        if (mDialogFilterSpinnerCoatLength !=null) {
-            mDialogFilterSpinnerCoatLength.setSelection(0, false);
-        }
+        if (mDialogFilterAutoCompleteTextViewBreed !=null) mDialogFilterAutoCompleteTextViewBreed.setText(breedToDisplay);
+        if (mDialogFilterSpinnerCoatLength !=null) mDialogFilterSpinnerCoatLength.setSelection(0, false);
 
         dialogFilterCheckBoxGoodWithKids.setChecked(false);
         mTempSelectedGoodWithKids = false;
@@ -1129,7 +1149,7 @@ public class PetListActivity extends BaseActivity implements
         mTempSelectedSpecialNeeds = false;
 
         mDialogFilterEditTextDistance.setText("0");
-        mTempPetDistance = 0;
+        mTempPetDistance = getResources().getInteger(R.integer.default_pet_distance);
     }
     private void saveSearchParametersToProfile() {
 
@@ -1393,6 +1413,12 @@ public class PetListActivity extends BaseActivity implements
     private void getPetsAtDistance() {
         mPetsAtDistance = new ArrayList<>();
         for (Pet pet : mPetList) {
+            if (pet.getGeo()==null) {
+                String addressString = Utilities.getAddressStringFromComponents(pet.getStN(), pet.getSt(), pet.getCt(), pet.getSe(), pet.getCn());
+                startGeoAddressLookupThread(addressString, pet.getUI());
+                continue;
+            }
+
             int distance = Utilities.getDistanceFromLatLong(mUserLatitude, mUserLongitude, pet.getGeo().getLatitude(), pet.getGeo().getLongitude());
             if (distance <= mPetDistance) {
                 pet.setDt(distance);
@@ -1496,6 +1522,18 @@ public class PetListActivity extends BaseActivity implements
             startActivity(intent);
         }
     }
+    private void startGeoAddressLookupThread(String addressString, String petId) {
+
+        LoaderManager loaderManager = getSupportLoaderManager();
+        Loader<Address> geoSyncAsyncTaskLoader = loaderManager.getLoader(Utilities.GEO_ADDRESS_LOOKUP_LOADER);
+        Bundle args = new Bundle();
+        args.putString(getString(R.string.bundled_address_string), addressString);
+        args.putString(getString(R.string.pet_profile_id), petId);
+        if (geoSyncAsyncTaskLoader ==null) {
+            loaderManager.initLoader(Utilities.GEO_ADDRESS_LOOKUP_LOADER, args, this);
+        }
+
+    }
 
 
     //View click listeners
@@ -1557,7 +1595,7 @@ public class PetListActivity extends BaseActivity implements
     }
 
     //Communication with Loader
-    @NonNull @Override public Loader<List<Object>> onCreateLoader(int id, @Nullable Bundle args) {
+    @NonNull @Override public Loader<Object> onCreateLoader(int id, @Nullable Bundle args) {
 
         if (id == LIST_MAIN_IMAGES_SYNC_LOADER && mImageSyncAsyncTaskLoader==null) {
             mImageSyncAsyncTaskLoader =  new ImageSyncAsyncTaskLoader(this, getString(R.string.task_sync_list_main_images),
@@ -1568,23 +1606,46 @@ public class PetListActivity extends BaseActivity implements
             mAddressLanguageSyncAsyncTaskLoader =  new AddressLanguageAsyncTaskLoader(this, mPetsAtDistance);
             return mAddressLanguageSyncAsyncTaskLoader;
         }
+        else if (id == Utilities.GEO_ADDRESS_LOOKUP_LOADER) {
+            String addressString = (args==null)? "" : args.getString(getString(R.string.bundled_address_string), "");
+            String petId = (args==null)? "" : args.getString(getString(R.string.pet_profile_id), "");
+            mGeoAddressLookupAsyncTaskLoader = new GeoAdressLookupAsyncTaskLoader(this, addressString, petId);
+            return mGeoAddressLookupAsyncTaskLoader;
+        }
         return new ImageSyncAsyncTaskLoader(this, "", null, null, null, null, this);
     }
-    @Override @SuppressWarnings("unchecked") public void onLoadFinished(@NonNull Loader<List<Object>> loader, List<Object> data) {
+    @Override @SuppressWarnings("unchecked") public void onLoadFinished(@NonNull Loader<Object> loader, Object data) {
         if (loader.getId() == LIST_MAIN_IMAGES_SYNC_LOADER) {
             mPetsRecyclerViewAdapter.notifyDataSetChanged();
             stopImageSyncThread();
         }
         else if (loader.getId() == LIST_ADDRESS_LANGUAGE_SYNC_LOADER) {
-            mPetsAtDistance = (List<Pet>)(Object) data;
+            mPetsAtDistance = (List<Pet>) data;
             mPetsRecyclerViewAdapter.setContents(mPetsAtDistance);
             if (getLoaderManager()!=null) getLoaderManager().destroyLoader(LIST_ADDRESS_LANGUAGE_SYNC_LOADER);
         }
+        else if (loader.getId() == Utilities.GEO_ADDRESS_LOOKUP_LOADER) {
+            if (data!=null) {
+                Object[] objectArray = (Object[]) data;
+                Address address = (Address) objectArray[0];
+                String petId = (String) objectArray[1];
+
+                String geoAddressCountry = address.getCountryCode();
+                double geoAddressLatitude = address.getLatitude();
+                double geoAddressLongitude = address.getLongitude();
+
+                GeoPoint geoPoint = new GeoPoint(geoAddressLatitude, geoAddressLongitude);
+                mFirebaseDao.updateObjectKeyValuePair(new Pet(petId), "geo", geoPoint);
+                mFirebaseDao.updateObjectKeyValuePair(new Pet(petId), "gaC", geoAddressCountry);
+
+            }
+            getLoaderManager().destroyLoader(Utilities.GEO_ADDRESS_LOOKUP_LOADER);
+        }
     }
-    @Override public void onLoaderReset(@NonNull Loader<List<Object>> loader) {
+    @Override public void onLoaderReset(@NonNull Loader<Object> loader) {
 
     }
-    @SuppressWarnings("unchecked") private static class AddressLanguageAsyncTaskLoader extends AsyncTaskLoader<List<Object>> {
+    @SuppressWarnings("unchecked") private static class AddressLanguageAsyncTaskLoader extends AsyncTaskLoader<Object> {
 
         private final List<Pet> mPets;
 
@@ -1598,12 +1659,12 @@ public class PetListActivity extends BaseActivity implements
             forceLoad();
         }
 
-        @Nullable @Override public List<Object> loadInBackground() {
+        @Nullable @Override public Object loadInBackground() {
 
             for (Pet pet : mPets) {
                 updatePetAddressWithLocalizedText(pet);
             }
-            return (List<Object>) (Object) mPets;
+            return mPets;
         }
 
         private void updatePetAddressWithLocalizedText(Pet pet) {

@@ -49,7 +49,7 @@ import butterknife.Unbinder;
 
 public class ShowPetProfileFragment extends Fragment implements
         ImageSyncAsyncTaskLoader.OnImageSyncOperationsHandler,
-        LoaderManager.LoaderCallbacks<List<Object>>,
+        LoaderManager.LoaderCallbacks<Object>,
         ImagesViewPagerAdapter.ImageClickHandler {
 
 
@@ -402,7 +402,7 @@ public class ShowPetProfileFragment extends Fragment implements
     }
 
     //Communication with Loader
-    @NonNull @Override public Loader<List<Object>> onCreateLoader(int id, @Nullable Bundle args) {
+    @NonNull @Override public Loader<Object> onCreateLoader(int id, @Nullable Bundle args) {
 
         if (id== SINGLE_OBJECT_IMAGES_SYNC_LOADER) {
             List<Pet> pets = new ArrayList<>();
@@ -413,13 +413,13 @@ public class ShowPetProfileFragment extends Fragment implements
         }
         return new ImageSyncAsyncTaskLoader(getContext(), "", null, null, null, null, this);
     }
-    @Override public void onLoadFinished(@NonNull Loader<List<Object>> loader, List<Object> data) {
+    @Override public void onLoadFinished(@NonNull Loader<Object> loader, Object data) {
         if (loader.getId() == SINGLE_OBJECT_IMAGES_SYNC_LOADER && !mAlreadyLoadedImages) {
             mAlreadyLoadedImages = true;
             displayImages();
         }
     }
-    @Override public void onLoaderReset(@NonNull Loader<List<Object>> loader) {
+    @Override public void onLoaderReset(@NonNull Loader<Object> loader) {
 
     }
 

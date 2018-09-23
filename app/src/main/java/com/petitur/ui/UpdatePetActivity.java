@@ -73,7 +73,7 @@ public class UpdatePetActivity extends BaseActivity implements
         ImagesRecycleViewAdapter.ImageClickHandler,
         VetEventRecycleViewAdapter.VetEventClickHandler,
         FosteringFamiliesRecycleViewAdapter.FosteringFamilyClickHandler,
-        LoaderManager.LoaderCallbacks<Address> {
+        LoaderManager.LoaderCallbacks<Object> {
 
 
     //region Parameters
@@ -697,6 +697,8 @@ public class UpdatePetActivity extends BaseActivity implements
         mPet.setHT(mCheckBoxHouseTrained.isChecked());
         mPet.setSN(mCheckBoxSpecialNeeds.isChecked());
 
+        mPet.setDte(Utilities.getCurrentDate());
+
         if ((years==0 && months==0)
                 || (nameLocal.length() < 2 && name.length() < 2)
                 || country.length() < 2 || city.length() < 1 || street.length() < 2 || streeNumber.length() < 1) {
@@ -993,10 +995,10 @@ public class UpdatePetActivity extends BaseActivity implements
     private void startGeoAddressLookupThread(String addressString) {
 
         LoaderManager loaderManager = getSupportLoaderManager();
-        Loader<Address> imageSyncAsyncTaskLoader = loaderManager.getLoader(Utilities.GEO_ADDRESS_LOOKUP_LOADER);
+        Loader<Address> geoAsyncTaskLoader = loaderManager.getLoader(Utilities.GEO_ADDRESS_LOOKUP_LOADER);
         Bundle args = new Bundle();
         args.putString(getString(R.string.bundled_address_string), addressString);
-        if (!mAlreadyGotGeoAddress && imageSyncAsyncTaskLoader==null) {
+        if (!mAlreadyGotGeoAddress && geoAsyncTaskLoader ==null) {
             loaderManager.initLoader(Utilities.GEO_ADDRESS_LOOKUP_LOADER, args, this);
         }
 
@@ -1170,22 +1172,23 @@ public class UpdatePetActivity extends BaseActivity implements
     }
 
     //Communication with GeoAddressLookupLoader
-    @NonNull @Override public Loader<Address> onCreateLoader(int id, @Nullable Bundle args) {
+    @NonNull @Override public Loader<Object> onCreateLoader(int id, @Nullable Bundle args) {
         String addressString = (args==null)? "" : args.getString(getString(R.string.bundled_address_string), "");
-        return new GeoAdressLookupAsyncTaskLoader(this, addressString);
+        return new GeoAdressLookupAsyncTaskLoader(this, addressString, "");
     }
-    @Override public void onLoadFinished(@NonNull Loader<Address> loader, Address data) {
-        if (data!=null ) {
-            String geoAddressCountry = data.getCountryCode();
-            double geoAddressLatitude = data.getLatitude();
-            double geoAddressLongitude = data.getLongitude();
+    @Override public void onLoadFinished(@NonNull Loader<Object> loader, Object data) {
+        if (data!=null) {
+            Address address = (Address) data;
+            String geoAddressCountry = address.getCountryCode();
+            double geoAddressLatitude = address.getLatitude();
+            double geoAddressLongitude = address.getLongitude();
 
-            mFoundation.setGaC(geoAddressCountry);
-            mFoundation.setGeo(new GeoPoint(geoAddressLatitude, geoAddressLongitude));
+            mPet.setGaC(geoAddressCountry);
+            mPet.setGeo(new GeoPoint(geoAddressLatitude, geoAddressLongitude));
         }
         getLoaderManager().destroyLoader(Utilities.GEO_ADDRESS_LOOKUP_LOADER);
     }
-    @Override public void onLoaderReset(@NonNull Loader<Address> loader) {
+    @Override public void onLoaderReset(@NonNull Loader<Object> loader) {
 
     }
 }

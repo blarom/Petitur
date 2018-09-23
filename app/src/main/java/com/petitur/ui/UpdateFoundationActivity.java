@@ -41,7 +41,7 @@ import butterknife.Unbinder;
 public class UpdateFoundationActivity extends BaseActivity  implements
         FirebaseDao.FirebaseOperationsHandler,
         ImagesRecycleViewAdapter.ImageClickHandler,
-        LoaderManager.LoaderCallbacks<Address> {
+        LoaderManager.LoaderCallbacks<Object> {
 
 
     //region Parameters
@@ -349,6 +349,8 @@ public class UpdateFoundationActivity extends BaseActivity  implements
 
         mFoundation.setUniqueIdentifierFromDetails();
 
+        mFoundation.setDte(Utilities.getCurrentDate());
+
         if (name.length() < 2 || country.length() < 2 || city.length() < 1) {
             mFoundationCriticalParametersSet = false;
         }
@@ -468,22 +470,26 @@ public class UpdateFoundationActivity extends BaseActivity  implements
     }
 
     //Communication with GeoAddressLookupLoader
-    @NonNull @Override public Loader<Address> onCreateLoader(int id, @Nullable Bundle args) {
+    @NonNull @Override public Loader<Object> onCreateLoader(int id, @Nullable Bundle args) {
         String addressString = (args==null)? "" : args.getString(getString(R.string.bundled_address_string), "");
-        return new GeoAdressLookupAsyncTaskLoader(this, addressString);
+        return new GeoAdressLookupAsyncTaskLoader(this, addressString, "");
     }
-    @Override public void onLoadFinished(@NonNull Loader<Address> loader, Address data) {
+    @Override public void onLoadFinished(@NonNull Loader<Object> loader, Object data) {
         if (data!=null ) {
-            String geoAddressCountry = data.getCountryCode();
-            double geoAddressLatitude = data.getLatitude();
-            double geoAddressLongitude = data.getLongitude();
+            Object[] objectArray = (Object[]) data;
+            Address address = (Address) objectArray[0];
+            String id = (String) objectArray[1];
+
+            String geoAddressCountry = address.getCountryCode();
+            double geoAddressLatitude = address.getLatitude();
+            double geoAddressLongitude = address.getLongitude();
 
             mFoundation.setGaC(geoAddressCountry);
             mFoundation.setGeo(new GeoPoint(geoAddressLatitude, geoAddressLongitude));
         }
         getLoaderManager().destroyLoader(Utilities.GEO_ADDRESS_LOOKUP_LOADER);
     }
-    @Override public void onLoaderReset(@NonNull Loader<Address> loader) {
+    @Override public void onLoaderReset(@NonNull Loader<Object> loader) {
 
     }
 }

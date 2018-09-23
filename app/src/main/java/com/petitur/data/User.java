@@ -5,6 +5,8 @@ import android.os.Parcelable;
 
 import com.petitur.resources.Utilities;
 
+import java.util.Date;
+
 public class User implements Parcelable {
 
     public User() {}
@@ -21,6 +23,7 @@ public class User implements Parcelable {
         lC = in.readByte() != 0;
         iF = in.readByte() != 0;
         lg = in.readString();
+        dte = new Date(in.readLong());
     }
 
     public static final Creator<User> CREATOR = new Creator<User>() {
@@ -99,6 +102,13 @@ public class User implements Parcelable {
         this.lg = lg;
     }
 
+    private Date dte = new Date(); //last loggin in date
+    public Date getDte() {
+        return dte;
+    }
+    public void setDte(Date dte) {
+        this.dte = dte;
+    }
 
     @Override
     public int describeContents() {
@@ -114,5 +124,6 @@ public class User implements Parcelable {
         parcel.writeByte((byte) (lC ? 1 : 0));
         parcel.writeByte((byte) (iF ? 1 : 0));
         parcel.writeString(lg);
+        parcel.writeLong(dte.getTime());
     }
 }

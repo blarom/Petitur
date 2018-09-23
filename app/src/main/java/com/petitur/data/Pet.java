@@ -9,6 +9,7 @@ import com.google.firebase.firestore.GeoPoint;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,6 +76,8 @@ public class Pet implements Parcelable, Comparable<Pet> {
         in.readMap(vet,Object.class.getClassLoader());
         fam = new HashMap<>();
         in.readMap(fam,Object.class.getClassLoader());
+
+        dte = new Date(in.readLong());
     }
 
     public static final Creator<Pet> CREATOR = new Creator<Pet>() {
@@ -344,7 +347,7 @@ public class Pet implements Parcelable, Comparable<Pet> {
         this.iUT = iUT;
     }
 
-    private int dt = 0; //distance (only used locally)
+    private int dt = 1000000; //distance (only used locally)
     public int getDt() {
         return dt;
     }
@@ -374,6 +377,14 @@ public class Pet implements Parcelable, Comparable<Pet> {
     }
     public void setFam(Map<String, String> fam) {
         this.fam = fam;
+    }
+
+    private Date dte = new Date(); //last modified date
+    public Date getDte() {
+        return dte;
+    }
+    public void setDte(Date dte) {
+        this.dte = dte;
     }
 
     //region Comparator interface
@@ -511,6 +522,8 @@ public class Pet implements Parcelable, Comparable<Pet> {
         parcel.writeDouble((geo==null)? 0.0 : geo.getLongitude());
         parcel.writeMap(vet);
         parcel.writeMap(fam);
+
+        parcel.writeLong(dte.getTime());
     }
 
 

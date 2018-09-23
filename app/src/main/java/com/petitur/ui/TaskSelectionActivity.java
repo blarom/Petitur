@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -19,6 +20,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.firebase.ui.auth.IdpResponse;
+import com.google.android.gms.maps.MapView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.petitur.R;
@@ -80,6 +82,7 @@ public class TaskSelectionActivity extends BaseActivity implements
         hasStoragePermissions = checkStoragePermission();
         hasLocationPermissions = checkLocationPermission();
         if (hasStoragePermissions && hasLocationPermissions) getUserProfile();
+        loadGooglePlayMapServicesInBackground();
     }
     @Override protected void onResume() {
         super.onResume();
@@ -138,7 +141,10 @@ public class TaskSelectionActivity extends BaseActivity implements
                     if (mFamily != null) {
                         returnedNullFamily = false;
                         if (TextUtils.isEmpty(mFamily.getUI())) mFamily = (Family) mFirebaseDao.createObjectWithUIAndReturnIt(mFamily);
-                        else mFirebaseDao.updateObject(mFamily);
+                        else {
+                            mFamily.setDte(Utilities.getCurrentDate());
+                            mFirebaseDao.updateObject(mFamily);
+                        }
                     }
                 }
                 if (data.hasExtra(getString(R.string.foundation_profile_parcelable))) {
@@ -146,7 +152,10 @@ public class TaskSelectionActivity extends BaseActivity implements
                     if (mFoundation != null) {
                         returnedNullFoundation = false;
                         if (TextUtils.isEmpty(mFoundation.getUI())) mFoundation = (Foundation) mFirebaseDao.createObjectWithUIAndReturnIt(mFoundation);
-                        else mFirebaseDao.updateObject(mFoundation);
+                        else {
+                            mFoundation.setDte(Utilities.getCurrentDate());
+                            mFirebaseDao.updateObject(mFoundation);
+                        }
                     }
                 }
 
@@ -208,7 +217,8 @@ public class TaskSelectionActivity extends BaseActivity implements
                 else Utilities.startUpdateFamilyProfileActivity(TaskSelectionActivity.this, mFamily);
                 return true;
             case R.id.action_signin:
-                //TODO: add "Are you sure?" dialog when signing out
+                mUser.setDte(Utilities.getCurrentDate());
+                mFirebaseDao.updateObject(mUser);
                 Utilities.handleUserSignIn(TaskSelectionActivity.this, mCurrentFirebaseUser, mFirebaseAuth, mMenu);
                 if (mCurrentFirebaseUser!=null) showBlankTaskSelectionMenu(); //ie. show the blank screen when requesting sign-out for a logged-in user
                 return true;
@@ -449,6 +459,24 @@ public class TaskSelectionActivity extends BaseActivity implements
         Intent intent = new Intent(this, TipsInfoActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         startActivity(intent);
+    }
+    private void loadGooglePlayMapServicesInBackground() {
+        //taken from: https://stackoverflow.com/questions/26265526/what-makes-my-map-fragment-loading-slow
+        // Fixing Later Map loading Delay
+        if (Looper.myLooper() == null) Looper.prepare();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    MapView mv = new MapView(getApplicationContext());
+                    mv.onCreate(null);
+                    mv.onPause();
+                    mv.onDestroy();
+                }catch (Exception ignored){
+
+                }
+            }
+        }).start();
     }
 
 

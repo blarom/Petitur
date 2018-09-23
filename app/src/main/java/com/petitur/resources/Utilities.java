@@ -77,9 +77,12 @@ import java.io.InputStream;
 import java.math.RoundingMode;
 import java.nio.channels.FileChannel;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
@@ -120,6 +123,8 @@ public class Utilities {
         activity.startActivityForResult(intent, UPDATE_PROFILE_FLAG);
     }
     public static void handleUserSignIn(final Activity activity, FirebaseUser mCurrentFirebaseUser, FirebaseAuth mFirebaseAuth, Menu mMenu) {
+
+        //TODO: add "Are you sure?" dialog when signing out
         if (mCurrentFirebaseUser==null) {
             Utilities.setAppPreferenceUserHasNotRefusedSignIn(activity.getApplicationContext(), true);
             Utilities.showSignInScreen(activity);
@@ -261,7 +266,10 @@ public class Utilities {
             activity.startActivity(intent);
         }
     }
-
+    public static Date getCurrentDate() {
+        Calendar cal = Calendar.getInstance();
+        return cal.getTime();
+    }
 
     //File utilities
     private static Uri moveFile(Uri source, String destinationDirectory, String destinationFilename) {
@@ -1183,7 +1191,7 @@ public class Utilities {
         }
         return null;
     }
-    public static double getCoordinateRandomJitter() {
+    private static double getCoordinateRandomJitter() {
         //Used to allow discrimination between objects on the map, by jittering by a random number of meters (<10) around the coordinate
         Random rand = new Random();
         int  n = rand.nextInt(10) + 1;

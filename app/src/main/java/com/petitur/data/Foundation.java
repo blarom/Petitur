@@ -8,6 +8,7 @@ import com.google.firebase.firestore.GeoPoint;
 import com.petitur.resources.Utilities;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 public class Foundation implements Parcelable {
@@ -66,6 +67,8 @@ public class Foundation implements Parcelable {
         Double lat = in.readDouble();
         Double lng = in.readDouble();
         geo = new GeoPoint(lat, lng);
+
+        dte = new Date(in.readLong());
     }
 
     public static final Creator<Foundation> CREATOR = new Creator<Foundation>() {
@@ -374,6 +377,14 @@ public class Foundation implements Parcelable {
         this.srT = srT;
     }
 
+    private Date dte = new Date(); //last modified date
+    public Date getDte() {
+        return dte;
+    }
+    public void setDte(Date dte) {
+        this.dte = dte;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -419,5 +430,7 @@ public class Foundation implements Parcelable {
 
         parcel.writeDouble((geo==null)? 0.0 : geo.getLatitude());
         parcel.writeDouble((geo==null)? 0.0 : geo.getLongitude());
+
+        parcel.writeLong(dte.getTime());
     }
 }
