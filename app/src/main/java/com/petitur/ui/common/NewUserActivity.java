@@ -77,7 +77,7 @@ public class NewUserActivity extends BaseActivity {
     }
     @Override protected void onDestroy() {
         super.onDestroy();
-        mBinding.unbind();
+        if (mBinding!=null) mBinding.unbind();
     }
     @Override public void onBackPressed() {
         if (mFoundation==null && mFamily == null) {

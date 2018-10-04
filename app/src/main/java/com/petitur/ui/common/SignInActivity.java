@@ -96,7 +96,7 @@ public class SignInActivity extends BaseActivity {
     }
     @Override protected void onDestroy() {
         super.onDestroy();
-        mBinding.unbind();
+        if (mBinding!=null) mBinding.unbind();
     }
     @Override public void onBackPressed() {
         //super.onBackPressed();

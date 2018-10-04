@@ -117,7 +117,7 @@ public class UpdateFamilyActivity extends BaseActivity implements
     }
     @Override protected void onDestroy() {
         super.onDestroy();
-        mBinding.unbind();
+        if (mBinding!=null) mBinding.unbind();
         mFirebaseDao.removeListeners();
     }
     @Override public void onActivityResult(int requestCode, int resultCode, Intent data) {

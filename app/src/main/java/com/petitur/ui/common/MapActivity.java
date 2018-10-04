@@ -104,7 +104,7 @@ public class MapActivity extends BaseActivity implements
     @Override protected void onDestroy() {
         super.onDestroy();
         removeListeners();
-        mBinding.unbind();
+        if (mBinding!=null) mBinding.unbind();
     }
     @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);

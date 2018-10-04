@@ -25,7 +25,7 @@ public class TipsInfoActivity extends BaseActivity {
     }
     @Override protected void onDestroy() {
         super.onDestroy();
-        mBinding.unbind();
+        if (mBinding!=null) mBinding.unbind();
     }
     @Override public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.tips_info_menu, menu);

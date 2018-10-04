@@ -104,7 +104,7 @@ public class PreferencesActivity extends BaseActivity implements FirebaseDao.Fir
     @Override protected void onDestroy() {
         super.onDestroy();
         removeListeners();
-        mBinding.unbind();
+        if (mBinding!=null) mBinding.unbind();
     }
     @Override public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == Utilities.FIREBASE_SIGN_IN_FLAG) {

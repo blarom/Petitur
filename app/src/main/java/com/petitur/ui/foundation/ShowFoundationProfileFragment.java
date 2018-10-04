@@ -94,7 +94,7 @@ public class ShowFoundationProfileFragment extends Fragment implements
     }
     @Override public void onDestroyView() {
         super.onDestroyView();
-        mBinding.unbind();
+        if (mBinding!=null) mBinding.unbind();
         if (mImageSyncAsyncTaskLoader!=null) mImageSyncAsyncTaskLoader.stopUpdatingImagesForObjects();
     }
     @Override public void onDetach() {
