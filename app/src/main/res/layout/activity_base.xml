@@ -5,6 +5,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.BaseActivity">
+    tools:context=".ui.common.BaseActivity">
 
 </android.support.constraint.ConstraintLayout>

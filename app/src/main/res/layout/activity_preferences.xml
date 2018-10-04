@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.PreferencesActivity">
+    tools:context=".ui.common.PreferencesActivity">
 
     <TextView
         android:id="@+id/preferences_please_sign_in"
@@ -35,7 +35,7 @@
 
             <TextView
                 style="@style/SpinnerTitleStyle"
-                android:text="@string/name"
+                android:text="@string/name_doublepoints"
                 app:layout_constraintBottom_toBottomOf="@+id/preferences_change_name"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="@+id/preferences_change_name"/>
@@ -65,7 +65,7 @@
 
             <TextView
                 style="@style/SpinnerTitleStyle"
-                android:text="@string/email"
+                android:text="@string/email_doublepoints"
                 app:layout_constraintBottom_toBottomOf="@+id/preferences_change_email"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="@+id/preferences_change_email"/>
@@ -102,7 +102,7 @@
             <TextView
                 android:id="@+id/preferences_password_title"
                 style="@style/SpinnerTitleStyle"
-                android:text="@string/password"
+                android:text="@string/password_doublepoints"
                 app:layout_constraintBottom_toBottomOf="@+id/preferences_change_password"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="@+id/preferences_change_password"/>
@@ -157,6 +157,16 @@
                 android:entries="@array/languages"
                 app:layout_constraintTop_toBottomOf="@id/preferences_search_country_only_checkbox"
                 />
+
+            <Button
+                android:id="@+id/preferences_delete_account"
+                android:layout_marginTop="@dimen/double_margin"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@id/preferences_language_selection_spinner"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                android:text="@string/delete_my_account"/>
 
         </android.support.constraint.ConstraintLayout>
 

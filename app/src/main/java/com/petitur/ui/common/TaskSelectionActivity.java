@@ -1,4 +1,4 @@
-package com.petitur.ui;
+package com.petitur.ui.common;
 
 import android.Manifest;
 import android.content.Intent;
@@ -16,6 +16,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,6 +27,8 @@ import com.google.firebase.auth.FirebaseUser;
 import com.petitur.R;
 import com.petitur.data.*;
 import com.petitur.resources.Utilities;
+import com.petitur.ui.family.TipsInfoActivity;
+import com.petitur.ui.foundation.UpdatePetActivity;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -44,7 +47,7 @@ import static butterknife.internal.Utils.arrayOf;
 public class TaskSelectionActivity extends BaseActivity implements
         FirebaseDao.FirebaseOperationsHandler {
 
-    //TODO: personalize login screen to include email verification + double password check
+    //TODO: put same menu in all activities: https://stackoverflow.com/questions/3270206/same-option-menu-in-all-activities-in-android
 
     //region Parameters
     @BindView(R.id.task_selection_find_pet) Button mFindPetButton;
@@ -53,8 +56,8 @@ public class TaskSelectionActivity extends BaseActivity implements
     @BindView(R.id.task_selection_see_my_pets) Button mSeeMyPetsButton;
     @BindView(R.id.task_selection_add_pet) Button mAddPetButton;
     @BindView(R.id.task_selection_search_users) Button mSearchUsersButton;
-    @BindView(R.id.task_selection_please_sign_in) TextView mPleaseSignInTextView;
     @BindView(R.id.task_selection_welcome) TextView mWelcomeTextView;
+    @BindView(R.id.task_selection_loading_indicator) ProgressBar mProgressBarLoadingIndicator;
     private static final String DEBUG_TAG = "Petitur TaskSelection";
     public static final int APP_PERMISSIONS_REQUEST_CODE_WRITE_EXTERNAL_STORAGE = 555;
     private static final int APP_PERMISSIONS_REQUEST_CODE_ACCESS_FINE_LOCATION = 123;
@@ -78,21 +81,22 @@ public class TaskSelectionActivity extends BaseActivity implements
         setContentView(R.layout.activity_task_selection);
 
         initializeParameters();
-        setupFirebaseAuthentication();
+        showLoadingIndicator();
         hasStoragePermissions = checkStoragePermission();
         hasLocationPermissions = checkLocationPermission();
         if (hasStoragePermissions && hasLocationPermissions) getUserProfile();
         loadGooglePlayMapServicesInBackground();
     }
-    @Override protected void onResume() {
-        super.onResume();
-        mCurrentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        invalidateOptionsMenu();
-
-    }
     @Override public void onStart() {
         super.onStart();
         setupFirebaseAuthentication();
+    }
+    @Override protected void onResume() {
+        super.onResume();
+        mCurrentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        checkIfSignedInOrShowSignInScreen();
+        invalidateOptionsMenu();
+
     }
     @Override protected void onStop() {
         super.onStop();
@@ -111,18 +115,20 @@ public class TaskSelectionActivity extends BaseActivity implements
 
             if (resultCode == RESULT_OK) {
                 // Successfully signed in
+                showLoadingIndicator();
                 mCurrentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
                 if (hasStoragePermissions && hasLocationPermissions) getUserProfile();
-                Utilities.updateSignInMenuItem(mMenu, this, true);
+                if (mMenu!=null) Utilities.updateSignInMenuItem(mMenu, this, true);
             } else {
-                Utilities.updateSignInMenuItem(mMenu, this, false);
+                hideLoadingIndicator();
+                if (mMenu!=null) Utilities.updateSignInMenuItem(mMenu, this, false);
                 // Sign in failed. If response is null the user canceled the
                 // sign-in flow using the back button. Otherwise check
                 // response.getError().getErrorCode() and handle the error.
                 // ...
             }
         }
-        if (requestCode == Utilities.NEW_USER_FLAG) {
+        else if (requestCode == Utilities.NEW_USER_FLAG) {
 
             if (resultCode == RESULT_OK) {
                 boolean mustRestartApp = false;
@@ -180,7 +186,7 @@ public class TaskSelectionActivity extends BaseActivity implements
 
             }
         }
-        if (requestCode == Utilities.UPDATE_PROFILE_FLAG) {
+        else if (requestCode == Utilities.UPDATE_PROFILE_FLAG) {
 
             if (resultCode == RESULT_OK) {
                 if (data.hasExtra(getString(R.string.family_profile_parcelable))) {
@@ -216,11 +222,11 @@ public class TaskSelectionActivity extends BaseActivity implements
                 if (mUser.getIF()) Utilities.startUpdateFoundationProfileActivity(TaskSelectionActivity.this, mFoundation);
                 else Utilities.startUpdateFamilyProfileActivity(TaskSelectionActivity.this, mFamily);
                 return true;
-            case R.id.action_signin:
-                mUser.setDte(Utilities.getCurrentDate());
-                mFirebaseDao.updateObject(mUser);
-                Utilities.handleUserSignIn(TaskSelectionActivity.this, mCurrentFirebaseUser, mFirebaseAuth, mMenu);
-                if (mCurrentFirebaseUser!=null) showBlankTaskSelectionMenu(); //ie. show the blank screen when requesting sign-out for a logged-in user
+            case R.id.action_sign_in_out:
+                if (mCurrentFirebaseUser!=null) {
+                    Utilities.startSigningOut(TaskSelectionActivity.this, mCurrentFirebaseUser, mFirebaseAuth, mMenu, mUser, mFirebaseDao);
+                }
+                //if (mCurrentFirebaseUser!=null) showBlankTaskSelectionMenu(); //ie. show the blank screen when requesting sign-out for a logged-in user
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -253,10 +259,11 @@ public class TaskSelectionActivity extends BaseActivity implements
     //Functionality methods
     private void initializeParameters() {
 
+        mBinding =  ButterKnife.bind(this);
+
         mFirebaseDao = new FirebaseDao(this, this);
         mFirebaseAuth = FirebaseAuth.getInstance();
         mCurrentFirebaseUser = mFirebaseAuth.getCurrentUser();
-        mBinding =  ButterKnife.bind(this);
 
         if (getSupportActionBar()!=null) {
             getSupportActionBar().setTitle(R.string.app_name);
@@ -265,7 +272,14 @@ public class TaskSelectionActivity extends BaseActivity implements
         showBlankTaskSelectionMenu();
 
     }
+    private void checkIfSignedInOrShowSignInScreen() {
+        if (mCurrentFirebaseUser==null) {
+            Utilities.showSignInScreen(TaskSelectionActivity.this);
+        }
+    }
     private void setupFirebaseAuthentication() {
+
+
         // Check if user is signed in (non-null) and update UI accordingly.
         mAuthStateListener = new FirebaseAuth.AuthStateListener() {
             @Override
@@ -273,24 +287,28 @@ public class TaskSelectionActivity extends BaseActivity implements
 
                 mCurrentFirebaseUser = firebaseAuth.getCurrentUser();
                 if (mCurrentFirebaseUser != null) {
-                    // TinDogUser is signed in
+                    // User is signed in
                     Utilities.setAppPreferenceUserHasNotRefusedSignIn(getApplicationContext(), true);
                     Utilities.setAppPreferenceFirstTimeUsingApp(getApplicationContext(), false);
                     updateWelcomeMessage();
                     Log.d(DEBUG_TAG, "onAuthStateChanged:signed_in:" + mCurrentFirebaseUser.getUid());
                 } else {
-                    // TinDogUser is signed out
-                    Log.d(DEBUG_TAG, "onAuthStateChanged:signed_out");
-                    //Showing the sign-in screen
-                    boolean firstTime = Utilities.getAppPreferenceFirstTimeUsingApp(getApplicationContext());
-                    if (!firstTime && Utilities.getAppPreferenceUserHasNotRefusedSignIn(getApplicationContext()))
-                        Utilities.showSignInScreen(TaskSelectionActivity.this);
+                    hideLoadingIndicator();
+                    Utilities.setAppPreferenceUserHasNotRefusedSignIn(TaskSelectionActivity.this, true);
+                    //Utilities.showSignInScreen(TaskSelectionActivity.this);
+//                    // TinDogUser is signed out
+//                    Log.d(DEBUG_TAG, "onAuthStateChanged:signed_out");
+//                    //Showing the sign-in screen
+//                    boolean firstTime = Utilities.getAppPreferenceFirstTimeUsingApp(getApplicationContext());
+//                    if (!firstTime && Utilities.getAppPreferenceUserHasNotRefusedSignIn(getApplicationContext()))
+//                        Utilities.showSignInScreen(TaskSelectionActivity.this);
                 }
+                mFirebaseAuth.removeAuthStateListener(mAuthStateListener);
             }
         };
         mFirebaseAuth.addAuthStateListener(mAuthStateListener);
     }
-    public boolean checkStoragePermission() {
+    private boolean checkStoragePermission() {
         if (Build.VERSION.SDK_INT >= 23) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
                 Log.e(DEBUG_TAG, "User has granted EXTERNAL_STORAGE permission");
@@ -362,6 +380,7 @@ public class TaskSelectionActivity extends BaseActivity implements
             mFirebaseDao.updateObject(mUser);
         }
 
+        hideLoadingIndicator();
         if (mUser!=null) {
             mWelcomeTextView.setVisibility(View.VISIBLE);
             if (mUser.getIF()) {
@@ -371,7 +390,6 @@ public class TaskSelectionActivity extends BaseActivity implements
                 mSeeMyPetsButton.setVisibility(View.VISIBLE);
                 mAddPetButton.setVisibility(View.VISIBLE);
                 mSearchUsersButton.setVisibility(View.VISIBLE);
-                mPleaseSignInTextView.setVisibility(View.GONE);
             }
             else {
                 mFindPetButton.setVisibility(View.VISIBLE);
@@ -380,10 +398,10 @@ public class TaskSelectionActivity extends BaseActivity implements
                 mSeeMyPetsButton.setVisibility(View.GONE);
                 mAddPetButton.setVisibility(View.GONE);
                 mSearchUsersButton.setVisibility(View.GONE);
-                mPleaseSignInTextView.setVisibility(View.GONE);
             }
         }
         else {
+            Utilities.startSigningOut(TaskSelectionActivity.this, mCurrentFirebaseUser, mFirebaseAuth, mMenu, mUser, mFirebaseDao);
             showBlankTaskSelectionMenu();
         }
     }
@@ -395,7 +413,6 @@ public class TaskSelectionActivity extends BaseActivity implements
         mSeeMyPetsButton.setVisibility(View.GONE);
         mAddPetButton.setVisibility(View.GONE);
         mSearchUsersButton.setVisibility(View.GONE);
-        mPleaseSignInTextView.setVisibility(View.VISIBLE);
     }
     private void openPetList(boolean requestedFavorites) {
         if (mUser.getIFT()) return;
@@ -477,6 +494,12 @@ public class TaskSelectionActivity extends BaseActivity implements
                 }
             }
         }).start();
+    }
+    private void showLoadingIndicator() {
+        if (mProgressBarLoadingIndicator!=null) mProgressBarLoadingIndicator.setVisibility(View.VISIBLE);
+    }
+    private void hideLoadingIndicator() {
+        if (mProgressBarLoadingIndicator!=null) mProgressBarLoadingIndicator.setVisibility(View.INVISIBLE);
     }
 
 

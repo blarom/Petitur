@@ -1,12 +1,12 @@
-package com.petitur.ui;
+package com.petitur.ui.family;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.petitur.R;
 import com.petitur.resources.Utilities;
+import com.petitur.ui.common.BaseActivity;
 
 import butterknife.ButterKnife;
 import butterknife.OnClick;

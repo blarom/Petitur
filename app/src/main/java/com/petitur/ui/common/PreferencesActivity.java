@@ -1,4 +1,4 @@
-package com.petitur.ui;
+package com.petitur.ui.common;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
+import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
 import android.os.Bundle;
 import android.text.InputType;
@@ -18,17 +19,20 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
-import android.widget.SpinnerAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.firebase.ui.auth.IdpResponse;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.FirebaseUser;
 import com.petitur.R;
 import com.petitur.data.Family;
@@ -40,7 +44,6 @@ import com.petitur.data.User;
 import com.petitur.resources.LocaleHelper;
 import com.petitur.resources.Utilities;
 
-import java.util.Arrays;
 import java.util.List;
 
 import butterknife.BindView;
@@ -110,10 +113,10 @@ public class PreferencesActivity extends BaseActivity implements FirebaseDao.Fir
             if (resultCode == RESULT_OK) {
                 // Successfully signed in
                 mCurrentFirebaseUser = mFirebaseAuth.getCurrentUser();
-                Utilities.updateSignInMenuItem(mMenu, this, true);
+                if (mMenu!=null) Utilities.updateSignInMenuItem(mMenu, this, true);
                 getUserProfile();
             } else {
-                Utilities.updateSignInMenuItem(mMenu, this, false);
+                if (mMenu!=null) Utilities.updateSignInMenuItem(mMenu, this, false);
                 // Sign in failed. If response is null the user canceled the
                 // sign-in flow using the back button. Otherwise check
                 // response.getError().getErrorCode() and handle the error.
@@ -143,8 +146,8 @@ public class PreferencesActivity extends BaseActivity implements FirebaseDao.Fir
                 mFirebaseDao.updateObject(mUser);
                 finish();
                 return true;
-            case R.id.action_signin:
-                Utilities.handleUserSignIn(PreferencesActivity.this, mCurrentFirebaseUser, mFirebaseAuth, mMenu);
+            case R.id.action_sign_in_out:
+                Utilities.startSigningOut(PreferencesActivity.this, mCurrentFirebaseUser, mFirebaseAuth, mMenu, mUser, mFirebaseDao);
                 if (mCurrentFirebaseUser!=null) showBlankPreferences(); //ie. show the blank screen when requesting sign-out for a logged-in user
                 return true;
         }
@@ -417,6 +420,102 @@ public class PreferencesActivity extends BaseActivity implements FirebaseDao.Fir
         mLastSelectedLanguagePosition = position;
         mLanguageSelectionSpinner.setSelection(position);
     }
+    public void showDeleteAccountDialog() {
+
+        //region Get the dialog view
+        LayoutInflater inflater = LayoutInflater.from(this);
+        View dialogView = inflater.inflate(R.layout.dialog_delete_account, null);
+        final TextInputEditText emailEditText = dialogView.findViewById(R.id.dialog_delete_account_email);
+        final TextInputEditText passwordEditText = dialogView.findViewById(R.id.dialog_delete_account_password);
+        emailEditText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+        passwordEditText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+        //endregion
+
+        //region Building the dialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.delete_my_account);
+
+        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+
+                //Getting the user entries
+                String email = emailEditText.getText().toString();
+                String password = emailEditText.getText().toString();
+
+                if (!email.equals(mCurrentFirebaseUser.getEmail())) {
+                    Toast.makeText(PreferencesActivity.this, R.string.wrong_email_entered, Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                mFirebaseAuth.signInWithEmailAndPassword(email, password)
+                        .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                            @Override
+                            public void onComplete(@NonNull Task<AuthResult> task) {
+                                if (!task.isSuccessful()) {
+                                    try {
+                                        throw task.getException();
+                                    }
+                                    catch (FirebaseAuthInvalidCredentialsException malformedEmail) {
+                                        Toast.makeText(PreferencesActivity.this, R.string.password_invalid_try_again, Toast.LENGTH_SHORT).show();
+                                    }
+                                    catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                                else {
+                                    showCredentialsConfirmedDeleteDialog();
+                                }
+                            }
+                        });
+
+                dialog.dismiss();
+            }
+        });
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                dialog.dismiss();
+            }
+        });
+        //endregion
+
+        builder.setView(dialogView);
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+    public void showCredentialsConfirmedDeleteDialog() {
+        android.support.v7.app.AlertDialog alertDialog = new android.support.v7.app.AlertDialog.Builder(this).create();
+        alertDialog.setMessage(getString(R.string.credentials_confirmed_delete_account));
+        alertDialog.setButton(android.support.v7.app.AlertDialog.BUTTON_POSITIVE, getString(R.string.yes),
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+
+                        mCurrentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+                        if (mCurrentFirebaseUser != null) {
+                            mCurrentFirebaseUser.delete()
+                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Void> task) {
+                                            if (task.isSuccessful()) {
+                                                Toast.makeText(PreferencesActivity.this, R.string.successfully_deleted_please_sign_in, Toast.LENGTH_SHORT).show();
+                                            } else {
+                                                Toast.makeText(PreferencesActivity.this, R.string.failed_to_delete_account, Toast.LENGTH_SHORT).show();
+                                            }
+                                        }
+                                    });
+                        }
+
+                        dialog.dismiss();
+                    }
+                });
+        alertDialog.setButton(android.support.v7.app.AlertDialog.BUTTON_NEGATIVE, getString(R.string.cancel),
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+        alertDialog.show();
+    }
 
 
     //View click listeners
@@ -428,6 +527,9 @@ public class PreferencesActivity extends BaseActivity implements FirebaseDao.Fir
     }
     @OnClick(R.id.preferences_change_password) public void onPreferencePasswordChangeButtonClick() {
         showUserInfoUpdateDialog("password");
+    }
+    @OnClick(R.id.preferences_delete_account) public void onPreferenceDeleteAccountButtonClick() {
+        showDeleteAccountDialog();
     }
 
 

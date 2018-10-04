@@ -1,4 +1,4 @@
-package com.petitur.ui;
+package com.petitur.ui.family;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -35,6 +35,7 @@ import com.petitur.data.Foundation;
 import com.petitur.data.Pet;
 import com.petitur.resources.ImageSyncAsyncTaskLoader;
 import com.petitur.resources.Utilities;
+import com.petitur.ui.common.SearchProfileActivity;
 import com.squareup.picasso.Picasso;
 import com.viewpagerindicator.CirclePageIndicator;
 

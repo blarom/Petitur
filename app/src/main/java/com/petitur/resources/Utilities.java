@@ -2,7 +2,6 @@ package com.petitur.resources;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -18,12 +17,10 @@ import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v4.app.LoaderManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
-import android.support.v4.content.Loader;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -33,21 +30,16 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.firebase.ui.auth.AuthUI;
-import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
@@ -61,9 +53,10 @@ import com.petitur.BuildConfig;
 import com.petitur.R;
 import com.petitur.adapters.ImagesRecycleViewAdapter;
 import com.petitur.data.*;
-import com.petitur.ui.PreferencesActivity;
-import com.petitur.ui.UpdateFamilyActivity;
-import com.petitur.ui.UpdateFoundationActivity;
+import com.petitur.ui.common.PreferencesActivity;
+import com.petitur.ui.common.SignInActivity;
+import com.petitur.ui.family.UpdateFamilyActivity;
+import com.petitur.ui.foundation.UpdateFoundationActivity;
 import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
 
@@ -77,7 +70,6 @@ import java.io.InputStream;
 import java.math.RoundingMode;
 import java.nio.channels.FileChannel;
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -86,8 +78,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
-
-import okhttp3.internal.Util;
 
 public class Utilities {
 
@@ -122,33 +112,76 @@ public class Utilities {
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         activity.startActivityForResult(intent, UPDATE_PROFILE_FLAG);
     }
-    public static void handleUserSignIn(final Activity activity, FirebaseUser mCurrentFirebaseUser, FirebaseAuth mFirebaseAuth, Menu mMenu) {
+    public static void startSigningOut(final Activity activity, FirebaseUser mCurrentFirebaseUser, FirebaseAuth mFirebaseAuth, Menu mMenu, User mUser, FirebaseDao mFirebaseDao) {
 
-        //TODO: add "Are you sure?" dialog when signing out
-        if (mCurrentFirebaseUser==null) {
-            Utilities.setAppPreferenceUserHasNotRefusedSignIn(activity.getApplicationContext(), true);
-            Utilities.showSignInScreen(activity);
+        if (mUser!=null) {
+            mUser.setDte(Utilities.getCurrentDate());
+            mFirebaseDao.updateObject(mUser);
         }
-        else {
-            Utilities.setAppPreferenceUserHasNotRefusedSignIn(activity.getApplicationContext(), false);
+        showWishToSignOutDialog(activity, mFirebaseAuth, mMenu);
+    }
+    public static void showSignInScreen(Activity activity) {
 
-            //inspired by: https://stackoverflow.com/questions/35541675/properly-log-out-a-user-from-android-app
-            GoogleSignInClient mGoogleSignInClient ;
-            GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                    .requestIdToken(activity.getString(R.string.default_web_client_id))
-                    .requestEmail()
-                    .build();
-            mGoogleSignInClient = GoogleSignIn.getClient(activity.getBaseContext(), gso);
-            mGoogleSignInClient.signOut();
+        Utilities.setAppPreferenceUserHasNotRefusedSignIn(activity, false);
+        Intent intent = new Intent(activity.getApplicationContext(), SignInActivity.class);
+        activity.startActivityForResult(intent, Utilities.FIREBASE_SIGN_IN_FLAG);
 
-//            GoogleApiClient mGoogleApiClient = new GoogleApiClient.Builder(activity.getBaseContext())
-//                    .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
-//                    .build();
-//            Auth.GoogleSignInApi.signOut(mGoogleApiClient);
-            mFirebaseAuth.signOut();
+//        FirebaseAuth auth = FirebaseAuth.getInstance();
+//
+//        List<AuthUI.IdpConfig> providers = Arrays.asList(
+//                new AuthUI.IdpConfig.EmailBuilder().build(),
+//                new AuthUI.IdpConfig.GoogleBuilder().build());
+//
+//        //List<AuthUI.IdpConfig> providers = Collections.singletonList(new AuthUI.IdpConfig.EmailBuilder().build());
+//
+//        activity.startActivityForResult(
+//
+//                AuthUI.getInstance()
+//                        .createSignInIntentBuilder()
+//                        .setIsSmartLockEnabled(false, true) //TODO: check if this causes problems - see https://github.com/firebase/FirebaseUI-Android/blob/master/auth/README.md
+//                        .setAvailableProviders(providers)
+//                        .build(),
+//                Utilities.FIREBASE_SIGN_IN_FLAG);
+    }
 
-            Utilities.updateSignInMenuItem(mMenu, activity.getBaseContext(), false);
-        }
+    private static void showWishToSignOutDialog(final Activity activity, final FirebaseAuth mFirebaseAuth, final Menu mMenu) {
+        AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
+        alertDialog.setMessage(activity.getApplicationContext().getString(R.string.are_you_sure_you_wish_to_sign_out));
+        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, activity.getApplicationContext().getString(R.string.yes),
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+
+                        Utilities.setAppPreferenceUserHasNotRefusedSignIn(activity.getApplicationContext(), false);
+
+                        //inspired by: https://stackoverflow.com/questions/35541675/properly-log-out-a-user-from-android-app
+                        GoogleSignInClient mGoogleSignInClient ;
+                        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                                .requestIdToken(activity.getApplicationContext().getString(R.string.default_web_client_id))
+                                .requestEmail()
+                                .build();
+                        mGoogleSignInClient = GoogleSignIn.getClient(activity.getBaseContext(), gso);
+                        mGoogleSignInClient.signOut();
+
+//                        GoogleApiClient mGoogleApiClient = new GoogleApiClient.Builder(activity.getBaseContext())
+//                                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+//                                .build();
+//                        Auth.GoogleSignInApi.signOut(mGoogleApiClient);
+                        mFirebaseAuth.signOut();
+
+                        Utilities.updateSignInMenuItem(mMenu, activity.getBaseContext(), false);
+
+                        Utilities.showSignInScreen(activity);
+
+                        dialog.dismiss();
+                    }
+                });
+        alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, activity.getApplicationContext().getString(R.string.cancel),
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+        alertDialog.show();
     }
     public static boolean overwriteLocalImagesWithTempImages(Context context, Uri[] mTempImageUris, Object object) {
 
@@ -425,32 +458,12 @@ public class Utilities {
         }
         return flagList.get(index);
     }
-    public static void showSignInScreen(Activity activity) {
-
-        Utilities.setAppPreferenceUserHasNotRefusedSignIn(activity, false);
-        FirebaseAuth auth = FirebaseAuth.getInstance();
-
-        List<AuthUI.IdpConfig> providers = Arrays.asList(
-                new AuthUI.IdpConfig.EmailBuilder().build(),
-                new AuthUI.IdpConfig.GoogleBuilder().build());
-
-        //List<AuthUI.IdpConfig> providers = Collections.singletonList(new AuthUI.IdpConfig.EmailBuilder().build());
-
-        activity.startActivityForResult(
-
-                AuthUI.getInstance()
-                        .createSignInIntentBuilder()
-                        .setIsSmartLockEnabled(false, true) //TODO: check if this causes problems - see https://github.com/firebase/FirebaseUI-Android/blob/master/auth/README.md
-                        .setAvailableProviders(providers)
-                        .build(),
-                Utilities.FIREBASE_SIGN_IN_FLAG);
-    }
     public static void updateSignInMenuItem(Menu menu, Context context, boolean signedIn) {
         if (signedIn) {
-            menu.findItem(R.id.action_signin).setTitle(context.getString(R.string.sign_out));
+            menu.findItem(R.id.action_sign_in_out).setTitle(context.getString(R.string.sign_out));
         }
         else {
-            menu.findItem(R.id.action_signin).setTitle(context.getString(R.string.sign_in));
+            menu.findItem(R.id.action_sign_in_out).setTitle(context.getString(R.string.sign_in));
         }
 
     }
@@ -1758,37 +1771,37 @@ public class Utilities {
         if (context != null) {
             SharedPreferences sharedPref = context.getSharedPreferences(context.getString(R.string.app_preferences), Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPref.edit();
-            editor.putString(context.getString(R.string.user_longitude), Double.toString(longitude));
+            editor.putString(context.getString(R.string.preference_key_user_longitude), Double.toString(longitude));
             editor.apply();
         }
     }
     public static Double getAppPreferenceUserLongitude(Context context) {
         SharedPreferences sharedPref = context.getSharedPreferences(context.getString(R.string.app_preferences), Context.MODE_PRIVATE);
-        return Double.parseDouble(sharedPref.getString(context.getString(R.string.user_longitude), "0.0"));
+        return Double.parseDouble(sharedPref.getString(context.getString(R.string.preference_key_user_longitude), "0.0"));
     }
     public static void setAppPreferenceUserLatitude(Context context, double latitude) {
         if (context != null) {
             SharedPreferences sharedPref = context.getSharedPreferences(context.getString(R.string.app_preferences), Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPref.edit();
-            editor.putString(context.getString(R.string.user_latitude), Double.toString(latitude));
+            editor.putString(context.getString(R.string.preference_key_user_latitude), Double.toString(latitude));
             editor.apply();
         }
     }
     public static Double getAppPreferenceUserLatitude(Context context) {
         SharedPreferences sharedPref = context.getSharedPreferences(context.getString(R.string.app_preferences), Context.MODE_PRIVATE);
-        return Double.parseDouble(sharedPref.getString(context.getString(R.string.user_latitude), "0.0"));
+        return Double.parseDouble(sharedPref.getString(context.getString(R.string.preference_key_user_latitude), "0.0"));
     }
     public static void setAppPreferenceFirstTimeUsingApp(Context context, boolean firstTimeFlag) {
         if (context != null) {
             SharedPreferences sharedPref = context.getSharedPreferences(context.getString(R.string.app_preferences), Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPref.edit();
-            editor.putBoolean(context.getString(R.string.first_time_using_app), firstTimeFlag);
+            editor.putBoolean(context.getString(R.string.preference_key_first_time_using_app), firstTimeFlag);
             editor.apply();
         }
     }
     public static boolean getAppPreferenceFirstTimeUsingApp(Context context) {
         SharedPreferences sharedPref = context.getSharedPreferences(context.getString(R.string.app_preferences), Context.MODE_PRIVATE);
-        return sharedPref.getBoolean(context.getString(R.string.first_time_using_app), true);
+        return sharedPref.getBoolean(context.getString(R.string.preference_key_first_time_using_app), true);
     }
     public static void setAppPreferenceProfileImagesRvPosition(Context context, int position) {
         if (context != null) {
@@ -1806,25 +1819,37 @@ public class Utilities {
         if (context != null) {
             SharedPreferences sharedPref = context.getSharedPreferences(context.getString(R.string.app_preferences), Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPref.edit();
-            editor.putString(context.getString(R.string.language_preference), languageCode);
+            editor.putString(context.getString(R.string.preference_key_language), languageCode);
             editor.apply();
         }
     }
     public static String getAppPreferenceLanguage(Context context) {
         SharedPreferences sharedPref = context.getSharedPreferences(context.getString(R.string.app_preferences), Context.MODE_PRIVATE);
-        return sharedPref.getString(context.getString(R.string.language_preference), "en");
+        return sharedPref.getString(context.getString(R.string.preference_key_language), "en");
     }
     public static void setAppPreferenceLanguageSetFlag(Context context, boolean flag) {
         if (context != null) {
             SharedPreferences sharedPref = context.getSharedPreferences(context.getString(R.string.app_preferences), Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPref.edit();
-            editor.putBoolean(context.getString(R.string.language_preference_set_flag), flag);
+            editor.putBoolean(context.getString(R.string.preference_key_language_set_flag), flag);
             editor.apply();
         }
     }
     public static boolean getAppPreferenceLanguageSetFlag(Context context) {
         SharedPreferences sharedPref = context.getSharedPreferences(context.getString(R.string.app_preferences), Context.MODE_PRIVATE);
-        return sharedPref.getBoolean(context.getString(R.string.language_preference_set_flag), false);
+        return sharedPref.getBoolean(context.getString(R.string.preference_key_language_set_flag), false);
+    }
+    public static void setAppPreferenceLastEmailSignedIn(Context context, String email) {
+        if (context != null) {
+            SharedPreferences sharedPref = context.getSharedPreferences(context.getString(R.string.app_preferences), Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPref.edit();
+            editor.putString(context.getString(R.string.preference_key_last_email_signed_in), email);
+            editor.apply();
+        }
+    }
+    public static String getAppPreferenceLastEmailSignedIn(Context context) {
+        SharedPreferences sharedPref = context.getSharedPreferences(context.getString(R.string.app_preferences), Context.MODE_PRIVATE);
+        return sharedPref.getString(context.getString(R.string.preference_key_last_email_signed_in), "");
     }
 
 }

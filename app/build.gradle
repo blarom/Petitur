@@ -18,13 +18,14 @@ android {
 
         buildConfigField("String", "mapsApiKey", mapsApiKey)
         resValue("string", "mapsApiKey", mapsApiKey)
+        resValue("string", "googleOAuth2WebAppId", googleOAuth2WebAppId)
     }
     signingConfigs {
         release {
             storePassword "default"
             keyAlias "default"
             keyPassword "default"
-            storeFile file("C:/Projects/Workspace/Keystore/petitur-keystore.jks")
+            storeFile file("C:/Projects/Workspace/Keystore/petitur.jks")
         }
     }
     buildTypes {

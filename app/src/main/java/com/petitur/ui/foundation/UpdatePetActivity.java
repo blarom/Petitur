@@ -1,4 +1,4 @@
-package com.petitur.ui;
+package com.petitur.ui.foundation;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -52,6 +52,7 @@ import com.petitur.data.Pet;
 import com.petitur.data.User;
 import com.petitur.resources.GeoAdressLookupAsyncTaskLoader;
 import com.petitur.resources.Utilities;
+import com.petitur.ui.common.BaseActivity;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 

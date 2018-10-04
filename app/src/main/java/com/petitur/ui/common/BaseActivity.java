@@ -1,4 +1,4 @@
-package com.petitur.ui;
+package com.petitur.ui.common;
 
 import android.content.Context;
 import android.support.v7.app.AppCompatActivity;

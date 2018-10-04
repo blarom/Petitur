@@ -33,5 +33,6 @@
     <dimen name="dialog_filter_bottom_buttons_corner_radius">16dp</dimen>
     <dimen name="show_profile_horizontal_margin">24dp</dimen>
     <dimen name="tips_card_height">100dp</dimen>
+    <dimen name="rtl_automirror_scale">1</dimen>
 
 </resources>

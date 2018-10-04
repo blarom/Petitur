@@ -1,4 +1,4 @@
-package com.petitur.ui;
+package com.petitur.ui.family;
 
 import android.content.Context;
 import android.net.Uri;

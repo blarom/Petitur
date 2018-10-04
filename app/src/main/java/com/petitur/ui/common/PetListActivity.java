@@ -1,4 +1,4 @@
-package com.petitur.ui;
+package com.petitur.ui.common;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -53,6 +53,7 @@ import com.petitur.resources.CustomLocationListener;
 import com.petitur.resources.GeoAdressLookupAsyncTaskLoader;
 import com.petitur.resources.ImageSyncAsyncTaskLoader;
 import com.petitur.resources.Utilities;
+import com.petitur.ui.foundation.UpdatePetActivity;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -72,7 +73,7 @@ public class PetListActivity extends BaseActivity implements
         FirebaseDao.FirebaseOperationsHandler {
 
 
-    //regionParameters
+    //region Parameters
     private static final String DEBUG_TAG = "Petitur Pet List";
     private static final int LIST_MAIN_IMAGES_SYNC_LOADER = 3698;
     private static final int LIST_ADDRESS_LANGUAGE_SYNC_LOADER = 3675;

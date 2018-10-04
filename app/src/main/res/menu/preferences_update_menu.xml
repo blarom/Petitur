@@ -8,7 +8,7 @@
         app:showAsAction="ifRoom"
         android:title="@string/done"/>
     <item
-        android:id="@+id/action_signin"
+        android:id="@+id/action_sign_in_out"
         android:orderInCategory="98"
         app:showAsAction="never"
         android:title="@string/sign_in"/>

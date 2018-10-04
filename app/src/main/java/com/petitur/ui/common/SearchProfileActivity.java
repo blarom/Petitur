@@ -1,4 +1,4 @@
-package com.petitur.ui;
+package com.petitur.ui.common;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -28,6 +28,9 @@ import com.petitur.data.Pet;
 import com.petitur.data.QueryCondition;
 import com.petitur.data.User;
 import com.petitur.resources.Utilities;
+import com.petitur.ui.family.ShowFamilyProfileFragment;
+import com.petitur.ui.family.ShowPetProfileFragment;
+import com.petitur.ui.foundation.ShowFoundationProfileFragment;
 
 import java.util.ArrayList;
 import java.util.List;

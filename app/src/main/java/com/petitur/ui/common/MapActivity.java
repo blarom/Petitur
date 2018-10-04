@@ -1,4 +1,4 @@
-package com.petitur.ui;
+package com.petitur.ui.common;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -35,6 +35,7 @@ import com.petitur.data.*;
 import com.petitur.R;
 import com.petitur.resources.CustomLocationListener;
 import com.petitur.resources.Utilities;
+import com.petitur.ui.foundation.UpdatePetActivity;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -7,27 +7,27 @@
     <string name="location_rationale">Location is required to improve the search results by checking the distance relative to you. If you don\'t allow this, search results may be less useful.</string>
     <string name="save">Save</string>
     <string name="done">Done</string>
-    <string name="sign_in">Sign in</string>
+    <string name="sign_in">Sign In</string>
     <string name="sign_out">Sign Out</string>
     <string name="preferences">Preferences</string>
     <string name="my_profile">My profile</string>
-    <string name="user_longitude" translatable="false">user_longitude</string>
-    <string name="user_latitude" translatable="false">user_latitude</string>
+    <string name="preference_key_user_longitude" translatable="false">user_longitude</string>
+    <string name="preference_key_user_latitude" translatable="false">user_latitude</string>
     <string name="image_too_large">The image you chose is too large, try a smaller image.</string>
     <string name="cannot_open_ftp">Sorry, we cannot open ftp links in this app</string>
     <string name="cannot_open_smtp">Sorry, we cannot open smtp links in this app</string>
     <string name="app_preference_sign_in_state" translatable="false">app_preference_sign_in_state</string>
     <string name="app_preferences" translatable="false">app_preferences</string>
-    <string name="first_time_using_app" translatable="false">first_time_using_app</string>
+    <string name="preference_key_first_time_using_app" translatable="false">first_time_using_app</string>
     <string name="saved_profile_images_rv_position" translatable="false">saved_profile_images_rv_position</string>
     <string name="reached_max_images">You have reached the maximum number of images, please select an image to replace.</string>
     <string name="no_permissions_terminating">The app cannot work properly without these permissions. Terminating the app.</string>
-    <string name="password">Password:</string>
-    <string name="email">Email:</string>
+    <string name="password_doublepoints">Password:</string>
+    <string name="email_doublepoints">Email:</string>
     <string name="no_email_available">No email available</string>
     <string name="no_name_available">No name available</string>
     <string name="hidden_password">********</string>
-    <string name="name">Name:</string>
+    <string name="name_doublepoints">Name:</string>
     <string name="who_i_am">Who I am</string>
     <string name="edit">edit</string>
     <string name="search_only_in_my_country">Search only in my country (recommended)</string>
@@ -242,7 +242,7 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="sure_to_change_app_language">Are you sure you want to the change the App\'s language? This will restart the app.</string>
-    <string name="language_preference" translatable="false">language_preference</string>
+    <string name="preference_key_language" translatable="false">language_preference</string>
 
     <string name="list_item_years">years</string>
     <string name="list_item_one_year">1 year</string>
@@ -301,7 +301,7 @@
     <string name="invalid_search_parameters">Sorry, it seems you have entered invalid search parameters.</string>
     <string name="share_this_profile">Share this profile</string>
     <string name="no_website_available">No website available</string>
-    <string name="language_preference_set_flag" translatable="false">language_preference_set_flag</string>
+    <string name="preference_key_language_set_flag" translatable="false">language_preference_set_flag</string>
     <string name="error_during_image_cropping">There was an error during image cropping, please try again.</string>
     <string name="selected_profile_image_position" translatable="false">selected_profile_image_position</string>
     <string name="please_choose_the_information_you_wish_to_share">Please choose the information you wish to share:</string>
@@ -355,6 +355,47 @@
     <string name="app_email" translatable="false">petiturmobileapp@gmail.com</string>
     <string name="must_complete_registration">You must complete the initial registration to use the app.</string>
     <string name="bundled_address_string" translatable="false">bundled_address_string</string>
+    <string name="username">Username</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="petitur_logo" translatable="false">Petitur Logo</string>
+    <string name="create_an_account">Create an Account</string>
+    <string name="create_account_continue">Continue</string>
+    <string name="password_at_least_6_characters">Password (at least 6 characters)</string>
+    <string name="failed_to_sign_in_with_credentials">Sorry, failed to sign in with your credentials.</string>
+    <string name="please_enter_password_with_at_least_6_chars">Please enter a password with at least 6 characters.</string>
+    <string name="no_valid_account_found">Sorry, no valid account found for the credentials you entered.</string>
+    <string name="password_invalid_try_again">The password you have enetered is invalid, please try again.</string>
+    <string name="credentials_already_in_use_do_you_wish_to_sign_in">The credentials you entered are already in use. Do you wish to sign in with these credentials?</string>
+    <string name="passwords_dont_match">Sorry, your passwords don\'t match. Please try again.</string>
+    <string name="please_fill_all_info">Please fill in all the information before proceeding.</string>
+    <string name="please_enter_password">Please enter a password.</string>
+    <string name="delete_my_account">Delete my Account</string>
+    <string name="sure_want_to_delete_account_enter_credentials">Are you sure you want to delete your account? If so, please enter your credentials to confirm.</string>
+    <string name="wrong_email_entered">Wrong email entered.</string>
+    <string name="credentials_confirmed_delete_account">Credentials confirmed. Delete the account?</string>
+    <string name="successfully_deleted_please_sign_in">Successfully deleted your account, please sign in with another account to continue using the app.</string>
+    <string name="failed_to_delete_account">Failed to delete your account!</string>
+    <string name="sign_in_with_email_password">Sign in with Email/Password</string>
+    <string name="forgot_your_password">Forgot your password?\u0020</string>
+    <string name="click_here">Click here</string>
+    <string name="sign_in_with_google">Sign in with Google</string>
+    <string name="_or_">- OR -</string>
+    <string name="sign_in_successful">Sign in successful.</string>
+    <string name="enter_email_and_press_reset">Please enter the email registered with your account and press RESET to send a password reset email.</string>
+    <string name="email_registered_to_your_account">Email registered to your account</string>
+    <string name="sent_reset_password_email">We have sent you instructions to reset your password!</string>
+    <string name="failed_to_reset_email">Failed to send reset email!</string>
+    <string name="sent_verification_email">We just sent you a verification email, please click on the link provided to activate your account. You can then proceed to use the app.</string>
+    <string name="successfully_verified_email">Successfully verified your email.</string>
+    <string name="created_acount_but_email_not_verified">It seems you created an account but haven\'t verified your email yet. Please check your mail.</string>
+    <string name="are_you_sure_you_wish_to_sign_out">Are you sure you wish to sign out?</string>
+    <string name="password_reset">Password Reset</string>
+    <string name="failed_sign_in_google">Failed to sign in with your Google account.</string>
+    <string name="sure_you_want_to_exit">Are you sure you want to exit the app?</string>
+    <string name="preference_key_last_email_signed_in" translatable="false">preference_key_last_email_signed_in</string>
+    <string name="languages_">Languages:\u0020</string>
 
     <string-array name="pet_genders">
         <item>@string/male</item>

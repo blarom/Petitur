@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/greenBackground"
-    tools:context=".ui.PetListActivity">
+    tools:context=".ui.common.PetListActivity">
 
     <android.support.constraint.Guideline
         android:id="@+id/pet_list_vertical_guideline"

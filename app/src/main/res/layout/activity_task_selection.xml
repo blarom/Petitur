@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.TaskSelectionActivity"
+    tools:context=".ui.common.TaskSelectionActivity"
     android:orientation="vertical">
 
     <LinearLayout
@@ -93,7 +93,19 @@
         android:id="@+id/task_selection_please_sign_in"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:visibility="invisible"
         android:text="@string/please_sign_in_to_view_the_menu"
         android:layout_gravity="center"/>
+
+    <ProgressBar
+        android:id="@+id/task_selection_loading_indicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_gravity="center"
+        android:visibility="invisible"/>
 
 </FrameLayout>

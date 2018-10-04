@@ -1,4 +1,4 @@
-package com.petitur.ui;
+package com.petitur.ui.foundation;
 
 import android.content.Context;
 import android.content.Intent;

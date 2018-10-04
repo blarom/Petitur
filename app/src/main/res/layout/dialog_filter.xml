@@ -201,6 +201,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:hint="@string/filter_option_any"
+                    android:maxLines="1"
                     app:layout_constraintEnd_toStartOf="@id/dialog_filter_arrow_breed"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
